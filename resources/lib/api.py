@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import json
+from os.path import join
 try:
     from urllib import urlencode
 except ImportError:
@@ -60,7 +60,7 @@ def start(args):
 
     # check if cookies exist
     try:
-        cj.load(get_cookie_path(args), ignore_discard=True)
+        cj.load(getCookiePath(args), ignore_discard=True)
     except IOError:
         # cookie file does not exist
         pass
@@ -118,7 +118,7 @@ def start(args):
 def close(args):
     """Saves cookies and session
     """
-    args._cj.save(get_cookie_path(args), ignore_discard=True)
+    args._cj.save(getCookiePath(args), ignore_discard=True)
     args._addon.setSetting("session_id", args._session_id)
     args._addon.setSetting("auth_token", args._auth_token)
 
@@ -158,11 +158,11 @@ def request(args, method, options, failed=False):
     return json_data
 
 
-def get_cookie_path(args):
+def getCookiePath(args):
     """Get cookie file path
     """
     profile_path = xbmc.translatePath(args._addon.getAddonInfo("profile"))
     if args.PY2:
-        return os.path.join(profile_path.decode("utf-8"), u"cookies.lwp")
+        return join(profile_path.decode("utf-8"), u"cookies.lwp")
     else:
-        return os.path.join(profile_path, "cookies.lwp")
+        return join(profile_path, "cookies.lwp")

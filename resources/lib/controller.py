@@ -48,6 +48,7 @@ def showQueue(args):
         if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
             continue
 
+        # add to view
         view.add_item(args,
                       {"title":       item["series"]["name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
                        "tvshowtitle": item["series"]["name"],
@@ -95,6 +96,7 @@ def showHistory(args):
         if not ("media" in item and "series" in item and item["media"]["available"] and item["media"]["premium_available"]):
             continue
 
+        # add to view
         view.add_item(args,
                       {"title":       item["series"]["name"] + " #" + item["media"]["episode_number"] + " - " + item["media"]["name"],
                        "tvshowtitle": item["series"]["name"],
