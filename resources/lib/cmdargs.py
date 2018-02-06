@@ -42,6 +42,7 @@ class Args(object):
         """Initialize arguments object
         Hold also references to the addon which can't be kept at module level.
         """
+        self.PY2        = sys.version_info[0] == 2 #: True for Python 2
         self._addon     = sys.modules["__main__"]._addon
         self._addonname = sys.modules["__main__"]._plugin
         self._addonid   = sys.modules["__main__"]._plugId

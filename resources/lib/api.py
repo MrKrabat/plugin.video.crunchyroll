@@ -163,9 +163,7 @@ def get_cookie_path(args):
     """Get cookie file path
     """
     profile_path = xbmc.translatePath(args._addon.getAddonInfo("profile"))
-    try:
-        # python2
+    if args.PY2:
         return os.path.join(profile_path.decode("utf-8"), u"cookies.lwp")
-    except AttributeError:
-        # python3
+    else:
         return os.path.join(profile_path, "cookies.lwp")
