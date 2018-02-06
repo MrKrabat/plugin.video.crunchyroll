@@ -87,11 +87,13 @@ def quote_value(value):
     """Proper quote on both python2 and python3 (feature detection)
        Remove after python3 migration
     """
-    if not isinstance(value, basestring):
-        value = str(value)
     try:
+        if not isinstance(value, basestring):
+            value = str(value)
         return quote_plus(value.encode("utf-8") if isinstance(value, unicode) else value)
     except NameError:
+        if not isinstance(value, str):
+            value = str(value)
         return quote_plus(value)
 
 

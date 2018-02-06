@@ -52,7 +52,7 @@ def showQueue(args):
                       {"title":       item["series"]["name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
                        "tvshowtitle": item["series"]["name"],
                        "duration":    item["most_likely_media"]["duration"],
-                       "playcount":   1 if (100/item["most_likely_media"]["duration"])*item["playhead"] > 90 else 0,
+                       "playcount":   1 if (100/int(item["most_likely_media"]["duration"]))*int(item["playhead"]) > 90 else 0,
                        "episode":     item["most_likely_media"]["episode_number"],
                        "episode_id":  item["most_likely_media"]["media_id"],
                        "series_id":   item["series"]["series_id"],
@@ -63,7 +63,7 @@ def showQueue(args):
                        "aired":       item["most_likely_media"]["created"][:10],
                        "premiered":   item["most_likely_media"]["created"][:10],
                        "studio":      item["series"]["publisher_name"],
-                       "rating":      item["series"]["rating"]/10.0,
+                       "rating":      int(item["series"]["rating"])/10.0,
                        "thumb":       item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"],
                        "fanart":      item["series"]["portrait_image"]["full_url"],
                        "mode":        "videoplay"},
@@ -99,7 +99,7 @@ def showHistory(args):
                       {"title":       item["series"]["name"] + " #" + item["media"]["episode_number"] + " - " + item["media"]["name"],
                        "tvshowtitle": item["series"]["name"],
                        "duration":    item["media"]["duration"],
-                       "playcount":   1 if (100/item["media"]["duration"])*item["playhead"] > 90 else 0,
+                       "playcount":   1 if (100/int(item["media"]["duration"]))*int(item["playhead"]) > 90 else 0,
                        "episode":     item["media"]["episode_number"],
                        "episode_id":  item["media"]["media_id"],
                        "series_id":   item["series"]["series_id"],
@@ -110,7 +110,7 @@ def showHistory(args):
                        "aired":       item["media"]["created"][:10],
                        "premiered":   item["media"]["created"][:10],
                        "studio":      item["series"]["publisher_name"],
-                       "rating":      item["series"]["rating"]/10.0,
+                       "rating":      int(item["series"]["rating"])/10.0,
                        "thumb":       item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else item["media"]["screenshot_image"]["full_url"],
                        "fanart":      item["series"]["portrait_image"]["full_url"],
                        "mode":        "videoplay"},
@@ -147,35 +147,36 @@ def startplayback(args):
     item.setContentLookup(False)
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 
-    # wait for video to begin
-    player = xbmc.Player()
-    timeout = time.time() + 20
-    while not xbmc.getCondVisibility("Player.IsInternetStream"):
-        xbmc.sleep(50)
-        # timeout to prevent infinite loop
-        if time.time() > timeout:
-            xbmc.log("[PLUGIN] %s: Timeout reached, video did not start in 20 seconds" % args._addonname, xbmc.LOGERROR)
-            return
+    if args._addon.getSetting("sync_playtime") == "true":
+        # wait for video to begin
+        player = xbmc.Player()
+        timeout = time.time() + 20
+        while not xbmc.getCondVisibility("Player.IsInternetStream"):
+            xbmc.sleep(50)
+            # timeout to prevent infinite loop
+            if time.time() > timeout:
+                xbmc.log("[PLUGIN] %s: Timeout reached, video did not start in 20 seconds" % args._addonname, xbmc.LOGERROR)
+                return
 
-    # ask if user want to continue playback
-    resume = (100/req["data"]["duration"]) * req["data"]["playhead"]
-    if resume >= 5 and resume <= 90:
-        player.pause()
-        if xbmcgui.Dialog().yesno(args._addonname, args._addon.getLocalizedString(30065) % resume):
-            player.seekTime(req["data"]["playhead"] - 5)
-        player.pause()
+        # ask if user want to continue playback
+        resume = (100/int(req["data"]["duration"])) * int(req["data"]["playhead"])
+        if resume >= 5 and resume <= 90:
+            player.pause()
+            if xbmcgui.Dialog().yesno(args._addonname, args._addon.getLocalizedString(30065) % resume):
+                player.seekTime(int(req["data"]["playhead"]) - 5)
+            player.pause()
 
-    # update playtime at crunchyroll
-    try:
-        while url == player.getPlayingFile():
-            # wait 10 seconds
-            xbmc.sleep(10000)
+        # update playtime at crunchyroll
+        try:
+            while url == player.getPlayingFile():
+                # wait 10 seconds
+                xbmc.sleep(10000)
 
-            if url == player.getPlayingFile():
-                # api request
-                payload = {"event":    "playback_status",
-                           "media_id": args.episode_id,
-                           "playhead": int(player.getTime())}
-                api.request(args, "log", payload)
-    except RuntimeError:
-        xbmc.log("[PLUGIN] %s: Playback aborted" % args._addonname, xbmc.LOGDEBUG)
+                if url == player.getPlayingFile():
+                    # api request
+                    payload = {"event":    "playback_status",
+                               "media_id": args.episode_id,
+                               "playhead": int(player.getTime())}
+                    api.request(args, "log", payload)
+        except RuntimeError:
+            xbmc.log("[PLUGIN] %s: Playback aborted" % args._addonname, xbmc.LOGDEBUG)
