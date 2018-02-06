@@ -32,10 +32,11 @@ except ImportError:
 
 import xbmc
 
-""" Api documentation
-https://github.com/CloudMax94/crunchyroll-api/wiki/Api
-"""
+
 class API:
+    """Api documentation
+    https://github.com/CloudMax94/crunchyroll-api/wiki/Api
+    """
     URL    = "https://api.crunchyroll.com/"
     VERSON = "2313.8"
     TOKEN  = "QWjz212GspMHH9h"
@@ -116,6 +117,8 @@ def start(username, password, args):
 
 
 def close(args):
+    """Saves cookies and session
+    """
     # create cookie path
     cookiepath = os.path.join(
         xbmc.translatePath(args._addon.getAddonInfo("profile")),

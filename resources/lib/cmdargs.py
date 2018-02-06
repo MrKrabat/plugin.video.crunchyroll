@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import xbmc
 try:
     from urlparse import parse_qs
     from urllib import unquote_plus

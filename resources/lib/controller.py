@@ -17,7 +17,6 @@
 
 import sys
 import time
-import json
 
 import xbmc
 import xbmcgui
