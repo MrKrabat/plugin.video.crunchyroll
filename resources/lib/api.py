@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2017 MrKrabat
+# Copyright (C) 2018 MrKrabat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -43,14 +43,9 @@ class API:
     DEVICE = "com.crunchyroll.iphone"
 
 
-def start(username, password, args):
+def start(args):
     """Login and session handler
     """
-    # create cookie path
-    cookiepath = os.path.join(
-        xbmc.translatePath(args._addon.getAddonInfo("profile")),
-        "cookies.lwp")
-
     # create cookiejar
     cj = LWPCookieJar()
     args._cj = cj
@@ -65,10 +60,14 @@ def start(username, password, args):
 
     # check if cookies exist
     try:
-        cj.load(cookiepath, ignore_discard=True)
+        cj.load(get_cookie_path(args), ignore_discard=True)
     except IOError:
         # cookie file does not exist
         pass
+
+    # get login informations
+    username = args._addon.getSetting("crunchyroll_username")
+    password = args._addon.getSetting("crunchyroll_password")
 
     # session management
     if not (args._session_id and args._auth_token):
@@ -119,18 +118,13 @@ def start(username, password, args):
 def close(args):
     """Saves cookies and session
     """
-    # create cookie path
-    cookiepath = os.path.join(
-        xbmc.translatePath(args._addon.getAddonInfo("profile")),
-        "cookies.lwp")
-
     # save cookies
-    args._cj.save(cookiepath, ignore_discard=True)
+    args._cj.save(get_cookie_path(args), ignore_discard=True)
     args._addon.setSetting("session_id", args._session_id)
     args._addon.setSetting("auth_token", args._auth_token)
 
 
-def request(args, method, options):
+def request(args, method, options, failed=False):
     """Make Crunchyroll JSON API call
     """
     # required in every request
@@ -155,7 +149,23 @@ def request(args, method, options):
 
     # check for error
     if json_data["error"]:
-        xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(req)), xbmc.LOGERROR)
+        xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(json_data)), xbmc.LOGNOTICE)
         args._session_restart = True
+        # retry request, session expired
+        if not failed:
+            start(args)
+            return request(args, method, options, True)
 
     return json_data
+
+
+def get_cookie_path(args):
+    """Get cookie file path
+    """
+    profile_path = xbmc.translatePath(args._addon.getAddonInfo("profile"))
+    try:
+        # python2
+        return os.path.join(profile_path.decode("utf-8"), u"cookies.lwp")
+    except AttributeError:
+        # python3
+        return os.path.join(profile_path, "cookies.lwp")

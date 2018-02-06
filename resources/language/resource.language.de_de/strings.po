@@ -24,6 +24,10 @@ msgctxt "#30002"
 msgid "Password"
 msgstr "Passwort"
 
+msgctxt "#30003"
+msgid "Synchronize play time progress"
+msgstr "Synchronisiere den Fortschritt der Spielzeit"
+
 msgctxt "#30010"
 msgid "Video quality"
 msgstr "Video Qualität"
@@ -153,6 +157,10 @@ msgstr "Login fehlgeschlagen"
 msgctxt "#30061"
 msgid "An error occurred"
 msgstr "Ein Fehler ist aufgetreten"
+
+msgctxt "#30062"
+msgid "You need to be logged in"
+msgstr "Du musst eingeloggt sein"
 
 msgctxt "#30063"
 msgid "You need to be a premium member"

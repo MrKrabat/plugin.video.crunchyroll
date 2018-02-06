@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2017 MrKrabat
+# Copyright (C) 2018 MrKrabat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -38,6 +38,7 @@ def showQueue(args):
 
     # check for error
     if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
         view.endofdirectory()
         return False
 
@@ -84,6 +85,7 @@ def showHistory(args):
 
     # check for error
     if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
         view.endofdirectory()
         return False
 

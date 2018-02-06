@@ -24,6 +24,10 @@ msgctxt "#30002"
 msgid "Password"
 msgstr ""
 
+msgctxt "#30003"
+msgid "Synchronize play time progress"
+msgstr ""
+
 msgctxt "#30010"
 msgid "Video quality"
 msgstr ""
@@ -152,6 +156,10 @@ msgstr ""
 
 msgctxt "#30061"
 msgid "An error occurred"
+msgstr ""
+
+msgctxt "#30062"
+msgid "You need to be logged in"
 msgstr ""
 
 msgctxt "#30063"

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2017 MrKrabat
+# Copyright (C) 2018 MrKrabat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -86,11 +86,13 @@ def main():
 
     if not (username and password):
         # open addon settings
+        view.add_item(args, {"title": args._addon.getLocalizedString(30062)})
+        view.endofdirectory()
         args._addon.openSettings()
         return False
     else:
         # login
-        success = api.start(username, password, args)
+        success = api.start(args)
         if success:
             # list menue
             xbmcplugin.setContent(int(sys.argv[1]), "tvshows")
@@ -99,6 +101,8 @@ def main():
         else:
             # login failed
             xbmc.log("[PLUGIN] %s: Login failed" % args._addonname, xbmc.LOGERROR)
+            view.add_item(args, {"title": args._addon.getLocalizedString(30060)})
+            view.endofdirectory()
             xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30060))
             return False
 

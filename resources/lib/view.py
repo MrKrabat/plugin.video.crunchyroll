@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2017 MrKrabat
+# Copyright (C) 2018 MrKrabat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,6 +46,10 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
     """Add item to directory listing.
     """
 
+    if args._addon.getSetting("sync_playtime") == "false":
+        info.pop("playcount", None)
+        info.pop("progress", None)
+
     # create list item
     li = xbmcgui.ListItem(label = info["title"])
 
@@ -80,9 +84,15 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
 
 
 def quote_value(value):
+    """Proper quote on both python2 and python3 (feature detection)
+       Remove after python3 migration
+    """
     if not isinstance(value, basestring):
         value = str(value)
-    return quote_plus(value.encode("utf8") if not isinstance(value, str) else value)
+    try:
+        return quote_plus(value.encode("utf-8") if isinstance(value, unicode) else value)
+    except NameError:
+        return quote_plus(value)
 
 
 def build_url(args, info):
