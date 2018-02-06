@@ -1,0 +1,167 @@
+# Kodi Media Center language file
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: alanwww1@kodi.org\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+# Crunchyroll Settings
+
+msgctxt "#30001"
+msgid "Username"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Video quality"
+msgstr ""
+
+msgctxt "#30011"
+msgid "360p (SD)"
+msgstr ""
+
+msgctxt "#30012"
+msgid "480p"
+msgstr ""
+
+msgctxt "#30013"
+msgid "720p (HD)"
+msgstr ""
+
+msgctxt "#30014"
+msgid "1080p (FHD)"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Subtitle Language"
+msgstr ""
+
+msgctxt "#30021"
+msgid "English (US)"
+msgstr ""
+
+msgctxt "#30022"
+msgid "English (UK)"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Spanish"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Spanish (Spain)"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Portuguese (Brazil)"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Portuguese (Portugal)"
+msgstr ""
+
+msgctxt "#30027"
+msgid "French (France)"
+msgstr ""
+
+msgctxt "#30028"
+msgid "German"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Arabic"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Italian"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Russian"
+msgstr ""
+
+
+# Crunchyroll Menue
+
+msgctxt "#30040"
+msgid "Queue"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Search"
+msgstr ""
+
+msgctxt "#30042"
+msgid "History"
+msgstr ""
+
+msgctxt "#30043"
+msgid "Random"
+msgstr ""
+
+msgctxt "#30050"
+msgid "Anime"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Drama"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Popular"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Simulcasts"
+msgstr ""
+
+msgctxt "#30054"
+msgid "Updated"
+msgstr ""
+
+msgctxt "#30055"
+msgid "Alphabetical"
+msgstr ""
+
+msgctxt "#30056"
+msgid "Genres"
+msgstr ""
+
+msgctxt "#30057"
+msgid "Seasons"
+msgstr ""
+
+
+# Crunchyroll Messages
+
+msgctxt "#30060"
+msgid "Login failed"
+msgstr ""
+
+msgctxt "#30061"
+msgid "An error occurred"
+msgstr ""
+
+msgctxt "#30063"
+msgid "You need to be a premium member"
+msgstr ""
+
+msgctxt "#30064"
+msgid "Failed to play video"
+msgstr ""
+
+msgctxt "#30065"
+msgid "Do you want to continue watching at %s%%?"
+msgstr ""
