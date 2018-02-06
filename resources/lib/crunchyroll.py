@@ -24,14 +24,14 @@ import xbmcplugin
 
 from . import api
 from . import view
-from . import cmdargs
+from . import model
 from . import controller
 
 
 def main():
     """Main function for the addon
     """
-    args = cmdargs.parse()
+    args = model.parse()
 
     # get account informations
     username = args._addon.getSetting("crunchyroll_username")
@@ -92,8 +92,7 @@ def main():
         return False
     else:
         # login
-        success = api.start(args)
-        if success:
+        if api.start(args):
             # list menue
             xbmcplugin.setContent(int(sys.argv[1]), "tvshows")
             check_mode(args)

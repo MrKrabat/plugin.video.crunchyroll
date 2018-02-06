@@ -118,7 +118,6 @@ def start(args):
 def close(args):
     """Saves cookies and session
     """
-    # save cookies
     args._cj.save(get_cookie_path(args), ignore_discard=True)
     args._addon.setSetting("session_id", args._session_id)
     args._addon.setSetting("auth_token", args._auth_token)
