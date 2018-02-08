@@ -7,6 +7,6 @@
     <setting id="auth_token" type="text" label="30002" visible="false" option="hidden" default=""/>
     <setting type="sep" />
     <setting id="subtitle_language" type="select" lvalues="30021|30022|30023|30024|30025|30026|30027|30028|30029|30030|30031" label="30020" default="0" />
-    <setting id="video_quality" type="select" lvalues="30014|30013|30012|30011" label="30010" default="0" />
+    <setting id="video_quality" type="select" lvalues="30016|30015|30014|30013|30012|30011" label="30010" default="0" />
     <setting id="sync_playtime" type="bool" label="30003" default="true"/>
 </settings>

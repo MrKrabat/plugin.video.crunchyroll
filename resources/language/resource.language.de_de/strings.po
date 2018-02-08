@@ -33,20 +33,28 @@ msgid "Video quality"
 msgstr "Video Qualität"
 
 msgctxt "#30011"
+msgid "240p (Mobile)"
+msgstr "240p (Mobil)"
+
+msgctxt "#30012"
 msgid "360p (SD)"
 msgstr "360p (SD)"
 
-msgctxt "#30012"
-msgid "480p"
-msgstr "480p"
-
 msgctxt "#30013"
+msgid "480p (SD)"
+msgstr "480p (SD)"
+
+msgctxt "#30014"
 msgid "720p (HD)"
 msgstr "720p (HD)"
 
-msgctxt "#30014"
+msgctxt "#30015"
 msgid "1080p (FHD)"
 msgstr "1080p (FHD)"
+
+msgctxt "#30016"
+msgid "Adaptive"
+msgstr "Adaptiv"
 
 msgctxt "#30020"
 msgid "Subtitle Language"

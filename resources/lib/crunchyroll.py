@@ -74,15 +74,19 @@ def main():
     # get video quality
     args._quality = args._addon.getSetting("video_quality")
     if args._quality == "0":
-        args._quality = "80"
+        args._quality = "adaptive"
     elif args._quality == "1":
-        args._quality = "62"
+        args._quality = "ultra"
     elif args._quality == "2":
-        args._quality = "61"
+        args._quality = "high"
     elif args._quality == "3":
-        args._quality = "60"
+        args._quality = "mid"
+    elif args._quality == "4":
+        args._quality = "low"
+    elif args._quality == "5":
+        args._quality = None # intended, maybe api failure
     else:
-        args._quality = "80"
+        args._quality = "adaptive"
 
     if not (username and password):
         # open addon settings

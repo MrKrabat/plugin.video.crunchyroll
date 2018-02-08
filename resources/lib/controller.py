@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import json
 import time
 
 import xbmc
@@ -377,9 +378,9 @@ def startplayback(args):
     # get stream url
     url = req["data"]["stream_data"]["streams"][0]["url"]
     for stream in req["data"]["stream_data"]["streams"]:
-        # TODO: get user selected quality
-        url = stream["url"]
-        break
+        if args._quality == stream["quality"]:
+            url = stream["url"]
+            break
 
     # start playback
     item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=url)
