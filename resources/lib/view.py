@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 import sys
 try:
     from urllib import quote_plus
@@ -67,6 +68,15 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
         infoLabels["mediatype"] = "video"
         li.setInfo(mediatype, infoLabels)
         li.setProperty("IsPlayable", "true")
+
+        # add context menue
+        cm = []
+        if u"series_id" in u:
+            cm.append((args._addon.getLocalizedString(30045), "XBMC.Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "series", u)))
+        if u"collection_id" in u:
+            cm.append((args._addon.getLocalizedString(30046), "XBMC.Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
+        if len(cm) > 0:
+            li.addContextMenuItems(cm)
 
     # set media image
     li.setArt({"thumb":  info.get("thumb",  "DefaultFolder.png"),

@@ -119,6 +119,14 @@ msgctxt "#30044"
 msgid "Next page"
 msgstr "Nächste Seite"
 
+msgctxt "#30045"
+msgid "Goto series"
+msgstr "Zur Serie"
+
+msgctxt "#30046"
+msgid "Goto season"
+msgstr "Zur Season"
+
 msgctxt "#30050"
 msgid "Anime"
 msgstr "Anime"

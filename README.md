@@ -23,8 +23,10 @@ What this plugin currently can do:
 - [x] Browse all seasons
 - [x] View queue/playlist
 - [x] View history
+- [ ] View random anime/drama
 - [x] View all seasons/arcs of an anime/drama
 - [x] View all episodes of an season/arc
+- [x] Context menue "Goto series" and "Goto season"
 - [ ] Add or remove anime/drama from your queue/playlist
 - [x] Display various informations
 - [x] Watch videos with premium subscription
