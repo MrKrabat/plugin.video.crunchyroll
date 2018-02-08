@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import json
 import time
 
 import xbmc
@@ -80,13 +79,18 @@ def searchAnime(args):
     """Search for anime
     """
     # ask for search string
-    d = xbmcgui.Dialog().input(args._addon.getLocalizedString(30021), type=xbmcgui.INPUT_ALPHANUM)
-    if not d:
-        return
+    if not hasattr(args, "search"):
+        d = xbmcgui.Dialog().input(args._addon.getLocalizedString(30021), type=xbmcgui.INPUT_ALPHANUM)
+        if not d:
+            return
+    else:
+        d = args.search
 
     # api request
     payload = {"media_types": "anime|drama",
                "q":           d,
+               "limit":       30,
+               "offset":      int(getattr(args, "offset", 0)),
                "fields":      "series.name,series.series_id,series.description,series.year,series.publisher_name, \
                                series.genres,series.portrait_image,series.landscape_image"}
     req = api.request(args, "autocomplete", payload)
@@ -114,6 +118,15 @@ def searchAnime(args):
                        "mode":        "series"},
                       isFolder=True)
 
+    # show next page button
+    if len(req["data"]) >= 30:
+        view.add_item(args,
+                      {"title":  args._addon.getLocalizedString(30044),
+                       "offset": int(getattr(args, "offset", 0)) + 30,
+                       "search": d,
+                       "mode":   args.mode},
+                      isFolder=True)
+
     view.endofdirectory()
     return True
 
@@ -123,6 +136,8 @@ def showHistory(args):
     """
     # api request
     payload = {"media_types": "anime|drama",
+               "limit":       30,
+               "offset":      int(getattr(args, "offset", 0)),
                "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
                                media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead, \
                                series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
@@ -162,6 +177,14 @@ def showHistory(args):
                        "fanart":        item["series"]["landscape_image"]["full_url"],
                        "mode":          "videoplay"},
                       isFolder=False)
+
+    # show next page button
+    if len(req["data"]) >= 30:
+        view.add_item(args,
+                      {"title":  args._addon.getLocalizedString(30044),
+                       "offset": int(getattr(args, "offset", 0)) + 30,
+                       "mode":   args.mode},
+                      isFolder=True)
 
     view.endofdirectory()
     return True
@@ -207,6 +230,7 @@ def listSeries(args, mode):
         view.add_item(args,
                       {"title":  args._addon.getLocalizedString(30044),
                        "offset": int(getattr(args, "offset", 0)) + 30,
+                       "search": getattr(args, "search", ""),
                        "mode":   args.mode},
                       isFolder=True)
 
@@ -288,6 +312,8 @@ def viewEpisodes(args):
     """
     # api request
     payload = {"collection_id": args.collection_id,
+               "limit":         30,
+               "offset":        int(getattr(args, "offset", 0)),
                "fields":        "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created,media.series_id, \
                                  media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead"}
     req = api.request(args, "list_media", payload)
@@ -318,6 +344,17 @@ def viewEpisodes(args):
                        "fanart":        args.fanart,
                        "mode":          "videoplay"},
                       isFolder=False)
+
+    # show next page button
+    if len(req["data"]) >= 30:
+        view.add_item(args,
+                      {"title":         args._addon.getLocalizedString(30044),
+                       "collection_id": args.collection_id,
+                       "offset":        int(getattr(args, "offset", 0)) + 30,
+                       "thumb":         args.thumb,
+                       "fanart":        args.fanart,
+                       "mode":          args.mode},
+                      isFolder=True)
 
     view.endofdirectory()
     return True

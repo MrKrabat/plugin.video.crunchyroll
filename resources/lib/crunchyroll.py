@@ -181,9 +181,9 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30042),
                    "mode":  "history"})
-    view.add_item(args,
-                  {"title": args._addon.getLocalizedString(30043),
-                   "mode":  "random"})
+    #view.add_item(args,
+    #              {"title": args._addon.getLocalizedString(30043),
+    #               "mode":  "random"})
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30050),
                    "mode":  "anime"})
