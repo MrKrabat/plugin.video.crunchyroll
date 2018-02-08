@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import json
 import time
 
 import xbmc
@@ -31,9 +32,9 @@ def showQueue(args):
     """
     # api request
     payload = {"media_types": "anime|drama",
-               "fields":      "media.name,media.media_id,media.description,media.episode_number,media.created,media.media_type,media.screenshot_image, \
-                               media.premium_only,media.premium_available,media.available,media.premium_available,media.duration, \
-                               series.name,series.series_id,series.year,series.publisher_name,series.rating,series.portrait_image"}
+               "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
+                               media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration, \
+                               series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
     req = api.request(args, "queue", payload)
 
     # check for error
@@ -50,38 +51,81 @@ def showQueue(args):
 
         # add to view
         view.add_item(args,
-                      {"title":       item["series"]["name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
-                       "tvshowtitle": item["series"]["name"],
-                       "duration":    item["most_likely_media"]["duration"],
-                       "playcount":   1 if (100/int(item["most_likely_media"]["duration"]))*int(item["playhead"]) > 90 else 0,
-                       "episode":     item["most_likely_media"]["episode_number"],
-                       "episode_id":  item["most_likely_media"]["media_id"],
-                       "series_id":   item["series"]["series_id"],
-                       "plot":        item["most_likely_media"]["description"],
-                       "plotoutline": item["most_likely_media"]["description"],
-                       "genre":       item["most_likely_media"]["media_type"],
-                       "year":        item["series"]["year"],
-                       "aired":       item["most_likely_media"]["created"][:10],
-                       "premiered":   item["most_likely_media"]["created"][:10],
-                       "studio":      item["series"]["publisher_name"],
-                       "rating":      int(item["series"]["rating"])/10.0,
-                       "thumb":       item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"],
-                       "fanart":      item["series"]["portrait_image"]["full_url"],
-                       "mode":        "videoplay"},
+                      {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
+                       "tvshowtitle":   item["most_likely_media"]["collection_name"],
+                       "duration":      item["most_likely_media"]["duration"],
+                       "playcount":     1 if (100/float(item["most_likely_media"]["duration"]))*int(item["playhead"]) > 90 else 0,
+                       "episode":       item["most_likely_media"]["episode_number"],
+                       "episode_id":    item["most_likely_media"]["media_id"],
+                       "collection_id": item["most_likely_media"]["collection_id"],
+                       "series_id":     item["series"]["series_id"],
+                       "plot":          item["most_likely_media"]["description"],
+                       "plotoutline":   item["most_likely_media"]["description"],
+                       "genre":         ", ".join(item["series"]["genres"]),
+                       "year":          item["series"]["year"],
+                       "aired":         item["most_likely_media"]["created"][:10],
+                       "premiered":     item["most_likely_media"]["created"][:10],
+                       "studio":        item["series"]["publisher_name"],
+                       "rating":        int(item["series"]["rating"])/10.0,
+                       "thumb":         item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"],
+                       "fanart":        item["series"]["landscape_image"]["full_url"],
+                       "mode":          "videoplay"},
                       isFolder=False)
 
     view.endofdirectory()
     return True
 
 
+def searchAnime(args):
+    """Search for anime
+    """
+    # ask for search string
+    d = xbmcgui.Dialog().input(args._addon.getLocalizedString(30021), type=xbmcgui.INPUT_ALPHANUM)
+    if not d:
+        return
+
+    # api request
+    payload = {"media_types": "anime|drama",
+               "q":           d,
+               "fields":      "series.name,series.series_id,series.description,series.year,series.publisher_name, \
+                               series.genres,series.portrait_image,series.landscape_image"}
+    req = api.request(args, "autocomplete", payload)
+
+    # check for error
+    if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
+        view.endofdirectory()
+        return False
+
+    # display media
+    for item in req["data"]:
+        # add to view
+        view.add_item(args,
+                      {"title":       item["name"],
+                       "tvshowtitle": item["name"],
+                       "series_id":   item["series_id"],
+                       "plot":        item["description"],
+                       "plotoutline": item["description"],
+                       "genre":       ", ".join(item["genres"]),
+                       "year":        item["year"],
+                       "studio":      item["publisher_name"],
+                       "thumb":       item["portrait_image"]["full_url"],
+                       "fanart":      item["landscape_image"]["full_url"],
+                       "mode":        "series"},
+                      isFolder=True)
+
+    view.endofdirectory()
+    return True
+
+
 def showHistory(args):
-    """ shows history of watched animes
+    """ shows history of watched anime
     """
     # api request
     payload = {"media_types": "anime|drama",
-               "fields":      "media.name,media.media_id,media.description,media.episode_number,media.created,media.media_type,media.screenshot_image, \
-                               media.premium_only,media.premium_available,media.available,media.premium_available,media.duration, \
-                               series.name,series.series_id,series.year,series.publisher_name,series.rating,series.portrait_image"}
+               "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
+                               media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead, \
+                               series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
     req = api.request(args, "recently_watched", payload)
 
     # check for error
@@ -98,24 +142,181 @@ def showHistory(args):
 
         # add to view
         view.add_item(args,
-                      {"title":       item["series"]["name"] + " #" + item["media"]["episode_number"] + " - " + item["media"]["name"],
-                       "tvshowtitle": item["series"]["name"],
-                       "duration":    item["media"]["duration"],
-                       "playcount":   1 if (100/int(item["media"]["duration"]))*int(item["playhead"]) > 90 else 0,
-                       "episode":     item["media"]["episode_number"],
-                       "episode_id":  item["media"]["media_id"],
-                       "series_id":   item["series"]["series_id"],
-                       "plot":        item["media"]["description"],
-                       "plotoutline": item["media"]["description"],
-                       "genre":       item["media"]["media_type"],
-                       "year":        item["series"]["year"],
-                       "aired":       item["media"]["created"][:10],
-                       "premiered":   item["media"]["created"][:10],
-                       "studio":      item["series"]["publisher_name"],
-                       "rating":      int(item["series"]["rating"])/10.0,
-                       "thumb":       item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else item["media"]["screenshot_image"]["full_url"],
-                       "fanart":      item["series"]["portrait_image"]["full_url"],
-                       "mode":        "videoplay"},
+                      {"title":         item["media"]["collection_name"] + " #" + item["media"]["episode_number"] + " - " + item["media"]["name"],
+                       "tvshowtitle":   item["media"]["collection_name"],
+                       "duration":      item["media"]["duration"],
+                       "playcount":     1 if (100/float(item["media"]["duration"]))*int(item["media"]["playhead"]) > 90 else 0,
+                       "episode":       item["media"]["episode_number"],
+                       "episode_id":    item["media"]["media_id"],
+                       "collection_id": item["media"]["collection_id"],
+                       "series_id":     item["series"]["series_id"],
+                       "plot":          item["media"]["description"],
+                       "plotoutline":   item["media"]["description"],
+                       "genre":         ", ".join(item["series"]["genres"]),
+                       "year":          item["series"]["year"],
+                       "aired":         item["media"]["created"][:10],
+                       "premiered":     item["media"]["created"][:10],
+                       "studio":        item["series"]["publisher_name"],
+                       "rating":        int(item["series"]["rating"])/10.0,
+                       "thumb":         item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else item["media"]["screenshot_image"]["full_url"],
+                       "fanart":        item["series"]["landscape_image"]["full_url"],
+                       "mode":          "videoplay"},
+                      isFolder=False)
+
+    view.endofdirectory()
+    return True
+
+
+def listSeries(args, mode):
+    """ view all anime from selected mode
+    """
+    # api request
+    payload = {"media_type": args.genre,
+               "filter":     mode,
+               "limit":      30,
+               "offset":     int(getattr(args, "offset", 0)),
+               "fields":     "series.name,series.series_id,series.description,series.year,series.publisher_name, \
+                              series.genres,series.portrait_image,series.landscape_image"}
+    req = api.request(args, "list_series", payload)
+
+    # check for error
+    if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
+        view.endofdirectory()
+        return False
+
+    # display media
+    for item in req["data"]:
+        # add to view
+        view.add_item(args,
+                      {"title":       item["name"],
+                       "tvshowtitle": item["name"],
+                       "series_id":   item["series_id"],
+                       "plot":        item["description"],
+                       "plotoutline": item["description"],
+                       "genre":       ", ".join(item["genres"]),
+                       "year":        item["year"],
+                       "studio":      item["publisher_name"],
+                       "thumb":       item["portrait_image"]["full_url"],
+                       "fanart":      item["landscape_image"]["full_url"],
+                       "mode":        "series"},
+                      isFolder=True)
+
+    # show next page button
+    if len(req["data"]) >= 30:
+        view.add_item(args,
+                      {"title":  args._addon.getLocalizedString(30044),
+                       "offset": int(getattr(args, "offset", 0)) + 30,
+                       "mode":   args.mode},
+                      isFolder=True)
+
+    view.endofdirectory()
+    return True
+
+
+def listFilter(args, mode):
+    """ view all anime from selected mode
+    """
+    # test if filter is selected
+    if hasattr(args, "search"):
+        return listSeries(args, "tag:" + args.search)
+
+    # api request
+    payload = {"media_type": args.genre}
+    req = api.request(args, "categories", payload)
+
+    # check for error
+    if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
+        view.endofdirectory()
+        return False
+
+    # display media
+    for item in req["data"][mode]:
+        # add to view
+        view.add_item(args,
+                      {"title":  item["label"],
+                       "search": item["tag"],
+                       "mode":   args.mode},
+                      isFolder=True)
+
+    view.endofdirectory()
+    return True
+
+
+def viewSeries(args):
+    """ view all seasons/arcs of an anime
+    """
+    # api request
+    payload = {"series_id": args.series_id,
+               "fields":    "collection.name,collection.collection_id,collection.description,collection.media_type,collection.created, \
+                             collection.season,collection.complete,collection.portrait_image,collection.landscape_image"}
+    req = api.request(args, "list_collections", payload)
+
+    # check for error
+    if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
+        view.endofdirectory()
+        return False
+
+    # display media
+    for item in req["data"]:
+        # add to view
+        view.add_item(args,
+                      {"title":         item["name"],
+                       "tvshowtitle":   item["name"],
+                       "season":        item["season"],
+                       "collection_id": item["collection_id"],
+                       "series_id":     args.series_id,
+                       "plot":          item["description"],
+                       "plotoutline":   item["description"],
+                       "genre":         item["media_type"],
+                       "aired":         item["created"][:10],
+                       "premiered":     item["created"][:10],
+                       "status":        u"Completed" if item["complete"] else u"Continuing",
+                       "thumb":         item["portrait_image"]["full_url"] if item["portrait_image"] else args.thumb,
+                       "fanart":        item["landscape_image"]["full_url"] if item["landscape_image"] else args.fanart,
+                       "mode":          "episodes"},
+                      isFolder=True)
+
+    view.endofdirectory()
+    return True
+
+
+def viewEpisodes(args):
+    """ view all episodes of season
+    """
+    # api request
+    payload = {"collection_id": args.collection_id,
+               "fields":        "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created,media.series_id, \
+                                 media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead"}
+    req = api.request(args, "list_media", payload)
+
+    # check for error
+    if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
+        view.endofdirectory()
+        return False
+
+    # display media
+    for item in req["data"]:
+        # add to view
+        view.add_item(args,
+                      {"title":         item["collection_name"] + " #" + item["episode_number"] + " - " + item["name"],
+                       "tvshowtitle":   item["collection_name"],
+                       "duration":      item["duration"],
+                       "playcount":     1 if (100/float(item["duration"]))*int(item["playhead"]) > 90 else 0,
+                       "episode":       item["episode_number"],
+                       "episode_id":    item["media_id"],
+                       "collection_id": args.collection_id,
+                       "series_id":     item["series_id"],
+                       "plot":          item["description"],
+                       "plotoutline":   item["description"],
+                       "aired":         item["created"][:10],
+                       "premiered":     item["created"][:10],
+                       "thumb":         item["screenshot_image"]["fwidestar_url"] if item["premium_only"] else item["screenshot_image"]["full_url"],
+                       "fanart":        args.fanart,
+                       "mode":          "videoplay"},
                       isFolder=False)
 
     view.endofdirectory()
@@ -161,7 +362,7 @@ def startplayback(args):
                 return
 
         # ask if user want to continue playback
-        resume = (100/int(req["data"]["duration"])) * int(req["data"]["playhead"])
+        resume = (100/float(req["data"]["duration"])) * int(req["data"]["playhead"])
         if resume >= 5 and resume <= 90:
             player.pause()
             if xbmcgui.Dialog().yesno(args._addonname, args._addon.getLocalizedString(30065) % resume):

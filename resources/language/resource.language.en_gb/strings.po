@@ -115,6 +115,10 @@ msgctxt "#30043"
 msgid "Random"
 msgstr ""
 
+msgctxt "#30044"
+msgid "Next page"
+msgstr ""
+
 msgctxt "#30050"
 msgid "Anime"
 msgstr ""
@@ -145,6 +149,14 @@ msgstr ""
 
 msgctxt "#30057"
 msgid "Seasons"
+msgstr ""
+
+msgctxt "#30058"
+msgid "Featured"
+msgstr ""
+
+msgctxt "#30059"
+msgid "Newest"
 msgstr ""
 
 

@@ -128,7 +128,7 @@ def check_mode(args):
     elif mode == "queue":
         controller.showQueue(args)
     elif mode == "search":
-        controller.showSearch(args)
+        controller.searchAnime(args)
     elif mode == "history":
         controller.showHistory(args)
     elif mode == "random":
@@ -139,19 +139,27 @@ def check_mode(args):
     elif mode == "drama":
         showMainCategory(args, "drama")
 
+    elif mode == "featured":
+        controller.listSeries(args, "featured")
     elif mode == "popular":
         controller.listSeries(args, "popular")
-    elif mode == "simulcasts":
-        controller.listSeries(args, "simulcasts")
+    elif mode == "simulcast":
+        controller.listSeries(args, "simulcast")
     elif mode == "updated":
         controller.listSeries(args, "updated")
-    elif mode == "alphabetical":
-        controller.listAlphabetical(args)
-    elif mode == "genres":
-        controller.listGenres(args)
-    elif mode == "seasons":
-        controller.listSeasons(args)
+    elif mode == "newest":
+        controller.listSeries(args, "newest")
+    elif mode == "alpha":
+        controller.listSeries(args, "alpha")
+    elif mode == "season":
+        controller.listFilter(args, "season")
+    elif mode == "genre":
+        controller.listFilter(args, "genre")
 
+    elif mode == "series":
+        controller.viewSeries(args)
+    elif mode == "episodes":
+        controller.viewEpisodes(args)
     elif mode == "videoplay":
         controller.startplayback(args)
     else:
@@ -189,27 +197,35 @@ def showMainCategory(args, genre):
     """Show main category
     """
     view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30058),
+                   "mode":  "featured",
+                   "genre": genre})
+    view.add_item(args,
                   {"title": args._addon.getLocalizedString(30052),
                    "mode":  "popular",
                    "genre": genre})
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30053),
-                   "mode":  "simulcasts",
+                   "mode":  "simulcast",
                    "genre": genre})
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30054),
                    "mode":  "updated",
                    "genre": genre})
     view.add_item(args,
-                  {"title": args._addon.getLocalizedString(30055),
-                   "mode":  "alphabetical",
+                  {"title": args._addon.getLocalizedString(30059),
+                   "mode":  "newest",
                    "genre": genre})
     view.add_item(args,
-                  {"title": args._addon.getLocalizedString(30056),
-                   "mode":  "genres",
+                  {"title": args._addon.getLocalizedString(30055),
+                   "mode":  "alpha",
                    "genre": genre})
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30057),
-                   "mode":  "seasons",
+                   "mode":  "season",
+                   "genre": genre})
+    view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30056),
+                   "mode":  "genre",
                    "genre": genre})
     view.endofdirectory()

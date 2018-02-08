@@ -6,23 +6,25 @@ Git repo: https://github.com/MrKrabat/plugin.video.crunchyroll
 
 Forum posting: xxx
 
-**WARNING: You MUST be a PREMIUM member OR buy videos to use this plugin!**
+**WARNING: You MUST be a PREMIUM member to use this plugin!**
 ***
 
 What this plugin currently can do:
 - [x] Supports all Crunchyroll regions
 - [x] Login with your account
-- [ ] Search for animes
-- [ ] Browse all popular anime/drama
-- [ ] Browse all simulcasts
-- [ ] Browse all updated anime/drama
-- [ ] Browse all anime/drama alphabetically
-- [ ] Browse all genres
-- [ ] Browse all seasons
+- [x] Search for animes
+- [x] Browse all featured anime/drama
+- [x] Browse all popular anime/drama
+- [x] Browse all simulcasts
+- [x] Browse all updated anime/drama
+- [x] Browse all new anime/drama
+- [x] Browse all anime/drama alphabetically
+- [x] Browse all genres
+- [x] Browse all seasons
 - [x] View queue/playlist
 - [x] View history
-- [ ] View all seasons/arcs of an anime/drama
-- [ ] View all episodes of an season/arc
+- [x] View all seasons/arcs of an anime/drama
+- [x] View all episodes of an season/arc
 - [ ] Add or remove anime/drama from your queue/playlist
 - [x] Display various informations
 - [x] Watch videos with premium subscription

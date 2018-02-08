@@ -115,6 +115,10 @@ msgctxt "#30043"
 msgid "Random"
 msgstr "Zufällig"
 
+msgctxt "#30044"
+msgid "Next page"
+msgstr "Nächste Seite"
+
 msgctxt "#30050"
 msgid "Anime"
 msgstr "Anime"
@@ -146,6 +150,14 @@ msgstr "Genres"
 msgctxt "#30057"
 msgid "Seasons"
 msgstr "Seasons"
+
+msgctxt "#30058"
+msgid "Featured"
+msgstr "Empfohlen"
+
+msgctxt "#30059"
+msgid "Newest"
+msgstr "Neuste"
 
 
 # Crunchyroll Messages

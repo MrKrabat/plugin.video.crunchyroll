@@ -50,7 +50,7 @@ def start(args):
     cj = LWPCookieJar()
     args._cj = cj
 
-    # lets urllib2 handle cookies
+    # lets urllib handle cookies
     opener = build_opener(HTTPCookieProcessor(cj))
     opener.addheaders = [("User-Agent",      "Mozilla/5.0 (iPhone; iPhone OS 8.3.0; en_US)"),
                          ("Accept-Encoding", "identity"),
@@ -58,7 +58,7 @@ def start(args):
                          ("Content-Type",    "application/x-www-form-urlencoded")]
     install_opener(opener)
 
-    # check if cookies exist
+    # load cookies
     try:
         cj.load(getCookiePath(args), ignore_discard=True)
     except IOError:
