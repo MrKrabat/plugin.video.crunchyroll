@@ -402,8 +402,8 @@ def startplayback(args):
         resume = (100/float(req["data"]["duration"])) * int(req["data"]["playhead"])
         if resume >= 5 and resume <= 90:
             player.pause()
-            if xbmcgui.Dialog().yesno(args._addonname, args._addon.getLocalizedString(30065) % resume):
-                player.seekTime(int(req["data"]["playhead"]) - 5)
+            if xbmcgui.Dialog().yesno(args._addonname, args._addon.getLocalizedString(30065) % int(resume)):
+                player.seekTime(float(req["data"]["playhead"]) - 5)
             player.pause()
 
         # update playtime at crunchyroll
