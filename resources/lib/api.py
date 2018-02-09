@@ -38,9 +38,9 @@ class API:
     https://github.com/CloudMax94/crunchyroll-api/wiki/Api
     """
     URL    = "https://api.crunchyroll.com/"
-    VERSON = "2313.8"
-    TOKEN  = "QWjz212GspMHH9h"
-    DEVICE = "com.crunchyroll.iphone"
+    VERSON = "1.1.21.0"
+    TOKEN  = "LNDJgOit5yaRIWN"
+    DEVICE = "com.crunchyroll.windows.desktop"
 
 
 def start(args):
@@ -52,7 +52,7 @@ def start(args):
 
     # lets urllib handle cookies
     opener = build_opener(HTTPCookieProcessor(cj))
-    opener.addheaders = [("User-Agent",      "Mozilla/5.0 (iPhone; iPhone OS 8.3.0; en_US)"),
+    opener.addheaders = [("User-Agent",      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299"),
                          ("Accept-Encoding", "identity"),
                          ("Accept",          "*/*"),
                          ("Content-Type",    "application/x-www-form-urlencoded")]
@@ -75,7 +75,7 @@ def start(args):
         payload = {"device_id":    args._device_id,
                    "device_type":  API.DEVICE,
                    "access_token": API.TOKEN}
-        req = request(args, "start_session", payload)
+        req = request(args, "start_session", payload, True)
 
         # check for error
         if req["error"]:
@@ -85,7 +85,7 @@ def start(args):
         # make login
         payload = {"password": password,
                    "account":  username}
-        req = request(args, "login", payload)
+        req = request(args, "login", payload, True)
 
         # check for error
         if req["error"]:
@@ -99,7 +99,7 @@ def start(args):
                    "device_type":  API.DEVICE,
                    "access_token": API.TOKEN,
                    "auth":         args._auth_token}
-        req = request(args, "start_session", payload)
+        req = request(args, "start_session", payload, True)
 
         # check for error
         if req["error"]:
@@ -150,10 +150,16 @@ def request(args, method, options, failed=False):
     if json_data["error"]:
         xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(json_data)), xbmc.LOGNOTICE)
         args._session_restart = True
-        # retry request, session expired
         if not failed:
+            # retry request, session expired
             start(args)
             return request(args, method, options, True)
+        elif failed:
+            # destroy session
+            args._addon.setSetting("session_id", "")
+            args._addon.setSetting("auth_token", "")
+            args._session_id = ""
+            args._auth_token = ""
 
     return json_data
 
