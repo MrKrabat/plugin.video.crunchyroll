@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+from os import remove
 from os.path import join
 try:
     from urllib import urlencode
@@ -47,11 +48,10 @@ def start(args):
     """Login and session handler
     """
     # create cookiejar
-    cj = LWPCookieJar()
-    args._cj = cj
+    args._cj = LWPCookieJar()
 
     # lets urllib handle cookies
-    opener = build_opener(HTTPCookieProcessor(cj))
+    opener = build_opener(HTTPCookieProcessor(args._cj))
     opener.addheaders = [("User-Agent",      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299"),
                          ("Accept-Encoding", "identity"),
                          ("Accept",          "*/*"),
@@ -60,7 +60,7 @@ def start(args):
 
     # load cookies
     try:
-        cj.load(getCookiePath(args), ignore_discard=True)
+        args._cj.load(getCookiePath(args), ignore_discard=True)
     except IOError:
         # cookie file does not exist
         pass
@@ -103,10 +103,7 @@ def start(args):
 
         # check for error
         if req["error"]:
-            args._addon.setSetting("session_id", "")
-            args._addon.setSetting("auth_token", "")
-            args._session_id = ""
-            args._auth_token = ""
+            destroy(args)
             return False
         args._session_id = req["data"]["session_id"]
         args._auth_token = req["data"]["auth"]
@@ -118,9 +115,21 @@ def start(args):
 def close(args):
     """Saves cookies and session
     """
-    args._cj.save(getCookiePath(args), ignore_discard=True)
     args._addon.setSetting("session_id", args._session_id)
     args._addon.setSetting("auth_token", args._auth_token)
+    if args._cj:
+        args._cj.save(getCookiePath(args), ignore_discard=True)
+
+
+def destroy(args):
+    """Destroys session
+    """
+    args._addon.setSetting("session_id", "")
+    args._addon.setSetting("auth_token", "")
+    remove(getCookiePath(args))
+    args._session_id = ""
+    args._auth_token = ""
+    args._cj = False
 
 
 def request(args, method, options, failed=False):
@@ -156,10 +165,7 @@ def request(args, method, options, failed=False):
             return request(args, method, options, True)
         elif failed:
             # destroy session
-            args._addon.setSetting("session_id", "")
-            args._addon.setSetting("auth_token", "")
-            args._session_id = ""
-            args._auth_token = ""
+            destroy(args)
 
     return json_data
 
