@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import ssl
 import sys
 import json
 import time
+import inputstreamhelper
 
 import xbmc
 import xbmcgui
@@ -382,10 +384,20 @@ def startplayback(args):
             url = stream["url"]
             break
 
-    # start playback
+    # prepare playback
+    url = url + "|User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F60.0.3112.113%20Safari%2F537.36"
     item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=url)
     item.setMimeType("application/vnd.apple.mpegurl")
     item.setContentLookup(False)
+
+    # inputstream adaptive
+    is_helper = inputstreamhelper.Helper("hls")
+    if is_helper.check_inputstream():
+        item.setProperty("inputstreamaddon", "inputstream.adaptive")
+        item.setProperty("inputstream.adaptive.manifest_type", "hls")
+        item.setProperty("inputstream.adaptive.stream_headers", "User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F60.0.3112.113%20Safari%2F537.36")
+
+    # start playback
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 
     if args._addon.getSetting("sync_playtime") == "true":
@@ -418,6 +430,10 @@ def startplayback(args):
                     payload = {"event":    "playback_status",
                                "media_id": args.episode_id,
                                "playhead": int(player.getTime())}
-                    api.request(args, "log", payload)
+                    try:
+                        api.request(args, "log", payload)
+                    except ssl.SSLError:
+                        # catch timeout exception
+                        pass
         except RuntimeError:
             xbmc.log("[PLUGIN] %s: Playback aborted" % args._addonname, xbmc.LOGDEBUG)

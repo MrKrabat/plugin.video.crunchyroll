@@ -17,6 +17,7 @@
 
 import sys
 import random
+import inputstreamhelper
 
 import xbmc
 import xbmcgui
@@ -32,6 +33,13 @@ def main():
     """Main function for the addon
     """
     args = model.parse()
+
+    # inputstream adaptive settings
+    if hasattr(args, "mode") and args.mode == "hls":
+        is_helper = inputstreamhelper.Helper("hls")
+        if is_helper.check_inputstream():
+            xbmcaddon.Addon(id="inputstream.adaptive").openSettings()
+        return True
 
     # get account informations
     username = args._addon.getSetting("crunchyroll_username")

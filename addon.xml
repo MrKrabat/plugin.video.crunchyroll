@@ -2,6 +2,7 @@
 <addon id="plugin.video.crunchyroll" name="Crunchyroll" version="3.0.0" provider-name="MrKrabat">
     <requires>
         <import addon="xbmc.python" version="2.25.0"/>
+        <import addon="script.module.inputstreamhelper" version="0.3.2"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>

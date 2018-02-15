@@ -28,6 +28,10 @@ msgctxt "#30003"
 msgid "Synchronize play time progress"
 msgstr ""
 
+msgctxt "#30004"
+msgid "Configure InputStream Adaptive"
+msgstr ""
+
 msgctxt "#30010"
 msgid "Video quality"
 msgstr ""
