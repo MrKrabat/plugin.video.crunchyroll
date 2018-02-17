@@ -398,7 +398,7 @@ def startplayback(args):
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 
     # check if playback worked
-    if waitForPlayback(10):
+    if not waitForPlayback(10):
         # start without inputstream adaptive
         xbmc.log("[PLUGIN] %s: Inputstream Adaptive failed, trying directly with kodi" % args._addonname, xbmc.LOGDEBUG)
         item.setProperty("inputstreamaddon", "")
