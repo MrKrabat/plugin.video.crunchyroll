@@ -21,6 +21,7 @@ import inputstreamhelper
 
 import xbmc
 import xbmcgui
+import xbmcaddon
 import xbmcplugin
 
 from . import api

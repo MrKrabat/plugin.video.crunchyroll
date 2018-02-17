@@ -83,7 +83,7 @@ def searchAnime(args):
     """
     # ask for search string
     if not hasattr(args, "search"):
-        d = xbmcgui.Dialog().input(args._addon.getLocalizedString(30021), type=xbmcgui.INPUT_ALPHANUM)
+        d = xbmcgui.Dialog().input(args._addon.getLocalizedString(30041), type=xbmcgui.INPUT_ALPHANUM)
         if not d:
             return
     else:
@@ -385,7 +385,6 @@ def startplayback(args):
             break
 
     # prepare playback
-    url = url + "|User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F60.0.3112.113%20Safari%2F537.36"
     item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=url)
     item.setMimeType("application/vnd.apple.mpegurl")
     item.setContentLookup(False)
@@ -395,21 +394,23 @@ def startplayback(args):
     if is_helper.check_inputstream():
         item.setProperty("inputstreamaddon", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
-        item.setProperty("inputstream.adaptive.stream_headers", "User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F60.0.3112.113%20Safari%2F537.36")
+        # start playback
+        xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 
-    # start playback
-    xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+    # check if playback worked
+    if waitForPlayback(10):
+        # start without inputstream adaptive
+        xbmc.log("[PLUGIN] %s: Inputstream Adaptive failed, trying directly with kodi" % args._addonname, xbmc.LOGDEBUG)
+        item.setProperty("inputstreamaddon", "")
+        xbmc.Player().play(url, item)
 
+    # sync playtime with crunchyroll
     if args._addon.getSetting("sync_playtime") == "true":
         # wait for video to begin
         player = xbmc.Player()
-        timeout = time.time() + 20
-        while not xbmc.getCondVisibility("Player.IsInternetStream"):
-            xbmc.sleep(50)
-            # timeout to prevent infinite loop
-            if time.time() > timeout:
-                xbmc.log("[PLUGIN] %s: Timeout reached, video did not start in 20 seconds" % args._addonname, xbmc.LOGERROR)
-                return
+        if not waitForPlayback(30):
+            xbmc.log("[PLUGIN] %s: Timeout reached, video did not start in 30 seconds" % args._addonname, xbmc.LOGERROR)
+            return
 
         # ask if user want to continue playback
         resume = (100/float(req["data"]["duration"])) * int(req["data"]["playhead"])
@@ -437,3 +438,16 @@ def startplayback(args):
                         pass
         except RuntimeError:
             xbmc.log("[PLUGIN] %s: Playback aborted" % args._addonname, xbmc.LOGDEBUG)
+
+
+def waitForPlayback(timeout=30):
+    """ function that waits for playback
+    """
+    timer = time.time() + timeout
+    while not xbmc.getCondVisibility("Player.IsInternetStream"):
+        xbmc.sleep(50)
+        # timeout to prevent infinite loop
+        if time.time() > timer:
+            return False
+
+    return True
