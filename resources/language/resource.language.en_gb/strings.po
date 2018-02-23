@@ -205,3 +205,7 @@ msgstr ""
 msgctxt "#30065"
 msgid "Do you want to continue watching at %s%%?"
 msgstr ""
+
+msgctxt "#30066"
+msgid "If the video does not start wait 30 seconds for the fallback to start."
+msgstr ""

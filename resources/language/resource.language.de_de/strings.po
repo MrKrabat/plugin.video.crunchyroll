@@ -205,3 +205,7 @@ msgstr "Fehlgeschlagen das Video abzuspielen"
 msgctxt "#30065"
 msgid "Do you want to continue watching at %s%%?"
 msgstr "Möchtest du das Video bei %s%% fortsetzen?"
+
+msgctxt "#30066"
+msgid "If the video does not start wait 30 seconds for the fallback to start."
+msgstr "Wenn das Video nicht abspielt, warte bitte 30 Sekunden, damit der Fallback einsetzen kann."
