@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 import ssl
 import sys
 import json
@@ -379,10 +380,9 @@ def startplayback(args):
 
     # get stream url
     url = req["data"]["stream_data"]["streams"][0]["url"]
-    for stream in req["data"]["stream_data"]["streams"]:
-        if args._quality == stream["quality"]:
-            url = stream["url"]
-            break
+    if not args._quality == "adaptive":
+        matches = re.findall(r",([0-9]+\.mp4)", url)
+        url = re.sub(r"(,[0-9]+\.mp4){5}", "," + matches[args._quality], url)
 
     # prepare playback
     item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=url)

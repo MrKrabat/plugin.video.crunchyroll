@@ -85,15 +85,15 @@ def main():
     if args._quality == "0":
         args._quality = "adaptive"
     elif args._quality == "1":
-        args._quality = "ultra"
+        args._quality = 1
     elif args._quality == "2":
-        args._quality = "high"
+        args._quality = 0
     elif args._quality == "3":
-        args._quality = "mid"
+        args._quality = 2
     elif args._quality == "4":
-        args._quality = "low"
+        args._quality = 3
     elif args._quality == "5":
-        args._quality = None # intended, maybe api failure
+        args._quality = 4
     else:
         args._quality = "adaptive"
 
