@@ -450,7 +450,7 @@ def waitForPlayback(timeout=30):
     """ function that waits for playback
     """
     timer = time.time() + timeout
-    while not xbmc.getCondVisibility("Player.IsInternetStream"):
+    while not xbmc.getCondVisibility("Player.HasMedia"):
         xbmc.sleep(50)
         # timeout to prevent infinite loop
         if time.time() > timer:
