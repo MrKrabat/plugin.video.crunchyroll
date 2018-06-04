@@ -70,7 +70,7 @@ def showQueue(args):
                        "premiered":     item["most_likely_media"]["created"][:10],
                        "studio":        item["series"]["publisher_name"],
                        "rating":        int(item["series"]["rating"])/10.0,
-                       "thumb":         item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"],
+                       "thumb":         (item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"]) if item["most_likely_media"]["screenshot_image"] else "",
                        "fanart":        item["series"]["landscape_image"]["full_url"],
                        "mode":          "videoplay"},
                       isFolder=False)
@@ -177,7 +177,7 @@ def showHistory(args):
                        "premiered":     item["media"]["created"][:10],
                        "studio":        item["series"]["publisher_name"],
                        "rating":        int(item["series"]["rating"])/10.0,
-                       "thumb":         item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else item["media"]["screenshot_image"]["full_url"],
+                       "thumb":         (item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else item["media"]["screenshot_image"]["full_url"]) if item["media"]["screenshot_image"] else "",
                        "fanart":        item["series"]["landscape_image"]["full_url"],
                        "mode":          "videoplay"},
                       isFolder=False)
@@ -344,7 +344,7 @@ def viewEpisodes(args):
                        "plotoutline":   item["description"],
                        "aired":         item["created"][:10],
                        "premiered":     item["created"][:10],
-                       "thumb":         item["screenshot_image"]["fwidestar_url"] if item["premium_only"] else item["screenshot_image"]["full_url"],
+                       "thumb":         (item["screenshot_image"]["fwidestar_url"] if item["premium_only"] else item["screenshot_image"]["full_url"]) if item["screenshot_image"] else "",
                        "fanart":        args.fanart,
                        "mode":          "videoplay"},
                       isFolder=False)
