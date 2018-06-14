@@ -126,10 +126,13 @@ def destroy(args):
     """
     args._addon.setSetting("session_id", "")
     args._addon.setSetting("auth_token", "")
-    remove(getCookiePath(args))
     args._session_id = ""
     args._auth_token = ""
     args._cj = False
+    try:
+        remove(getCookiePath(args))
+    except WindowsError:
+        pass
 
 
 def request(args, method, options, failed=False):
