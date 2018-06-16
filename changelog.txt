@@ -1,2 +1,9 @@
+v3.1.0 (2018.06.16)
+- Added context menu
+- Improvements
+- Fix playback
+- Small fixes
+- Compatibility with latest Kodi 18
+
 v3.0.0 (2018.02.xx)
 - Addon rewriten from scratch
