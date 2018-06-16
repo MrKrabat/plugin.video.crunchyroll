@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import random
 import inputstreamhelper
 
@@ -30,10 +29,10 @@ from . import model
 from . import controller
 
 
-def main():
+def main(argv):
     """Main function for the addon
     """
-    args = model.parse()
+    args = model.parse(argv)
 
     # inputstream adaptive settings
     if hasattr(args, "mode") and args.mode == "hls":
@@ -100,21 +99,21 @@ def main():
     if not (username and password):
         # open addon settings
         view.add_item(args, {"title": args._addon.getLocalizedString(30062)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         args._addon.openSettings()
         return False
     else:
         # login
         if api.start(args):
             # list menue
-            xbmcplugin.setContent(int(sys.argv[1]), "tvshows")
+            xbmcplugin.setContent(int(args._argv[1]), "tvshows")
             check_mode(args)
             api.close(args)
         else:
             # login failed
             xbmc.log("[PLUGIN] %s: Login failed" % args._addonname, xbmc.LOGERROR)
             view.add_item(args, {"title": args._addon.getLocalizedString(30060)})
-            view.endofdirectory()
+            view.endofdirectory(args)
             xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30060))
             return False
 
@@ -203,7 +202,7 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30051),
                    "mode":  "drama"})
-    view.endofdirectory()
+    view.endofdirectory(args)
 
 
 def showMainCategory(args, genre):
@@ -241,4 +240,4 @@ def showMainCategory(args, genre):
                   {"title": args._addon.getLocalizedString(30056),
                    "mode":  "genre",
                    "genre": genre})
-    view.endofdirectory()
+    view.endofdirectory(args)

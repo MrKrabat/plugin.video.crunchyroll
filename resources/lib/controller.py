@@ -17,8 +17,6 @@
 
 import re
 import ssl
-import sys
-import json
 import time
 import inputstreamhelper
 
@@ -43,7 +41,7 @@ def showQueue(args):
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         return False
 
     # display media
@@ -75,7 +73,7 @@ def showQueue(args):
                        "mode":          "videoplay"},
                       isFolder=False)
 
-    view.endofdirectory()
+    view.endofdirectory(args)
     return True
 
 
@@ -102,7 +100,7 @@ def searchAnime(args):
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         return False
 
     # display media
@@ -131,7 +129,7 @@ def searchAnime(args):
                        "mode":   args.mode},
                       isFolder=True)
 
-    view.endofdirectory()
+    view.endofdirectory(args)
     return True
 
 
@@ -150,7 +148,7 @@ def showHistory(args):
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         return False
 
     # display media
@@ -190,7 +188,7 @@ def showHistory(args):
                        "mode":   args.mode},
                       isFolder=True)
 
-    view.endofdirectory()
+    view.endofdirectory(args)
     return True
 
 
@@ -209,7 +207,7 @@ def listSeries(args, mode):
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         return False
 
     # display media
@@ -238,7 +236,7 @@ def listSeries(args, mode):
                        "mode":   args.mode},
                       isFolder=True)
 
-    view.endofdirectory()
+    view.endofdirectory(args)
     return True
 
 
@@ -256,7 +254,7 @@ def listFilter(args, mode):
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         return False
 
     # display media
@@ -268,7 +266,7 @@ def listFilter(args, mode):
                        "mode":   args.mode},
                       isFolder=True)
 
-    view.endofdirectory()
+    view.endofdirectory(args)
     return True
 
 
@@ -284,7 +282,7 @@ def viewSeries(args):
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         return False
 
     # display media
@@ -307,7 +305,7 @@ def viewSeries(args):
                        "mode":          "episodes"},
                       isFolder=True)
 
-    view.endofdirectory()
+    view.endofdirectory(args)
     return True
 
 
@@ -325,7 +323,7 @@ def viewEpisodes(args):
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
-        view.endofdirectory()
+        view.endofdirectory(args)
         return False
 
     # display media
@@ -360,7 +358,7 @@ def viewEpisodes(args):
                        "mode":          args.mode},
                       isFolder=True)
 
-    view.endofdirectory()
+    view.endofdirectory(args)
     return True
 
 
@@ -375,7 +373,7 @@ def startplayback(args):
     # check for error
     if req["error"]:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
-        xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, item)
+        xbmcplugin.setResolvedUrl(int(args._argv[1]), False, item)
         return False
 
     # get stream url
@@ -395,7 +393,7 @@ def startplayback(args):
         item.setProperty("inputstreamaddon", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
         # start playback
-        xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+        xbmcplugin.setResolvedUrl(int(args._argv[1]), True, item)
 
         # wait for playback
         #xbmcgui.Dialog().notification(args._addonname, args._addon.getLocalizedString(30066), xbmcgui.NOTIFICATION_INFO)

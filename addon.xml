@@ -10,7 +10,6 @@
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <language>en es pt fr de ar it ru</language>
-        <reuselanguageinvoker>false</reuselanguageinvoker>
         <summary lang="en_GB">Watch videos from Crunchyroll.com!</summary>
         <summary lang="de_DE">Schaue Videos von Crunchyroll.com!</summary>
         <description lang="en_GB">Crunchyroll is an online video service and community that offers full-length episodes and movies of the very best in Japanese anime and Asian entertainment.</description>

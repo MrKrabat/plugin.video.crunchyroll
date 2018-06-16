@@ -52,10 +52,11 @@ def start(args):
 
     # lets urllib handle cookies
     opener = build_opener(HTTPCookieProcessor(args._cj))
-    opener.addheaders = [("User-Agent",      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299"),
+    opener.addheaders = [("User-Agent",      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.62 Safari/537.36"),
                          ("Accept-Encoding", "identity"),
                          ("Accept",          "*/*"),
-                         ("Content-Type",    "application/x-www-form-urlencoded")]
+                         ("Content-Type",    "application/x-www-form-urlencoded"),
+                         ("DNT",             "1")]
     install_opener(opener)
 
     # load cookies

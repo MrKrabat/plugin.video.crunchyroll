@@ -32,6 +32,4 @@ xbmc.log("[PLUGIN] %s: version %s initialized" % (_plugin, _version))
 if __name__ == "__main__":
     from resources.lib import crunchyroll
     # start addon
-    crunchyroll.main()
-
-sys.modules.clear()
+    crunchyroll.main(sys.argv)
