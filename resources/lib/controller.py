@@ -55,7 +55,7 @@ def showQueue(args):
                       {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
                        "tvshowtitle":   item["most_likely_media"]["collection_name"],
                        "duration":      item["most_likely_media"]["duration"],
-                       "playcount":     1 if (100/float(item["most_likely_media"]["duration"]))*int(item["playhead"]) > 90 else 0,
+                       "playcount":     1 if (100/(float(item["most_likely_media"]["duration"])+1))*int(item["playhead"]) > 90 else 0,
                        "episode":       item["most_likely_media"]["episode_number"],
                        "episode_id":    item["most_likely_media"]["media_id"],
                        "collection_id": item["most_likely_media"]["collection_id"],
@@ -162,7 +162,7 @@ def showHistory(args):
                       {"title":         item["media"]["collection_name"] + " #" + item["media"]["episode_number"] + " - " + item["media"]["name"],
                        "tvshowtitle":   item["media"]["collection_name"],
                        "duration":      item["media"]["duration"],
-                       "playcount":     1 if (100/float(item["media"]["duration"]))*int(item["media"]["playhead"]) > 90 else 0,
+                       "playcount":     1 if (100/(float(item["media"]["duration"])+1))*int(item["media"]["playhead"]) > 90 else 0,
                        "episode":       item["media"]["episode_number"],
                        "episode_id":    item["media"]["media_id"],
                        "collection_id": item["media"]["collection_id"],
@@ -333,7 +333,7 @@ def viewEpisodes(args):
                       {"title":         item["collection_name"] + " #" + item["episode_number"] + " - " + item["name"],
                        "tvshowtitle":   item["collection_name"],
                        "duration":      item["duration"],
-                       "playcount":     1 if (100/float(item["duration"]))*int(item["playhead"]) > 90 else 0,
+                       "playcount":     1 if (100/(float(item["duration"])+1))*int(item["playhead"]) > 90 else 0,
                        "episode":       item["episode_number"],
                        "episode_id":    item["media_id"],
                        "collection_id": args.collection_id,
@@ -417,7 +417,7 @@ def startplayback(args):
             return
 
         # ask if user want to continue playback
-        resume = (100/float(req["data"]["duration"])) * int(req["data"]["playhead"])
+        resume = (100/(float(req["data"]["duration"])+1)) * int(req["data"]["playhead"])
         if resume >= 5 and resume <= 90:
             player.pause()
             if xbmcgui.Dialog().yesno(args._addonname, args._addon.getLocalizedString(30065) % int(resume)):
