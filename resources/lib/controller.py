@@ -19,6 +19,10 @@ import re
 import ssl
 import time
 import inputstreamhelper
+try:
+    from urllib2 import URLError
+except ImportError:
+    from urllib.error import URLError
 
 import xbmc
 import xbmcgui
@@ -374,13 +378,17 @@ def startplayback(args):
     if req["error"]:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args._argv[1]), False, item)
+        xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30064))
         return False
 
     # get stream url
-    url = req["data"]["stream_data"]["streams"][0]["url"]
-    if not args._quality == "adaptive":
-        matches = re.findall(r",([0-9]+\.mp4)", url)
-        url = re.sub(r"(,[0-9]+\.mp4){5}", "," + matches[args._quality], url)
+    try:
+        url = req["data"]["stream_data"]["streams"][0]["url"]
+    except IndexError:
+        item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
+        xbmcplugin.setResolvedUrl(int(args._argv[1]), False, item)
+        xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30063))
+        return False
 
     # prepare playback
     item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=url)
@@ -414,6 +422,7 @@ def startplayback(args):
         player = xbmc.Player()
         if not waitForPlayback(30):
             xbmc.log("[PLUGIN] %s: Timeout reached, video did not start in 30 seconds" % args._addonname, xbmc.LOGERROR)
+            #xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30064))
             return
 
         # ask if user want to continue playback
@@ -437,7 +446,7 @@ def startplayback(args):
                                "playhead": int(player.getTime())}
                     try:
                         api.request(args, "log", payload)
-                    except ssl.SSLError:
+                    except (ssl.SSLError, URLError) as e:
                         # catch timeout exception
                         pass
         except RuntimeError:

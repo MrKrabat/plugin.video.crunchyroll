@@ -79,23 +79,6 @@ def main(argv):
     else:
         args._subtitle = "enUS"
 
-    # get video quality
-    args._quality = args._addon.getSetting("video_quality")
-    if args._quality == "0":
-        args._quality = "adaptive"
-    elif args._quality == "1":
-        args._quality = 1
-    elif args._quality == "2":
-        args._quality = 0
-    elif args._quality == "3":
-        args._quality = 2
-    elif args._quality == "4":
-        args._quality = 3
-    elif args._quality == "5":
-        args._quality = 4
-    else:
-        args._quality = "adaptive"
-
     if not (username and password):
         # open addon settings
         view.add_item(args, {"title": args._addon.getLocalizedString(30062)})

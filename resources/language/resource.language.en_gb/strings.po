@@ -32,34 +32,6 @@ msgctxt "#30004"
 msgid "Configure InputStream Adaptive"
 msgstr ""
 
-msgctxt "#30010"
-msgid "Video quality"
-msgstr ""
-
-msgctxt "#30011"
-msgid "240p (Mobile)"
-msgstr ""
-
-msgctxt "#30012"
-msgid "360p (SD)"
-msgstr ""
-
-msgctxt "#30013"
-msgid "480p (SD)"
-msgstr ""
-
-msgctxt "#30014"
-msgid "720p (HD)"
-msgstr ""
-
-msgctxt "#30015"
-msgid "1080p (FHD)"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Adaptive"
-msgstr ""
-
 msgctxt "#30020"
 msgid "Subtitle Language"
 msgstr ""
