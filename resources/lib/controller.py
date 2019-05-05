@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import ssl
 import time
 import inputstreamhelper
@@ -387,7 +386,7 @@ def startplayback(args):
     except IndexError:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args._argv[1]), False, item)
-        xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30063))
+        xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30064))
         return False
 
     # prepare playback
@@ -446,7 +445,7 @@ def startplayback(args):
                                "playhead": int(player.getTime())}
                     try:
                         api.request(args, "log", payload)
-                    except (ssl.SSLError, URLError) as e:
+                    except (ssl.SSLError, URLError):
                         # catch timeout exception
                         pass
         except RuntimeError:
