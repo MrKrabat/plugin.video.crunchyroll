@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import xbmcvfs
 from os import remove
 from os.path import join
 try:
@@ -161,7 +162,7 @@ def request(args, method, options, failed=False):
 
     # check for error
     if json_data["error"]:
-        xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(json_data)), xbmc.LOGNOTICE)
+        xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(json_data)), xbmc.LOGINFO)
         args._session_restart = True
         if not failed:
             # retry request, session expired
@@ -177,7 +178,7 @@ def request(args, method, options, failed=False):
 def getCookiePath(args):
     """Get cookie file path
     """
-    profile_path = xbmc.translatePath(args._addon.getAddonInfo("profile"))
+    profile_path = xbmcvfs.translatePath(args._addon.getAddonInfo("profile"))
     if args.PY2:
         return join(profile_path.decode("utf-8"), u"cookies.lwp")
     else:
