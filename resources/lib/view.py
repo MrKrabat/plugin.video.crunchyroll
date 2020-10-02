@@ -22,6 +22,7 @@ except ImportError:
     from urllib.parse import quote_plus
 
 import xbmc
+import xbmcvfs
 import xbmcgui
 import xbmcplugin
 
@@ -77,7 +78,7 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
     li.setArt({"thumb":  info.get("thumb",  "DefaultFolder.png"),
                "poster": info.get("thumb",  "DefaultFolder.png"),
                "banner": info.get("thumb",  "DefaultFolder.png"),
-               "fanart": info.get("fanart", xbmc.translatePath(args._addon.getAddonInfo("fanart"))),
+               "fanart": info.get("fanart",  xbmcvfs.translatePath(args._addon.getAddonInfo("fanart"))),
                "icon":   info.get("thumb",  "DefaultFolder.png")})
 
     # add item to list
