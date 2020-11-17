@@ -397,7 +397,7 @@ def startplayback(args):
     # inputstream adaptive
     is_helper = inputstreamhelper.Helper("hls")
     if is_helper.check_inputstream():
-        item.setProperty("inputstreamaddon", "inputstream.adaptive")
+        item.setProperty("inputstream", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
         # start playback
         xbmcplugin.setResolvedUrl(int(args._argv[1]), True, item)
@@ -412,7 +412,7 @@ def startplayback(args):
     if not waitForPlayback(2):
         # start without inputstream adaptive
         xbmc.log("[PLUGIN] %s: Inputstream Adaptive failed, trying directly with kodi" % args._addonname, xbmc.LOGDEBUG)
-        item.setProperty("inputstreamaddon", "")
+        item.setProperty("inputstream", "")
         xbmc.Player().play(url, item)
 
     # sync playtime with crunchyroll
