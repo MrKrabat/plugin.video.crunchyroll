@@ -68,9 +68,9 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
         # add context menue
         cm = []
         if u"series_id" in u:
-            cm.append((args._addon.getLocalizedString(30045), "XBMC.Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "series", u)))
+            cm.append((args._addon.getLocalizedString(30045), "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "series", u)))
         if u"collection_id" in u:
-            cm.append((args._addon.getLocalizedString(30046), "XBMC.Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
+            cm.append((args._addon.getLocalizedString(30046), "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
         if len(cm) > 0:
             li.addContextMenuItems(cm)
 
