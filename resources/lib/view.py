@@ -58,10 +58,11 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
 
     if isFolder:
         # directory
+        infoLabels["mediatype"] = "tvshow"
         li.setInfo(mediatype, infoLabels)
     else:
         # playable video
-        infoLabels["mediatype"] = "video"
+        infoLabels["mediatype"] = "episode"
         li.setInfo(mediatype, infoLabels)
         li.setProperty("IsPlayable", "true")
 
