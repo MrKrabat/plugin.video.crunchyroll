@@ -55,30 +55,24 @@ def main(argv):
     # get next page episode settings
     args._nextpage = args._addon.getSettingBool("episode_nextpage")
     # get subtitle language
-    args._subtitle = args._addon.getSetting("subtitle_language")
-    if args._subtitle == "0":
-        args._subtitle = "enUS"
-    elif args._subtitle == "1":
-        args._subtitle = "enGB"
-    elif args._subtitle == "2":
-        args._subtitle = "esLA"
-    elif args._subtitle == "3":
-        args._subtitle = "esES"
-    elif args._subtitle == "4":
-        args._subtitle = "ptBR"
-    elif args._subtitle == "5":
-        args._subtitle = "ptPT"
-    elif args._subtitle == "6":
-        args._subtitle = "frFR"
-    elif args._subtitle == "7":
-        args._subtitle = "deDE"
-    elif args._subtitle == "8":
-        args._subtitle = "arME"
-    elif args._subtitle == "9":
-        args._subtitle = "itIT"
-    elif args._subtitle == "10":
-        args._subtitle = "ruRU"
-    else:
+    subtitle_dict = {
+        '0': 'enUS',
+        '1': 'enGB',
+        '2': 'esLA',
+        '3': 'esES',
+        '4': 'ptBR',
+        '5': 'ptPT',
+        '6': 'frFR',
+        '7': 'deDE',
+        '8': 'arME',
+        '9': 'itIT',
+        '10': 'ruRU',
+    }
+    try:
+        args._subtitle = subtitle_dict[
+            args._addon.getSetting("subtitle_language")
+        ]
+    except KeyError:
         args._subtitle = "enUS"
 
     if not (username and password):
