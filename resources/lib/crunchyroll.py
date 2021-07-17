@@ -46,10 +46,11 @@ def main(argv):
     password = args._addon.getSetting("crunchyroll_password")
     args._session_id = args._addon.getSetting("session_id")
     args._auth_token = args._addon.getSetting("auth_token")
-    args._device_id  = args._addon.getSetting("device_id")
+    args._device_id = args._addon.getSetting("device_id")
     if not args._device_id:
-        char_set  = "0123456789abcdefghijklmnopqrstuvwxyz0123456789"
-        args._device_id = "".join(random.sample(char_set, 8)) + "-KODI-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 12))
+        char_set = "0123456789abcdefghijklmnopqrstuvwxyz0123456789"
+        args._device_id = "".join(random.sample(char_set, 8)) + "-KODI-" + "".join(random.sample(
+            char_set, 4)) + "-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 12))
         args._addon.setSetting("device_id", args._device_id)
 
     # get next page episode settings
@@ -90,8 +91,10 @@ def main(argv):
             api.close(args)
         else:
             # login failed
-            xbmc.log("[PLUGIN] %s: Login failed" % args._addonname, xbmc.LOGERROR)
-            view.add_item(args, {"title": args._addon.getLocalizedString(30060)})
+            xbmc.log("[PLUGIN] %s: Login failed" %
+                     args._addonname, xbmc.LOGERROR)
+            view.add_item(
+                args, {"title": args._addon.getLocalizedString(30060)})
             view.endofdirectory(args)
             xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30060))
             return False
@@ -155,8 +158,10 @@ def check_mode(args):
         controller.startplayback(args)
     else:
         # unkown mode
-        xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" % (args._addonname, str(mode)), xbmc.LOGERROR)
-        xbmcgui.Dialog().notification(args._addonname, args._addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
+        xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" %
+                 (args._addonname, str(mode)), xbmc.LOGERROR)
+        xbmcgui.Dialog().notification(args._addonname,
+                                      args._addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
         showMainMenue(args)
 
 
@@ -172,7 +177,7 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30042),
                    "mode":  "history"})
-    #view.add_item(args,
+    # view.add_item(args,
     #              {"title": args._addon.getLocalizedString(30043),
     #               "mode":  "random"})
     view.add_item(args,
