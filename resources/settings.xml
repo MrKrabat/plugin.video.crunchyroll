@@ -9,4 +9,5 @@
     <setting id="subtitle_language" type="select" lvalues="30021|30022|30023|30024|30025|30026|30027|30028|30029|30030|30031" label="30020" default="0" />
     <setting id="sync_playtime" type="bool" label="30003" default="true"/>
     <setting id="inputstream_adaptive" type="action" label="30004" option="close" action="RunPlugin(plugin://plugin.video.crunchyroll/?mode=hls)"/>
+    <setting id="episode_nextpage" type="bool" label="30067" default="false"/>
 </settings>

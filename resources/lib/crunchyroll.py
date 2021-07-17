@@ -52,6 +52,8 @@ def main(argv):
         args._device_id = "".join(random.sample(char_set, 8)) + "-KODI-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 12))
         args._addon.setSetting("device_id", args._device_id)
 
+    # get next page episode settings
+    args._nextpage = args._addon.getSettingBool("episode_nextpage")
     # get subtitle language
     args._subtitle = args._addon.getSetting("subtitle_language")
     if args._subtitle == "0":
