@@ -42,6 +42,7 @@ class API:
     VERSON = "1.1.21.0"
     TOKEN  = "LNDJgOit5yaRIWN"
     DEVICE = "com.crunchyroll.windows.desktop"
+    TIMEOUT = 30
 
 
 def start(args):
@@ -153,7 +154,7 @@ def request(args, method, options, failed=False):
 
     # send payload
     url = API.URL + method + ".0.json"
-    response = urlopen(url, payload.encode("utf-8"))
+    response = urlopen(url, payload.encode("utf-8"), TIMEOUT)
 
     # parse response
     json_data = response.read().decode("utf-8")
