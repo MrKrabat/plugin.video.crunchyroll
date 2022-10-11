@@ -282,6 +282,16 @@ def viewSeries(args):
                              collection.season,collection.complete,collection.portrait_image,collection.landscape_image"}
     req = api.request(args, "list_collections", payload)
 
+    #iterate backwards to remove any Dubs
+    if args._addon.getSettingBool("ignore_dubbed"):
+        idx = len(req["data"]) - 1
+        items = req["data"]
+        for item in reversed(items):
+            if " Dub)" in item["name"]:
+                if idx >= 0:
+                    req["data"].pop(idx)
+            idx = idx - 1
+
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
