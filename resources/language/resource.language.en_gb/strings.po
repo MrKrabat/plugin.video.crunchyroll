@@ -182,6 +182,10 @@ msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr ""
 
+msgctxt "#30067"
+msgid "Enable 'Next Page' in episode list."
+msgstr ""
+
 msgctxt "#30068"
 msgid "Try to filter out dubbed seasons."
 msgstr ""

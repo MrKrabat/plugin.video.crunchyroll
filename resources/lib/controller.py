@@ -292,6 +292,11 @@ def viewSeries(args):
                     req["data"].pop(idx)
             idx = idx - 1
 
+    if len(req["data"]) == 1:
+        setattr(args, "collection_id", req["data"][0]["collection_id"])
+        viewEpisodes(args)
+        return True
+
     # check for error
     if req["error"]:
         view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
@@ -327,7 +332,7 @@ def viewEpisodes(args):
     """
     # api request
     payload = {"collection_id": args.collection_id,
-               "limit":         30,
+               "limit":         30 if args._nextpage else 9999,
                "offset":        int(getattr(args, "offset", 0)),
                "fields":        "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created,media.series_id, \
                                  media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead"}
@@ -360,16 +365,17 @@ def viewEpisodes(args):
                        "mode":          "videoplay"},
                       isFolder=False)
 
-    # show next page button
-    if len(req["data"]) >= 30:
-        view.add_item(args,
-                      {"title":         args._addon.getLocalizedString(30044),
-                       "collection_id": args.collection_id,
-                       "offset":        int(getattr(args, "offset", 0)) + 30,
-                       "thumb":         args.thumb,
-                       "fanart":        args.fanart,
-                       "mode":          args.mode},
-                      isFolder=True)
+    if args._nextpage:
+        # show next page button
+        if len(req["data"]) >= 30:
+            view.add_item(args,
+                          {"title":         args._addon.getLocalizedString(30044),
+                           "collection_id": args.collection_id,
+                           "offset":        int(getattr(args, "offset", 0)) + 30,
+                           "thumb":         args.thumb,
+                           "fanart":        args.fanart,
+                           "mode":          args.mode},
+                          isFolder=True)
 
     view.endofdirectory(args)
     return True
