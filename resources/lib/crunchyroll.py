@@ -121,6 +121,8 @@ def check_mode(args):
 
     elif mode == "queue":
         controller.showQueue(args)
+    elif mode == "queueunwatched":
+        controller.showQueueUnwatched(args)
     elif mode == "search":
         controller.searchAnime(args)
     elif mode == "history":
@@ -168,6 +170,9 @@ def check_mode(args):
 def showMainMenue(args):
     """Show main menu
     """
+    view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30069),
+                   "mode":  "queueunwatched"})
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30040),
                    "mode":  "queue"})

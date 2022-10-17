@@ -79,6 +79,56 @@ def showQueue(args):
     view.endofdirectory(args)
     return True
 
+def showQueueUnwatched(args):
+    """ shows anime queue/playlist
+    """
+    # api request
+    payload = {"media_types": "anime|drama",
+               "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
+                               media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration, \
+                               series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
+    req = api.request(args, "queue", payload)
+
+    # check for error
+    if req["error"]:
+        view.add_item(args, {"title": args._addon.getLocalizedString(30061)})
+        view.endofdirectory(args)
+        return False
+
+    # display media
+    for item in req["data"]:
+        # video no longer available
+        if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
+            continue
+        
+        #crunchroll seems to consider something watched a 90%, if there is a next episode it will show in the queue
+        if (100/(float(item["most_likely_media"]["duration"])+1))*int(item["playhead"]) < 90:
+            # add to view
+            view.add_item(args,
+                        {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
+                        "tvshowtitle":   item["most_likely_media"]["collection_name"],
+                        "duration":      item["most_likely_media"]["duration"],
+                        "playcount":     0,
+                        "episode":       item["most_likely_media"]["episode_number"],
+                        "episode_id":    item["most_likely_media"]["media_id"],
+                        "collection_id": item["most_likely_media"]["collection_id"],
+                        "series_id":     item["series"]["series_id"],
+                        "plot":          item["most_likely_media"]["description"],
+                        "plotoutline":   item["most_likely_media"]["description"],
+                        "genre":         ", ".join(item["series"]["genres"]),
+                        "year":          item["series"]["year"],
+                        "aired":         item["most_likely_media"]["created"][:10],
+                        "premiered":     item["most_likely_media"]["created"][:10],
+                        "studio":        item["series"]["publisher_name"],
+                        "rating":        int(item["series"]["rating"])/10.0,
+                        "thumb":         (item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"]) if item["most_likely_media"]["screenshot_image"] else "",
+                        "fanart":        item["series"]["landscape_image"]["full_url"],
+                        "mode":          "videoplay"},
+                        isFolder=False)
+
+    view.endofdirectory(args)
+    return True
+
 
 def searchAnime(args):
     """Search for anime
@@ -287,9 +337,10 @@ def viewSeries(args):
         idx = len(req["data"]) - 1
         items = req["data"]
         for item in reversed(items):
-            if " Dub)" in item["name"]:
-                if idx >= 0:
-                    req["data"].pop(idx)
+            if "(" in item["name"]:
+                if " Dub)" in item["name"] or "(Russian)" in item["name"]:
+                    if idx >= 0:
+                        req["data"].pop(idx)
             idx = idx - 1
 
     if len(req["data"]) == 1:

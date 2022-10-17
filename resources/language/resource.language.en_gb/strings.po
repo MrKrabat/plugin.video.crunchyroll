@@ -189,3 +189,7 @@ msgstr ""
 msgctxt "#30068"
 msgid "Try to filter out dubbed seasons."
 msgstr ""
+
+msgctxt "#30069"
+msgid "Queue Unwatched"
+msgstr ""
