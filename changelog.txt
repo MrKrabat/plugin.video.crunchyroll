@@ -1,3 +1,6 @@
+v3.3.0 (2023.03.08)
+- Update for Kodi 20 Nexus
+
 v3.2.0 (2020.09.01)
 - Update for Kodi 19 Matrix
 
