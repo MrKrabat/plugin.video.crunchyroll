@@ -134,7 +134,7 @@ def destroy(args):
     args._cj = False
     try:
         remove(getCookiePath(args))
-    except WindowsError:
+    except OSError:
         pass
 
 
