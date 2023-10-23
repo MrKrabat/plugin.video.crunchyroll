@@ -120,9 +120,13 @@ def check_mode(args):
         showMainMenue(args)
 
     elif mode == "queue":
-        controller.showQueue(args)
+        controller.showQueue(args,sortByDate=False)
+    elif mode == "newestqueue":
+        controller.showQueue(args,sortByDate=True)
     elif mode == "queueunwatched":
-        controller.showQueueUnwatched(args)
+        controller.showQueueUnwatched(args,sortByDate=False)
+    elif mode == "queueunwatchedsorted":
+        controller.showQueueUnwatched(args,sortByDate=True)
     elif mode == "search":
         controller.searchAnime(args)
     elif mode == "history":
@@ -173,6 +177,12 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30069),
                    "mode":  "queueunwatched"})
+    view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30070),
+                   "mode":  "queueunwatchedsorted"})
+    view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30071),
+                   "mode":  "newestqueue"})
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30040),
                    "mode":  "queue"})

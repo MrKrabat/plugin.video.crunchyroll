@@ -26,12 +26,12 @@ except ImportError:
 import xbmc
 import xbmcgui
 import xbmcplugin
+from datetime import datetime
 
 from . import api
 from . import view
 
-
-def showQueue(args):
+def showQueue(args,sortByDate):
     """ shows anime queue/playlist
     """
     # api request
@@ -47,8 +47,13 @@ def showQueue(args):
         view.endofdirectory(args)
         return False
 
+    if sortByDate == True:
+        sorted_date = sorted(req["data"], key=lambda x: (x["most_likely_media"]["created"]), reverse=True)
+    else:
+        sorted_date = req["data"]
+
     # display media
-    for item in req["data"]:
+    for item in sorted_date:
         # video no longer available
         if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
             continue
@@ -79,7 +84,7 @@ def showQueue(args):
     view.endofdirectory(args)
     return True
 
-def showQueueUnwatched(args):
+def showQueueUnwatched(args,sortByDate):
     """ shows anime queue/playlist
     """
     # api request
@@ -95,8 +100,13 @@ def showQueueUnwatched(args):
         view.endofdirectory(args)
         return False
 
+    if sortByDate == True:
+        sorted_date = sorted(req["data"], key=lambda x: (x["most_likely_media"]["created"]), reverse=True)
+    else:
+        sorted_date = req["data"]
+
     # display media
-    for item in req["data"]:
+    for item in sorted_date:
         # video no longer available
         if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
             continue

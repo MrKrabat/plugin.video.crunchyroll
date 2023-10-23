@@ -193,3 +193,11 @@ msgstr ""
 msgctxt "#30069"
 msgid "Queue Unwatched"
 msgstr ""
+
+msgctxt "#30070"
+msgid "Newest Queue Unwatched"
+msgstr ""
+
+msgctxt "#30071"
+msgid "Newest Queue"
+msgstr ""
