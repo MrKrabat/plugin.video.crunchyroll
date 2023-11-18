@@ -338,6 +338,7 @@ def viewSeries(args):
     """
     # api request
     payload = {"series_id": args.series_id,
+               "limit":      999,
                "fields":    "collection.name,collection.collection_id,collection.description,collection.media_type,collection.created, \
                              collection.season,collection.complete,collection.portrait_image,collection.landscape_image"}
     req = api.request(args, "list_collections", payload)
