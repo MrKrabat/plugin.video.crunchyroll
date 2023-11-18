@@ -31,6 +31,8 @@ from datetime import datetime
 from . import api
 from . import view
 
+import re
+
 def showQueue(args,sortByDate):
     """ shows anime queue/playlist
     """
@@ -52,6 +54,9 @@ def showQueue(args,sortByDate):
     else:
         sorted_date = req["data"]
 
+    #set category
+    xbmcplugin.setPluginCategory(int(args._argv[1]), 'Queue')
+    
     # display media
     for item in sorted_date:
         # video no longer available
@@ -61,9 +66,11 @@ def showQueue(args,sortByDate):
         # add to view
         view.add_item(args,
                       {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
+                       "sorttitle":     re.sub('^\([^\)]+\)\s*', '', item["most_likely_media"]["collection_name"]),
                        "tvshowtitle":   item["most_likely_media"]["collection_name"],
                        "duration":      item["most_likely_media"]["duration"],
                        "playcount":     1 if (100/(float(item["most_likely_media"]["duration"])+1))*int(item["playhead"]) > 90 else 0,
+                       "resumetime":    0.0 if float(item["playhead"]) < 1 else float(item["playhead"]),
                        "episode":       item["most_likely_media"]["episode_number"],
                        "episode_id":    item["most_likely_media"]["media_id"],
                        "collection_id": item["most_likely_media"]["collection_id"],
@@ -74,6 +81,8 @@ def showQueue(args,sortByDate):
                        "year":          item["series"]["year"],
                        "aired":         item["most_likely_media"]["created"][:10],
                        "premiered":     item["most_likely_media"]["created"][:10],
+                       "dateadded":     item["most_likely_media"]["created"][:19],
+                       "date":          item["most_likely_media"]["created"][:10],
                        "studio":        item["series"]["publisher_name"],
                        "rating":        int(item["series"]["rating"])/10.0,
                        "thumb":         (item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"]) if item["most_likely_media"]["screenshot_image"] else "",
@@ -81,6 +90,8 @@ def showQueue(args,sortByDate):
                        "mode":          "videoplay"},
                       isFolder=False)
 
+    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_DATEADDED)
+    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE)
     view.endofdirectory(args)
     return True
 
@@ -105,6 +116,9 @@ def showQueueUnwatched(args,sortByDate):
     else:
         sorted_date = req["data"]
 
+    #set category
+    xbmcplugin.setPluginCategory(int(args._argv[1]), 'Queue')
+    
     # display media
     for item in sorted_date:
         # video no longer available
@@ -116,9 +130,11 @@ def showQueueUnwatched(args,sortByDate):
             # add to view
             view.add_item(args,
                         {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
+                        "sorttitle":     re.sub('^\([^\)]+\)\s*', '', item["most_likely_media"]["collection_name"]),
                         "tvshowtitle":   item["most_likely_media"]["collection_name"],
                         "duration":      item["most_likely_media"]["duration"],
                         "playcount":     0,
+                        "resumetime":    0.0 if float(item["playhead"]) < 1 else float(item["playhead"]),
                         "episode":       item["most_likely_media"]["episode_number"],
                         "episode_id":    item["most_likely_media"]["media_id"],
                         "collection_id": item["most_likely_media"]["collection_id"],
@@ -128,6 +144,8 @@ def showQueueUnwatched(args,sortByDate):
                         "genre":         ", ".join(item["series"]["genres"]),
                         "year":          item["series"]["year"],
                         "aired":         item["most_likely_media"]["created"][:10],
+                        "dateadded":     item["most_likely_media"]["created"][:19],
+                        "date":          item["most_likely_media"]["created"][:10],
                         "premiered":     item["most_likely_media"]["created"][:10],
                         "studio":        item["series"]["publisher_name"],
                         "rating":        int(item["series"]["rating"])/10.0,
@@ -136,6 +154,8 @@ def showQueueUnwatched(args,sortByDate):
                         "mode":          "videoplay"},
                         isFolder=False)
 
+    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_DATEADDED)
+    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE)
     view.endofdirectory(args)
     return True
 
@@ -179,6 +199,7 @@ def searchAnime(args):
                        "year":        item["year"],
                        "studio":      item["publisher_name"],
                        "thumb":       item["portrait_image"]["full_url"],
+                       "poster":      item["portrait_image"]["full_url"],
                        "fanart":      item["landscape_image"]["full_url"],
                        "mode":        "series"},
                       isFolder=True)
@@ -205,7 +226,7 @@ def showHistory(args):
                "offset":      int(getattr(args, "offset", 0)),
                "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
                                media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead, \
-                               series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
+                               series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.portrait_image,series.landscape_image"}
     req = api.request(args, "recently_watched", payload)
 
     # check for error
@@ -239,6 +260,9 @@ def showHistory(args):
                        "studio":        item["series"]["publisher_name"],
                        "rating":        int(item["series"]["rating"])/10.0,
                        "thumb":         (item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else item["media"]["screenshot_image"]["full_url"]) if item["media"]["screenshot_image"] else "",
+                       "poster":        item["series"]["portrait_image"]["full_url"],
+                       "fanart":        (item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else item["media"]["screenshot_image"]["full_url"]) if item["media"]["screenshot_image"] else "",
+                       "fanart1":       item["series"]["landscape_image"]["full_url"],
                        "fanart":        item["series"]["landscape_image"]["full_url"],
                        "mode":          "videoplay"},
                       isFolder=False)
@@ -286,6 +310,7 @@ def listSeries(args, mode):
                        "year":        item["year"],
                        "studio":      item["publisher_name"],
                        "thumb":       item["portrait_image"]["full_url"],
+                       "poster":       item["portrait_image"]["full_url"],
                        "fanart":      item["landscape_image"]["full_url"],
                        "mode":        "series"},
                       isFolder=True)
@@ -381,6 +406,7 @@ def viewSeries(args):
                        "premiered":     item["created"][:10],
                        "status":        u"Completed" if item["complete"] else u"Continuing",
                        "thumb":         item["portrait_image"]["full_url"] if item["portrait_image"] else args.thumb,
+                       "poster":        item["portrait_image"]["full_url"] if item["portrait_image"] else args.thumb,
                        "fanart":        item["landscape_image"]["full_url"] if item["landscape_image"] else args.fanart,
                        "mode":          "episodes"},
                       isFolder=True)
@@ -397,7 +423,7 @@ def viewEpisodes(args):
                "limit":         30 if args._nextpage else 9999,
                "offset":        int(getattr(args, "offset", 0)),
                "fields":        "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created,media.series_id, \
-                                 media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead"}
+                                 media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead,series.portrait_image"}
     req = api.request(args, "list_media", payload)
 
     # check for error
@@ -423,7 +449,8 @@ def viewEpisodes(args):
                        "aired":         item["created"][:10],
                        "premiered":     item["created"][:10],
                        "thumb":         (item["screenshot_image"]["fwidestar_url"] if item["premium_only"] else item["screenshot_image"]["full_url"]) if item["screenshot_image"] else "",
-                       "fanart":        args.fanart,
+                       "fanart":        args.fanart,                       
+                       "fanart1":       (item["screenshot_image"]["fwidestar_url"] if item["premium_only"] else item["screenshot_image"]["full_url"]) if item["screenshot_image"] else "",
                        "mode":          "videoplay"},
                       isFolder=False)
 
@@ -501,14 +528,6 @@ def startplayback(args):
             xbmc.log("[PLUGIN] %s: Timeout reached, video did not start in 30 seconds" % args._addonname, xbmc.LOGERROR)
             #xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30064))
             return
-
-        # ask if user want to continue playback
-        resume = (100/(float(req["data"]["duration"])+1)) * int(req["data"]["playhead"])
-        if resume >= 5 and resume <= 90:
-            player.pause()
-            if xbmcgui.Dialog().yesno(args._addonname, args._addon.getLocalizedString(30065) % int(resume)):
-                player.seekTime(float(req["data"]["playhead"]) - 5)
-            player.pause()
 
         # update playtime at crunchyroll
         try:
