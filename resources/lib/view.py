@@ -32,12 +32,12 @@ types = ["count", "size", "date", "genre", "country", "year", "episode", "season
          "tracknumber", "rating", "userrating", "watched", "playcount", "overlay", "cast", "castandrole", "director",
          "mpaa", "plot", "plotoutline", "title", "originaltitle", "sorttitle", "duration", "studio", "tagline", "writer",
          "tvshowtitle", "premiered", "status", "set", "setoverview", "tag", "imdbnumber", "code", "aired", "credits",
-         "lastplayed", "album", "artist", "votes", "path", "trailer", "dateadded", "mediatype", "dbid"]
+         "lastplayed", "album", "artist", "votes", "path", "trailer", "dateadded", "mediatype", "dbid","resumetime"]
 
 
 def endofdirectory(args):
     # sort methods are required in library mode
-    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_NONE)
+    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
 
     # let xbmc know the script is done adding items to the list
     xbmcplugin.endOfDirectory(handle = int(args._argv[1]))
@@ -71,6 +71,8 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
             infoTag.setEpisode(int(infoLabels.get("episode")))
         if infoLabels.get("playcount") is not None:
             infoTag.setPlaycount(int(infoLabels.get("playcount")))
+        if infoLabels.get("resumetime") is not None:
+            infoTag.setResumePoint(infoLabels.get("resumetime"),infoLabels.get("duration"))
         if infoLabels.get("plot") is not None:
             infoTag.setPlot(infoLabels.get("plot"))
             infoTag.setPlotOutline(infoLabels.get("plot"))
