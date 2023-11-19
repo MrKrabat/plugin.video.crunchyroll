@@ -32,12 +32,12 @@ types = ["count", "size", "date", "genre", "country", "year", "episode", "season
          "tracknumber", "rating", "userrating", "watched", "playcount", "overlay", "cast", "castandrole", "director",
          "mpaa", "plot", "plotoutline", "title", "originaltitle", "sorttitle", "duration", "studio", "tagline", "writer",
          "tvshowtitle", "premiered", "status", "set", "setoverview", "tag", "imdbnumber", "code", "aired", "credits",
-         "lastplayed", "album", "artist", "votes", "path", "trailer", "dateadded", "mediatype", "dbid"]
+         "lastplayed", "album", "artist", "votes", "path", "trailer", "dateadded", "mediatype", "dbid","resumetime"]
 
 
 def endofdirectory(args):
     # sort methods are required in library mode
-    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_NONE)
+    xbmcplugin.addSortMethod(int(args._argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
 
     # let xbmc know the script is done adding items to the list
     xbmcplugin.endOfDirectory(handle = int(args._argv[1]))
@@ -56,22 +56,45 @@ def add_item(args, info, isFolder=True, total_items=0, mediatype="video"):
     # get url
     u = build_url(args, info)
 
+    infoTag = li.getVideoInfoTag()
+
     if isFolder:
         # directory
-        infoLabels["mediatype"] = "tvshow"
-        li.setInfo(mediatype, infoLabels)
+        infoTag.setMediaType("tvshow")
     else:
         # playable video
-        infoLabels["mediatype"] = "episode"
-        li.setInfo(mediatype, infoLabels)
+        infoTag.setMediaType("episode")
+        infoTag.setTitle(infoLabels.get("title"))
+        if infoLabels.get("duration") is not None: 
+            infoTag.setDuration(infoLabels.get("duration"))
+        if infoLabels.get("episode") is not None and infoLabels.get("episode").isnumeric(): 
+            infoTag.setEpisode(int(infoLabels.get("episode")))
+        if infoLabels.get("playcount") is not None:
+            infoTag.setPlaycount(int(infoLabels.get("playcount")))
+        if infoLabels.get("resumetime") is not None:
+            infoTag.setResumePoint(infoLabels.get("resumetime"),infoLabels.get("duration"))
+        if infoLabels.get("plot") is not None:
+            infoTag.setPlot(infoLabels.get("plot"))
+            infoTag.setPlotOutline(infoLabels.get("plot"))
+        if infoLabels.get("genre") is not None:
+            infoTag.setGenres(tuple(infoLabels.get("genre").split(',')))
+        if infoLabels.get("premiered") is not None:
+            infoTag.setPremiered(infoLabels.get("premiered"))
+        if infoLabels.get("studio") is not None:
+            infoTag.setStudios(tuple(infoLabels.get("studio").split(',')))
+        if infoLabels.get("rating") is not None:     
+            if isinstance(infoLabels.get("rating"), str) and infoLabels.get("rating").isnumeric():
+                infoTag.setRating(infoLabels.get("rating"))
+            else:
+                infoTag.setRating(float(infoLabels.get("rating")))
         li.setProperty("IsPlayable", "true")
 
-        # add context menue
+        # add context menu
         cm = []
-        if u"series_id" in u:
-            cm.append((args._addon.getLocalizedString(30045), "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "series", u)))
         if u"collection_id" in u:
             cm.append((args._addon.getLocalizedString(30046), "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
+        if u"series_id" in u:
+            cm.append((args._addon.getLocalizedString(30045), "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "series", u)))
         if len(cm) > 0:
             li.addContextMenuItems(cm)
 

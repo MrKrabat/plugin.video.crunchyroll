@@ -46,37 +46,34 @@ def main(argv):
     password = args._addon.getSetting("crunchyroll_password")
     args._session_id = args._addon.getSetting("session_id")
     args._auth_token = args._addon.getSetting("auth_token")
-    args._device_id  = args._addon.getSetting("device_id")
+    args._device_id = args._addon.getSetting("device_id")
     if not args._device_id:
-        char_set  = "0123456789abcdefghijklmnopqrstuvwxyz0123456789"
-        args._device_id = "".join(random.sample(char_set, 8)) + "-KODI-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 12))
+        char_set = "0123456789abcdefghijklmnopqrstuvwxyz0123456789"
+        args._device_id = "".join(random.sample(char_set, 8)) + "-KODI-" + "".join(random.sample(
+            char_set, 4)) + "-" + "".join(random.sample(char_set, 4)) + "-" + "".join(random.sample(char_set, 12))
         args._addon.setSetting("device_id", args._device_id)
 
+    # get next page episode settings
+    args._nextpage = args._addon.getSettingBool("episode_nextpage")
     # get subtitle language
-    args._subtitle = args._addon.getSetting("subtitle_language")
-    if args._subtitle == "0":
-        args._subtitle = "enUS"
-    elif args._subtitle == "1":
-        args._subtitle = "enGB"
-    elif args._subtitle == "2":
-        args._subtitle = "esLA"
-    elif args._subtitle == "3":
-        args._subtitle = "esES"
-    elif args._subtitle == "4":
-        args._subtitle = "ptBR"
-    elif args._subtitle == "5":
-        args._subtitle = "ptPT"
-    elif args._subtitle == "6":
-        args._subtitle = "frFR"
-    elif args._subtitle == "7":
-        args._subtitle = "deDE"
-    elif args._subtitle == "8":
-        args._subtitle = "arME"
-    elif args._subtitle == "9":
-        args._subtitle = "itIT"
-    elif args._subtitle == "10":
-        args._subtitle = "ruRU"
-    else:
+    subtitle_dict = {
+        '0': 'enUS',
+        '1': 'enGB',
+        '2': 'esLA',
+        '3': 'esES',
+        '4': 'ptBR',
+        '5': 'ptPT',
+        '6': 'frFR',
+        '7': 'deDE',
+        '8': 'arME',
+        '9': 'itIT',
+        '10': 'ruRU',
+    }
+    try:
+        args._subtitle = subtitle_dict[
+            args._addon.getSetting("subtitle_language")
+        ]
+    except KeyError:
         args._subtitle = "enUS"
 
     if not (username and password):
@@ -94,8 +91,10 @@ def main(argv):
             api.close(args)
         else:
             # login failed
-            xbmc.log("[PLUGIN] %s: Login failed" % args._addonname, xbmc.LOGERROR)
-            view.add_item(args, {"title": args._addon.getLocalizedString(30060)})
+            xbmc.log("[PLUGIN] %s: Login failed" %
+                     args._addonname, xbmc.LOGERROR)
+            view.add_item(
+                args, {"title": args._addon.getLocalizedString(30060)})
             view.endofdirectory(args)
             xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30060))
             return False
@@ -121,7 +120,13 @@ def check_mode(args):
         showMainMenue(args)
 
     elif mode == "queue":
-        controller.showQueue(args)
+        controller.showQueue(args,sortByDate=False)
+    elif mode == "newestqueue":
+        controller.showQueue(args,sortByDate=True)
+    elif mode == "queueunwatched":
+        controller.showQueueUnwatched(args,sortByDate=False)
+    elif mode == "queueunwatchedsorted":
+        controller.showQueueUnwatched(args,sortByDate=True)
     elif mode == "search":
         controller.searchAnime(args)
     elif mode == "history":
@@ -159,14 +164,25 @@ def check_mode(args):
         controller.startplayback(args)
     else:
         # unkown mode
-        xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" % (args._addonname, str(mode)), xbmc.LOGERROR)
-        xbmcgui.Dialog().notification(args._addonname, args._addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
+        xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" %
+                 (args._addonname, str(mode)), xbmc.LOGERROR)
+        xbmcgui.Dialog().notification(args._addonname,
+                                      args._addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
         showMainMenue(args)
 
 
 def showMainMenue(args):
     """Show main menu
     """
+    view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30069),
+                   "mode":  "queueunwatched"})
+    view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30070),
+                   "mode":  "queueunwatchedsorted"})
+    view.add_item(args,
+                  {"title": args._addon.getLocalizedString(30071),
+                   "mode":  "newestqueue"})
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30040),
                    "mode":  "queue"})
@@ -176,7 +192,7 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30042),
                    "mode":  "history"})
-    #view.add_item(args,
+    # view.add_item(args,
     #              {"title": args._addon.getLocalizedString(30043),
     #               "mode":  "random"})
     view.add_item(args,
