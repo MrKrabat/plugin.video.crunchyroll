@@ -48,6 +48,8 @@ class Args(object):
         self._cj = None
         self._device_id = None
         self._subtitle = None
+        # needed to pass some data around
+        self._playhead = None
 
         for key, value in kwargs.items():
             if value:

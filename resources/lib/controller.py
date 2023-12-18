@@ -32,8 +32,6 @@ from .api import API
 from . import view
 from . import utils
 
-import json
-
 
 def showQueue(args, api: API):
     """ shows anime queue/playlist
@@ -85,9 +83,9 @@ def showQueue(args, api: API):
                 "title": meta["season_title"] + " #" + meta["episode"] + " - " + item["panel"]["title"],
                 "tvshowtitle": meta["series_title"],
                 "duration": meta["duration_ms"],
-                "playcount": 1 if (100 / (float(meta["duration_ms"]) + 1)) * int(item["playhead"]) > 90 else 0,
+                "playcount": 1 if (int(int(item["playhead"]) / (int(meta["duration_ms"]) / 1000) * 100)) > 90 else 0,
                 "episode": meta["episode"],
-                "episode_id": meta["identifier"],  # ???
+                "episode_id": item["panel"]["id"], #meta["identifier"],  # ???
                 "collection_id": meta["season_id"],
                 "series_id": meta["series_id"],
                 "plot": item["panel"]["description"],
@@ -103,7 +101,8 @@ def showQueue(args, api: API):
                 "fanart": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
                 "mode": "videoplay",
                 # note that for fetching streams we need a special guid, not the episode_id
-                "stream_id": stream_id
+                "stream_id": stream_id,
+                "playhead": int(item["playhead"])
             },
             is_folder=False
         )
@@ -470,7 +469,8 @@ def viewEpisodes(args, api: API):
                 "fanart": args.fanart,
                 "mode": "videoplay",
                 # note that for fetching streams we need a special guid, not the episode_id
-                "stream_id": stream_id
+                "stream_id": stream_id,
+                "playhead": None
             },
             is_folder=False
         )
@@ -493,7 +493,7 @@ def viewEpisodes(args, api: API):
 def startplayback(args, api: API):
     """ plays an episode
     """
-    # api request
+    # api request streams
     req = api.make_request(
         method="GET",
         url=api.STREAMS_ENDPOINT.format(api.account_data.cms.bucket, args.stream_id),
@@ -557,6 +557,8 @@ def startplayback(args, api: API):
             # if successful wait more
             xbmc.sleep(3000)
 
+    # @TODO: fallbacks not tested
+
     # start fallback
     if not wait_for_playback(2):
         # start without inputstream adaptive
@@ -566,6 +568,22 @@ def startplayback(args, api: API):
 
     # sync playtime with crunchyroll
     if args.addon.getSetting("sync_playtime") == "true":
+        # fetch playhead info from api
+        if hasattr(args, 'playhead') is False or args.playhead is None:
+            args.playhead = 0
+
+            req_episode_data = api.make_request(
+                method="GET",
+                url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
+                params={
+                    "locale": args.subtitle,
+                    "content_ids": args.episode_id
+                }
+            )
+
+            if req_episode_data and req_episode_data["data"]:
+                args.playhead = int(req_episode_data["data"][0]["playhead"])
+
         # wait for video to begin
         player = xbmc.Player()
         if not wait_for_playback(30):
@@ -574,12 +592,13 @@ def startplayback(args, api: API):
             return
 
         # ask if user want to continue playback
-        resume = (100 / (float(req["data"]["duration"]) + 1)) * int(req["data"]["playhead"])
-        if resume >= 5 and resume <= 90:
-            player.pause()
-            if xbmcgui.Dialog().yesno(args.addonname, args.addon.getLocalizedString(30065) % int(resume)):
-                player.seekTime(float(req["data"]["playhead"]) - 5)
-            player.pause()
+        if args.playhead and args.duration:
+            resume = int(int(args.playhead) / (int(args.duration) / 1000) * 100)
+            if 5 <= resume <= 90:
+                player.pause()
+                if xbmcgui.Dialog().yesno(args.addonname, args.addon.getLocalizedString(30065) % int(resume)):
+                    player.seekTime(float(args.playhead) - 5)
+                player.pause()
 
         # update playtime at crunchyroll
         try:
@@ -589,11 +608,18 @@ def startplayback(args, api: API):
 
                 if url == player.getPlayingFile():
                     # api request
-                    payload = {"event": "playback_status",
-                               "media_id": args.episode_id,
-                               "playhead": int(player.getTime())}
                     try:
-                        api.request(args, "log", payload)
+                        api.make_request(
+                            method="POST",
+                            url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
+                            json={
+                                "playhead": int(player.getTime()),
+                                "content_id": args.episode_id
+                            },
+                            headers={
+                                'Content-Type': 'application/json'
+                            }
+                        )
                     except (ssl.SSLError, URLError):
                         # catch timeout exception
                         pass

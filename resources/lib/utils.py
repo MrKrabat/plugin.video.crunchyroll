@@ -67,7 +67,12 @@ def str_to_date(string: str) -> datetime:
 def get_json_from_response(r: Response) -> Optional[Dict]:
     # @TODO: better error handling
     code: int = r.status_code
-    r_json: Dict = r.json()
+    try:
+        r_json: Dict = r.json()
+    except ValueError:
+        # no data, possibly a POST to playheads?
+        return {}
+
     if "error" in r_json:
         error_code = r_json.get("error")
         if error_code == "invalid_grant":

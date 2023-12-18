@@ -63,7 +63,7 @@ class API:
     BROWSE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/browse"
     WATCHLIST_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist"
     WATCHLIST_SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist/{}"
-    PLAYHEADS_ENDPOINT = "https://www.crunchyroll.com/content/v2/{}/playheads"
+    PLAYHEADS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/playheads"
 
     AUTHORIZATION = "Basic aHJobzlxM2F3dnNrMjJ1LXRzNWE6cHROOURteXRBU2Z6QjZvbXVsSzh6cUxzYTczVE1TY1k="
 
@@ -217,7 +217,8 @@ class API:
             url: str,
             headers=None,
             params=None,
-            data=None
+            data=None,
+            json=None
     ) -> Optional[Dict]:
         if params is None:
             params = dict()
@@ -240,6 +241,7 @@ class API:
             url,
             headers=headers,
             params=params,
-            data=data
+            data=data,
+            json=json
         )
         return utils.get_json_from_response(r)
