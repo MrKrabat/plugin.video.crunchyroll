@@ -55,29 +55,29 @@ def main(argv):
     # get subtitle language
     args._subtitle = args._addon.getSetting("subtitle_language")
     if args._subtitle == "0":
-        args._subtitle = "enUS"
+        args._subtitle = "en-US"
     elif args._subtitle == "1":
-        args._subtitle = "enGB"
+        args._subtitle = "en-GB"
     elif args._subtitle == "2":
-        args._subtitle = "esLA"
+        args._subtitle = "es-LA"
     elif args._subtitle == "3":
-        args._subtitle = "esES"
+        args._subtitle = "es-ES"
     elif args._subtitle == "4":
-        args._subtitle = "ptBR"
+        args._subtitle = "pt-BR"
     elif args._subtitle == "5":
-        args._subtitle = "ptPT"
+        args._subtitle = "pt-PT"
     elif args._subtitle == "6":
-        args._subtitle = "frFR"
+        args._subtitle = "fr-FR"
     elif args._subtitle == "7":
-        args._subtitle = "deDE"
+        args._subtitle = "de-DE"
     elif args._subtitle == "8":
-        args._subtitle = "arME"
+        args._subtitle = "ar-ME"
     elif args._subtitle == "9":
-        args._subtitle = "itIT"
+        args._subtitle = "it-IT"
     elif args._subtitle == "10":
-        args._subtitle = "ruRU"
+        args._subtitle = "ru-RU"
     else:
-        args._subtitle = "enUS"
+        args._subtitle = "en-US"
 
     if not (username and password):
         # open addon settings
@@ -156,7 +156,7 @@ def check_mode(args):
     elif mode == "episodes":
         controller.viewEpisodes(args)
     elif mode == "videoplay":
-        controller.startplayback(args)
+        controller.startplayback0(args)
     else:
         # unkown mode
         xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" % (args._addonname, str(mode)), xbmc.LOGERROR)
@@ -170,21 +170,21 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args._addon.getLocalizedString(30040),
                    "mode":  "queue"})
-    view.add_item(args,
-                  {"title": args._addon.getLocalizedString(30041),
-                   "mode":  "search"})
-    view.add_item(args,
-                  {"title": args._addon.getLocalizedString(30042),
-                   "mode":  "history"})
     #view.add_item(args,
-    #              {"title": args._addon.getLocalizedString(30043),
-    #               "mode":  "random"})
-    view.add_item(args,
-                  {"title": args._addon.getLocalizedString(30050),
-                   "mode":  "anime"})
-    view.add_item(args,
-                  {"title": args._addon.getLocalizedString(30051),
-                   "mode":  "drama"})
+    #              {"title": args._addon.getLocalizedString(30041),
+    #               "mode":  "search"})
+    #view.add_item(args,
+    #              {"title": args._addon.getLocalizedString(30042),
+    #               "mode":  "history"})
+    ##view.add_item(args,
+    ##              {"title": args._addon.getLocalizedString(30043),
+    ##               "mode":  "random"})
+    #view.add_item(args,
+    #              {"title": args._addon.getLocalizedString(30050),
+    #               "mode":  "anime"})
+    #view.add_item(args,
+    #              {"title": args._addon.getLocalizedString(30051),
+    #               "mode":  "drama"})
     view.endofdirectory(args)
 
 

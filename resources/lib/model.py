@@ -22,7 +22,11 @@ try:
 except ImportError:
     from urllib.parse import parse_qs, unquote_plus
 
+from typing import Dict, List
+from json import dumps
+
 import xbmcaddon
+import xbmc
 
 
 def parse(argv):
@@ -54,3 +58,55 @@ class Args(object):
         for key, value in kwargs.items():
             if value:
                 setattr(self, key, unquote_plus(value[0]))
+
+
+class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):
+    def __str__(self):
+        return f"<class 'crunchyroll_beta.types.{self.__name__}'>"
+
+class Object(metaclass=Meta):
+    @staticmethod
+    def default(obj: "Object"):
+        return {
+            "_": obj.__class__.__name__,
+            **{
+                attr: (
+                    "*" * 5
+                    if attr in ("access_token", "refresh_token")
+                    else getattr(obj, attr)
+                )
+                for attr in filter(lambda x: not x.startswith("_"), obj.__dict__)
+                if getattr(obj, attr) is not None
+            }
+        }
+
+    def __str__(self) -> str:
+        return dumps(self, indent=4, default=Object.default, ensure_ascii=False)
+
+class AccountData(Object):
+    def __init__(self, data: dict):
+        self.access_token: str = data.get("access_token")
+        self.refresh_token: str = data.get("refresh_token")
+        self.expires: str = data.get("expires")
+        self.token_type: str =  data.get("token_type")
+        self.scope: str = data.get("scope")
+        self.country: str = data.get("country")
+        self.account_id: str = data.get("account_id")
+        self.cms: CMS = CMS(data.get("cms", {}))
+        self.service_available: bool = data.get("service_available")
+        self.avatar: str = data.get("avatar")
+        self.has_beta: bool = data.get("cr_beta_opt_in")
+        self.email_verified: bool = data.get("crleg_email_verified")
+        self.email: str = data.get("email")
+        self.maturity_rating: str = data.get("maturity_rating")
+        self.account_language: str = data.get("preferred_communication_language")
+        self.default_subtitles_language: str = data.get("preferred_communication_language")
+        self.username: str = data.get("username")
+
+class CrunchyrollError(Exception):
+    xbmc.log("[PLUGIN] %s: CrunchyrollError : %s" % (args._addonname, str(Exception)), xbmc.LOGINFO)
+    pass
+
+class LoginError(CrunchyrollError):
+    xbmc.log("[PLUGIN] %s: LoginError : %s" % (args._addonname, str(CrunchyrollError)), xbmc.LOGINFO)
+    pass

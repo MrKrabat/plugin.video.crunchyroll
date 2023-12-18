@@ -32,6 +32,13 @@ try:
 except ImportError:
     from http.cookiejar import LWPCookieJar
 
+import requests
+import re
+from datetime import timedelta
+from typing import Optional, List, Dict
+from requests.models import Response
+from . import model
+
 import xbmc
 
 
@@ -45,142 +52,228 @@ class API:
     DEVICE = "com.crunchyroll.windows.desktop"
     TIMEOUT = 30
 
+    INDEX_ENDPOINT = "https://beta-api.crunchyroll.com/index/v2"
+    PROFILE_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/profile"
+    TOKEN_ENDPOINT = "https://beta-api.crunchyroll.com/auth/v1/token"
+    SEARCH_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/search"
+    STREAMS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/videos/{}/streams"
+    SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
+    SEASONS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/seasons"
+    EPISODES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/episodes"
+    SIMILAR_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/similar_to"
+    NEWSFEED_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/news_feed"
+    BROWSE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/browse"
+    WATCHLIST_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist"
+    WATCHLIST_SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist/{}"
+    PLAYHEADS_ENDPOINT = "https://www.crunchyroll.com/content/v2/{}/playheads"
 
-def start(args):
-    """Login and session handler
-    """
-    # create cookiejar
-    args._cj = LWPCookieJar()
+    AUTHORIZATION = "Basic aHJobzlxM2F3dnNrMjJ1LXRzNWE6cHROOURteXRBU2Z6QjZvbXVsSzh6cUxzYTczVE1TY1k="
 
-    # lets urllib handle cookies
-    opener = build_opener(HTTPCookieProcessor(args._cj))
-    opener.addheaders = [("User-Agent",      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.62 Safari/537.36"),
-                         ("Accept-Encoding", "identity"),
-                         ("Accept",          "*/*"),
-                         ("Content-Type",    "application/x-www-form-urlencoded"),
-                         ("DNT",             "1")]
-    install_opener(opener)
+    def __init__(
+        self,
+        locale: str="en-US"
+    ) -> None:
+        self.http = requests.Session()
+        self.locale: str = locale
+        self.account_data: AccountData = AccountData(dict())
+        self.api_headers: Dict = self.headers()
 
-    # load cookies
-    try:
-        args._cj.load(getCookiePath(args), ignore_discard=True)
-    except IOError:
-        # cookie file does not exist
-        pass
+    def start(args):
+        # get login informations
+        username = args._addon.getSetting("crunchyroll_username")
+        password = args._addon.getSetting("crunchyroll_password")
+        session_restart = getattr(args, "_session_restart", False)
 
-    # get login informations
-    username = args._addon.getSetting("crunchyroll_username")
-    password = args._addon.getSetting("crunchyroll_password")
+        # session management
+        self.createSession(args, session_restart)
 
-    # session management
-    if not (args._session_id and args._auth_token):
-        # create new session
-        payload = {"device_id":    args._device_id,
-                   "device_type":  API.DEVICE,
-                   "access_token": API.TOKEN}
-        req = request(args, "start_session", payload, True)
+        return True
+
+    def createSession(self, refresh=False):
+        # get login informations
+        username = self._addon.getSetting("crunchyroll_username")
+        password = self._addon.getSetting("crunchyroll_password")
+
+        headers = {"Authorization": API.AUTHORIZATION}
+
+        if not refresh:
+            data = {
+                "username": username,
+                "password": password,
+                "grant_type": "password",
+                "scope": "offline_access",
+            }
+        elif refresh:
+            data = {
+                "refresh_token": self.account_data.refresh_token,
+                "grant_type": "refresh_token",
+                "scope": "offline_access",
+            }
+
+        r = self.http.request(
+            method="POST",
+            url=API.TOKEN_ENDPOINT,
+            headers=headers,
+            data=data
+        )
+        r_json = self._get_json(r)
+
+        self.api_headers.clear()
+        self.account_data = AccountData({})
+
+        access_token = r_json["access_token"]
+        token_type = r_json["token_type"]
+        account_auth = {"Authorization": f"{token_type} {access_token}"}
+
+        account_data = dict()
+        account_data.update(r_json)
+        self.account_data = AccountData({})
+        self.api_headers.update(account_auth)
+
+        r = self._make_request(
+            method="GET",
+            url=API.INDEX_ENDPOINT
+        )
+        account_data.update(r)
+
+        r = self._make_request(
+            method="GET",
+            url=API.PROFILE_ENDPOINT
+        )
+        account_data.update(r)
+
+        account_data["expires"] = date_to_str(get_date() + timedelta(seconds=account_data["expires_in"]))
+        self.account_data = AccountData(account_data)
+
+
+    def close(args):
+        # @TODO: update
+
+        """Saves cookies and session
+        """
+        #args._addon.setSetting("session_id", args._session_id)
+        #args._addon.setSetting("auth_token", args._auth_token)
+        #if args._cj:
+        #    args._cj.save(getCookiePath(args), ignore_discard=True)
+
+
+    def destroy(args):
+        # @TODO: update
+
+        """Destroys session
+        """
+        #args._addon.setSetting("session_id", "")
+        #args._addon.setSetting("auth_token", "")
+        #args._session_id = ""
+        #args._auth_token = ""
+       # args._cj = False
+       # try:
+       #    remove(getCookiePath(args))
+        #except WindowsError:
+        #    pass
+
+    # @DEPRECATED
+    def request_old(args, method, options, failed=False):
+        # @TODO: remove
+        xbmc.log("[PLUGIN] %s: CALL TO DEPRECATED METHOD 'request' with for %s" % (args._addonname, method), xbmc.LOGINFO)
+
+        """Make Crunchyroll JSON API call
+        """
+        # required in every request
+        payload = {"version": API.VERSON,
+                   "locale":  args._subtitle}
+
+        # if not new session add access token
+        if not method == "start_session":
+            payload["session_id"] = args._session_id
+
+        # merge payload with parameters
+        payload.update(options)
+        payload = urlencode(payload)
+
+        # send payload
+        url = API.URL + method + ".0.json"
+        response = urlopen(url, payload.encode("utf-8"), API.TIMEOUT)
+
+        # parse response
+        json_data = response.read().decode("utf-8")
+        json_data = json.loads(json_data)
 
         # check for error
-        if req["error"]:
-            return False
-        args._session_id = req["data"]["session_id"]
+        if json_data["error"]:
+            xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(json_data)), xbmc.LOGINFO)
+            args._session_restart = True
+            if not failed:
+                # retry request, session expired
+                start(args)
+                return request(args, method, options, True)
+            elif failed:
+                # destroy session
+                destroy(args)
 
-        # make login
-        payload = {"password": password,
-                   "account":  username}
-        req = request(args, "login", payload, True)
+        return json_data
 
-        # check for error
-        if req["error"]:
-            return False
-        args._auth_token = req["data"]["auth"]
-    if not getattr(args, "_session_restart", False):
-        pass
-    else:
-        # restart session
-        payload = {"device_id":    args._device_id,
-                   "device_type":  API.DEVICE,
-                   "access_token": API.TOKEN,
-                   "auth":         args._auth_token}
-        req = request(args, "start_session", payload, True)
+    def _make_request(
+        self,
+        method: str,
+        url: str,
+        headers: Dict=dict(),
+        params: Dict=dict(),
+        data=None
+    ) -> Optional[Dict]:
+        if self.account_data:
+            if expiration := self.account_data.expires:
+                current_time = self.get_date()
+                if current_time > self.str_to_date(expiration):
+                    self._create_session(refresh=True)
+            params.update({
+                "Policy": self.account_data.cms.policy,
+                "Signature": self.account_data.cms.signature,
+                "Key-Pair-Id": self.account_data.cms.key_pair_id
+            })
+        headers.update(self.api_headers)
+        r = self.http.request(
+            method,
+            url,
+            headers=headers,
+            params=params,
+            data=data
+        )
+        return self._get_json(r)
 
-        # check for error
-        if req["error"]:
-            destroy(args)
-            return False
-        args._session_id = req["data"]["session_id"]
-        args._auth_token = req["data"]["auth"]
-        args._session_restart = False
+    def headers() -> Dict:
+        return {
+            "User-Agent": "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1",
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
 
-    return True
+    def get_date() -> datetime:
+        return datetime.utcnow()
 
+    def date_to_str(date: datetime) -> str:
+        return "{}-{}-{}T{}:{}:{}Z".format(
+            date.year, date.month,
+            date.day, date.hour,
+            date.minute, date.second
+        )
 
-def close(args):
-    """Saves cookies and session
-    """
-    args._addon.setSetting("session_id", args._session_id)
-    args._addon.setSetting("auth_token", args._auth_token)
-    if args._cj:
-        args._cj.save(getCookiePath(args), ignore_discard=True)
+    def str_to_date(string: str) -> datetime:
+        return datetime.strptime(
+            string,
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
 
-
-def destroy(args):
-    """Destroys session
-    """
-    args._addon.setSetting("session_id", "")
-    args._addon.setSetting("auth_token", "")
-    args._session_id = ""
-    args._auth_token = ""
-    args._cj = False
-    try:
-        remove(getCookiePath(args))
-    except WindowsError:
-        pass
-
-
-def request(args, method, options, failed=False):
-    """Make Crunchyroll JSON API call
-    """
-    # required in every request
-    payload = {"version": API.VERSON,
-               "locale":  args._subtitle}
-
-    # if not new session add access token
-    if not method == "start_session":
-        payload["session_id"] = args._session_id
-
-    # merge payload with parameters
-    payload.update(options)
-    payload = urlencode(payload)
-
-    # send payload
-    url = API.URL + method + ".0.json"
-    response = urlopen(url, payload.encode("utf-8"), API.TIMEOUT)
-
-    # parse response
-    json_data = response.read().decode("utf-8")
-    json_data = json.loads(json_data)
-
-    # check for error
-    if json_data["error"]:
-        xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(json_data)), xbmc.LOGINFO)
-        args._session_restart = True
-        if not failed:
-            # retry request, session expired
-            start(args)
-            return request(args, method, options, True)
-        elif failed:
-            # destroy session
-            destroy(args)
-
-    return json_data
-
-
-def getCookiePath(args):
-    """Get cookie file path
-    """
-    profile_path = xbmcvfs.translatePath(args._addon.getAddonInfo("profile"))
-    if args.PY2:
-        return join(profile_path.decode("utf-8"), u"cookies.lwp")
-    else:
-        return join(profile_path, "cookies.lwp")
+    def _get_json(self, r: Response) -> Optional[Dict]:
+        # @TODO: better error handling
+        code: int = r.status_code
+        r_json: Dict = r.json()
+        if "error" in r_json:
+            error_code = r_json.get("error")
+            if error_code == "invalid_grant":
+                raise LoginError(f"[{code}] Invalid login credentials.")
+        elif "message" in r_json and "code" in r_json:
+            message = r_json.get("message")
+            raise CrunchyrollError(f"[{code}] Error occured: {message}")
+        if code != 200:
+            raise CrunchyrollError(f"[{code}] {r.text}")
+        return r_json

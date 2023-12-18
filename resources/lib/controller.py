@@ -35,11 +35,20 @@ def showQueue(args):
     """ shows anime queue/playlist
     """
     # api request
-    payload = {"media_types": "anime|drama",
-               "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
-                               media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration, \
-                               series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
-    req = api.request(args, "queue", payload)
+    #payload = {"media_types": "anime|drama",
+    #           "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
+    #                           media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration, \
+    #                           series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
+    #req = api.request(args, "queue", payload)
+
+    req = api._make_request(
+        method = "GET",
+        url = API.WATCHLIST_LIST_ENDPOINT.format(self.account_data.account_id),
+        params = {
+          "n": 1024,
+          "locale": self._subtitle
+        }
+    )
 
     # check for error
     if req["error"]:
@@ -48,33 +57,58 @@ def showQueue(args):
         return False
 
     # display media
-    for item in req["data"]:
+    for item in req.items:
         # video no longer available
-        if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
-            continue
+        # @TODO: re-add filtering of non-available items
+        #if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
+        #    continue
+        meta = item.panel.episode_metadata
 
-        # add to view
         view.add_item(args,
-                      {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
-                       "tvshowtitle":   item["most_likely_media"]["collection_name"],
-                       "duration":      item["most_likely_media"]["duration"],
-                       "playcount":     1 if (100/(float(item["most_likely_media"]["duration"])+1))*int(item["playhead"]) > 90 else 0,
-                       "episode":       item["most_likely_media"]["episode_number"],
-                       "episode_id":    item["most_likely_media"]["media_id"],
-                       "collection_id": item["most_likely_media"]["collection_id"],
-                       "series_id":     item["series"]["series_id"],
-                       "plot":          item["most_likely_media"]["description"],
-                       "plotoutline":   item["most_likely_media"]["description"],
-                       "genre":         ", ".join(item["series"]["genres"]),
+                      {"title":         meta.season_title + " #" + meta.episode + " - " + meta.title,
+                       "tvshowtitle":   meta.series_title,
+                       "duration":      meta.duration_ms,
+                       "playcount":     1 if (100/(float(meta.duration_ms)+1))*int(item.playhead) > 90 else 0,
+                       "episode":       meta.episode,
+                       "episode_id":    meta.identifier,   # ???
+                       "collection_id": meta.season_id,
+                       "series_id":     meta.series_id,
+                       "plot":          item.panel.description,
+                       "plotoutline":   item.panel.description,
+                       "genre":         "", # no longer available
                        "year":          item["series"]["year"],
-                       "aired":         item["most_likely_media"]["created"][:10],
-                       "premiered":     item["most_likely_media"]["created"][:10],
-                       "studio":        item["series"]["publisher_name"],
-                       "rating":        int(item["series"]["rating"])/10.0,
-                       "thumb":         (item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"]) if item["most_likely_media"]["screenshot_image"] else "",
-                       "fanart":        item["series"]["landscape_image"]["full_url"],
+                       "aired":         meta.episode_air_date[:10],
+                       "premiered":     meta.episode_air_date[:10],
+                       "studio":        "", # no longer available
+                       "rating":        0, # no longer available
+                       "thumb":         item.panel.images.thumbnail[-1][-1].source, # thats usually 1080p, not sure if too big?
+                       "fanart":        item.panel.images.thumbnail[-1][-1].source,
                        "mode":          "videoplay"},
                       isFolder=False)
+
+
+        # add to view
+#        view.add_item(args,
+#                      {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
+#                       "tvshowtitle":   item["most_likely_media"]["collection_name"],
+#                       "duration":      item["most_likely_media"]["duration"],
+#                       "playcount":     1 if (100/(float(item["most_likely_media"]["duration"])+1))*int(item["playhead"]) > 90 else 0,
+#                       "episode":       item["most_likely_media"]["episode_number"],
+#                       "episode_id":    item["most_likely_media"]["media_id"],
+#                       "collection_id": item["most_likely_media"]["collection_id"],
+#                       "series_id":     item["series"]["series_id"],
+#                       "plot":          item["most_likely_media"]["description"],
+#                       "plotoutline":   item["most_likely_media"]["description"],
+#                       "genre":         ", ".join(item["series"]["genres"]),
+#                       "year":          item["series"]["year"],
+#                       "aired":         item["most_likely_media"]["created"][:10],
+#                       "premiered":     item["most_likely_media"]["created"][:10],
+#                       "studio":        item["series"]["publisher_name"],
+#                       "rating":        int(item["series"]["rating"])/10.0,
+#                       "thumb":         (item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"]) if item["most_likely_media"]["screenshot_image"] else "",
+#                       "fanart":        item["series"]["landscape_image"]["full_url"],
+#                       "mode":          "videoplay"},
+#                      isFolder=False)
 
     view.endofdirectory(args)
     return True
@@ -277,10 +311,20 @@ def viewSeries(args):
     """ view all seasons/arcs of an anime
     """
     # api request
-    payload = {"series_id": args.series_id,
-               "fields":    "collection.name,collection.collection_id,collection.description,collection.media_type,collection.created, \
-                             collection.season,collection.complete,collection.portrait_image,collection.landscape_image"}
-    req = api.request(args, "list_collections", payload)
+#    payload = {"series_id": args.series_id,
+#               "fields":    "collection.name,collection.collection_id,collection.description,collection.media_type,collection.created, \
+#                             collection.season,collection.complete,collection.portrait_image,collection.landscape_image"}
+#    req = api.request(args, "list_collections", payload)
+
+
+    req = api._make_request(
+        method = "GET",
+        url = API.SEASONS_ENDPOINT.format(self.account_data.cms.bucket),
+        params = {
+          "locale": self._subtitle,
+          "series_id": args.series_id
+        }
+    )
 
     # check for error
     if req["error"]:
@@ -289,22 +333,22 @@ def viewSeries(args):
         return False
 
     # display media
-    for item in req["data"]:
+    for item in req.items:
         # add to view
         view.add_item(args,
-                      {"title":         item["name"],
-                       "tvshowtitle":   item["name"],
-                       "season":        item["season"],
-                       "collection_id": item["collection_id"],
+                      {"title":         item.title,
+                       "tvshowtitle":   item.title,
+                       "season":        item.season_number,
+                       "collection_id": item.id,
                        "series_id":     args.series_id,
-                       "plot":          item["description"],
-                       "plotoutline":   item["description"],
-                       "genre":         item["media_type"],
-                       "aired":         item["created"][:10],
-                       "premiered":     item["created"][:10],
-                       "status":        u"Completed" if item["complete"] else u"Continuing",
-                       "thumb":         item["portrait_image"]["full_url"] if item["portrait_image"] else args.thumb,
-                       "fanart":        item["landscape_image"]["full_url"] if item["landscape_image"] else args.fanart,
+                       "plot":          item.description,
+                       "plotoutline":   item.description,
+                       "genre":         "", #item["media_type"],
+                       "aired":         "", #item["created"][:10],
+                       "premiered":     "", #item["created"][:10],
+                       "status":        u"Completed" if item.is_complete else u"Continuing",
+                       "thumb":         args.thumb,
+                       "fanart":        args.fanart,
                        "mode":          "episodes"},
                       isFolder=True)
 
@@ -316,12 +360,23 @@ def viewEpisodes(args):
     """ view all episodes of season
     """
     # api request
-    payload = {"collection_id": args.collection_id,
-               "limit":         30,
-               "offset":        int(getattr(args, "offset", 0)),
-               "fields":        "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created,media.series_id, \
-                                 media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead"}
-    req = api.request(args, "list_media", payload)
+    #payload = {"collection_id": args.collection_id,
+               #"limit":         30,
+               #"offset":        int(getattr(args, "offset", 0)),
+               #"fields":        "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created,media.series_id, \
+                                 #media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead"}
+    #req = api.request(args, "list_media", payload)
+
+    req = api._make_request(
+        method = "GET",
+        url = API.EPISODES_ENDPOINT.format(self.account_data.cms.bucket),
+        params = {
+          "locale": self._subtitle,
+          "season_id": args.collection_id
+        }
+    )
+
+    # @TODO: collect all episodes ids and make a call to playheads api endpoint, to find out if and which we haven't seen fully yet.
 
     # check for error
     if req["error"]:
@@ -329,37 +384,50 @@ def viewEpisodes(args):
         view.endofdirectory(args)
         return False
 
+    #episodes_query_string = ""
+    #for item in req.items:
+    #  episodes_query_string += ( (episodes_query_string.len() > 0 ? "," : "") + item.id)
+
+    #req_playheads = api._make_request(
+    #    method = "GET",
+    #    url = API.PLAYHEADS_ENDPOINT.format(self.account_data.cms.bucket),
+    #    params = {
+    #      "locale": self._subtitle,
+    #      "content_ids" : episodes_query_string
+    #    }
+    #)
+
     # display media
-    for item in req["data"]:
+    for idx, item in req.items:
         # add to view
         view.add_item(args,
-                      {"title":         item["collection_name"] + " #" + item["episode_number"] + " - " + item["name"],
-                       "tvshowtitle":   item["collection_name"],
-                       "duration":      item["duration"],
-                       "playcount":     1 if (100/(float(item["duration"])+1))*int(item["playhead"]) > 90 else 0,
-                       "episode":       item["episode_number"],
-                       "episode_id":    item["media_id"],
+                      {"title":         item.series_title + " #" + item.episode_number + " - " + item.title,
+                       "tvshowtitle":   item.series_title,
+                       "duration":      item.duration_ms,
+                       "playcount":     0, #1 if (100/(float(item.duration_ms)+1))*int(item["playhead"]) > 90 else 0, # needs separatecall to /playheads
+                       "episode":       item.episode_number,
+                       "episode_id":    item.id,
                        "collection_id": args.collection_id,
-                       "series_id":     item["series_id"],
-                       "plot":          item["description"],
-                       "plotoutline":   item["description"],
-                       "aired":         item["created"][:10],
-                       "premiered":     item["created"][:10],
-                       "thumb":         (item["screenshot_image"]["fwidestar_url"] if item["premium_only"] else item["screenshot_image"]["full_url"]) if item["screenshot_image"] else "",
+                       "series_id":     item.series_id,
+                       "plot":          item.description,
+                       "plotoutline":   item.description,
+                       "aired":         item.episode_air_date[:10],
+                       "premiered":     item.availability_starts[:10], # ???
+                       "thumb":         item.images.thumbnail[-1][-1].source,
                        "fanart":        args.fanart,
                        "mode":          "videoplay"},
                       isFolder=False)
 
     # show next page button
-    if len(req["data"]) >= 30:
-        view.add_item(args,
-                      {"title":         args._addon.getLocalizedString(30044),
-                       "collection_id": args.collection_id,
-                       "offset":        int(getattr(args, "offset", 0)) + 30,
-                       "thumb":         args.thumb,
-                       "fanart":        args.fanart,
-                       "mode":          args.mode},
-                      isFolder=True)
+    #if len(req["data"]) >= 30:
+    #    view.add_item(args,
+    #                  {"title":         args._addon.getLocalizedString(30044),
+    #                   "collection_id": args.collection_id,
+    #                   "offset":        int(getattr(args, "offset", 0)) + 30,
+    #                   "thumb":         args.thumb,
+    #                   "fanart":        args.fanart,
+    #                   "mode":          args.mode},
+    #                  isFolder=True)
 
     view.endofdirectory(args)
     return True
@@ -369,20 +437,45 @@ def startplayback(args):
     """ plays an episode
     """
     # api request
-    payload = {"media_id": args.episode_id,
-               "fields":   "media.duration,media.playhead,media.stream_data"}
-    req = api.request(args, "info", payload)
+    req = api._make_request(
+        method = "GET",
+        url = API.STREAMS_ENDPOINT.format(self.account_data.cms.bucket, args.episode_id),
+        params = {
+          "locale": self._subtitle
+        }
+    )
 
     # check for error
+    # @TODO: still works this way?
     if req["error"]:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args._argv[1]), False, item)
         xbmcgui.Dialog().ok(args._addonname, args._addon.getLocalizedString(30064))
         return False
 
+    ##############################
     # get stream url
+    ##############################
+
+    # @TODO: there are tons of different stream types. not sure which one to pick...
+    # adaptive_dash
+    # adaptive_hls - i chose this
+    # download_dash
+    # download_hls
+    # drm_adaptive_dash
+    # drm_adaptive_hls
+    # drm_download_dash
+    # drm_download_hls
+    # drm_multitrack_adaptive_hls_v2
+    # multitrack_adaptive_hls_v2
+    # vo_adaptive_dash
+    # vo_adaptive_hls
+    # vo_drm_adaptive_dash
+    # vo_drm_adaptive_hls
+
+
     try:
-        url = req["data"]["stream_data"]["streams"][0]["url"]
+        url = req.streams["adaptive_hls"][self._subtitle].url
     except IndexError:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args._argv[1]), False, item)

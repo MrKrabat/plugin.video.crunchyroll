@@ -16,8 +16,8 @@ msgstr ""
 
 # Crunchyroll Settings
 msgctxt "#30001"
-msgid "Username"
-msgstr "Utilisateur"
+msgid "Email"
+msgstr "Email"
 
 msgctxt "#30002"
 msgid "Password"
