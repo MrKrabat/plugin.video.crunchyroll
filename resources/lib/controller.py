@@ -30,6 +30,7 @@ import xbmcplugin
 
 from .api import API
 from . import view
+from . import utils
 
 import json
 
@@ -70,6 +71,14 @@ def showQueue(args, api: API):
 
         meta = item["panel"]["episode_metadata"]
 
+        stream_id = utils.get_stream_id_from_url(item["panel"]["__links__"]["streams"]["href"])
+        if stream_id is None:
+            xbmc.log(
+                "[PLUGIN] Crunchyroll | Error : failed to fetch stream_id for %s" % (meta["series_title"]),
+                xbmc.LOGINFO
+            )
+            continue
+
         view.add_item(
             args,
             {
@@ -94,7 +103,7 @@ def showQueue(args, api: API):
                 "fanart": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
                 "mode": "videoplay",
                 # note that for fetching streams we need a special guid, not the episode_id
-                "stream_id": meta["versions"][0]["media_guid"]  # @todo that points to jp-JP for me, maybe too static
+                "stream_id": stream_id
             },
             is_folder=False
         )
@@ -432,6 +441,14 @@ def viewEpisodes(args, api: API):
 
     # display media
     for item in req["items"]:
+        stream_id = utils.get_stream_id_from_url(item["__links__"]["streams"]["href"])
+        if stream_id is None:
+            xbmc.log(
+                "[PLUGIN] Crunchyroll | Error : failed to fetch stream_id for %s" % (item["series_title"]),
+                xbmc.LOGINFO
+            )
+            continue
+
         # add to view
         view.add_item(
             args,
@@ -453,7 +470,7 @@ def viewEpisodes(args, api: API):
                 "fanart": args.fanart,
                 "mode": "videoplay",
                 # note that for fetching streams we need a special guid, not the episode_id
-                "stream_id": item["versions"][0]["media_guid"]  # @todo that points to jp-JP for me, maybe too static
+                "stream_id": stream_id
             },
             is_folder=False
         )

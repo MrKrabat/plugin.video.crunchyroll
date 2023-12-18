@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from requests import Response
+import re
 
 try:
     from urlparse import parse_qs
@@ -77,3 +78,10 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     if code != 200:
         raise CrunchyrollError(f"[{code}] {r.text}")
     return r_json
+
+
+def get_stream_id_from_url(url: str):
+    stream_id = re.search('/videos/([^/]+)/streams', url)
+    if stream_id is None:
+        return None
+    return stream_id[1]

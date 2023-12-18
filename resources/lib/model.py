@@ -133,10 +133,10 @@ class AccountData(Object):
 
 
 class CrunchyrollError(Exception):
-    xbmc.log("[PLUGIN] Crunchyroll: CrunchyrollError : %s" % (str(Exception)), xbmc.LOGINFO)
+    xbmc.log("[PLUGIN] Crunchyroll: CrunchyrollError : %s" % (str(Exception)), xbmc.LOGERROR)
     pass
 
 
 class LoginError(CrunchyrollError):
-    xbmc.log("[PLUGIN] Crunchyroll: LoginError : %s" % (str(CrunchyrollError)), xbmc.LOGINFO)
+    xbmc.log("[PLUGIN] Crunchyroll: LoginError : %s" % (str(CrunchyrollError)), xbmc.LOGERROR)
     pass
