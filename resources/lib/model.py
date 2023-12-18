@@ -16,26 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+
 try:
     from urlparse import parse_qs
     from urllib import unquote_plus
 except ImportError:
     from urllib.parse import parse_qs, unquote_plus
 
-from typing import Dict, List
 from json import dumps
 
 import xbmcaddon
 import xbmc
-
-
-def parse(argv):
-    """Decode arguments
-    """
-    if (argv[2]):
-        return Args(argv, parse_qs(argv[2][1:]))
-    else:
-        return Args(argv, {})
 
 
 class Args(object):
@@ -44,25 +35,43 @@ class Args(object):
     reference to the addon. It is intended to hold all data necessary for the
     script.
     """
+
     def __init__(self, argv, kwargs):
         """Initialize arguments object
         Hold also references to the addon which can't be kept at module level.
         """
-        self.PY2        = sys.version_info[0] == 2 #: True for Python 2
-        self._argv      = argv
-        self._addonid   = self._argv[0][9:-1]
-        self._addon     = xbmcaddon.Addon(id=self._addonid)
+        self.PY2 = sys.version_info[0] == 2  #: True for Python 2
+        self._argv = argv
+        self._addonid = self._argv[0][9:-1]
+        self._addon = xbmcaddon.Addon(id=self._addonid)
         self._addonname = self._addon.getAddonInfo("name")
-        self._cj        = None
+        self._cj = None
 
         for key, value in kwargs.items():
             if value:
                 setattr(self, key, unquote_plus(value[0]))
 
+    @property
+    def addon(self):
+        return self._addon
+
+    @property
+    def addonname(self):
+        return self._addonname
+
+    @property
+    def addonid(self):
+        return self._addonid
+
+    @property
+    def argv(self):
+        return self._argv
+
 
 class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):
     def __str__(self):
         return f"<class 'crunchyroll_beta.types.{self.__name__}'>"
+
 
 class Object(metaclass=Meta):
     @staticmethod
@@ -83,12 +92,21 @@ class Object(metaclass=Meta):
     def __str__(self) -> str:
         return dumps(self, indent=4, default=Object.default, ensure_ascii=False)
 
+
+class CMS(Object):
+    def __init__(self, data: dict):
+        self.bucket: str = data.get("bucket")
+        self.policy: str = data.get("policy")
+        self.signature: str = data.get("signature")
+        self.key_pair_id: str = data.get("key_pair_id")
+
+
 class AccountData(Object):
     def __init__(self, data: dict):
         self.access_token: str = data.get("access_token")
         self.refresh_token: str = data.get("refresh_token")
         self.expires: str = data.get("expires")
-        self.token_type: str =  data.get("token_type")
+        self.token_type: str = data.get("token_type")
         self.scope: str = data.get("scope")
         self.country: str = data.get("country")
         self.account_id: str = data.get("account_id")
@@ -103,10 +121,12 @@ class AccountData(Object):
         self.default_subtitles_language: str = data.get("preferred_communication_language")
         self.username: str = data.get("username")
 
+
 class CrunchyrollError(Exception):
-    xbmc.log("[PLUGIN] %s: CrunchyrollError : %s" % (args._addonname, str(Exception)), xbmc.LOGINFO)
+    xbmc.log("[PLUGIN] Crunchyroll: CrunchyrollError : %s" % (str(Exception)), xbmc.LOGINFO)
     pass
 
+
 class LoginError(CrunchyrollError):
-    xbmc.log("[PLUGIN] %s: LoginError : %s" % (args._addonname, str(CrunchyrollError)), xbmc.LOGINFO)
+    xbmc.log("[PLUGIN] Crunchyroll: LoginError : %s" % (str(CrunchyrollError)), xbmc.LOGINFO)
     pass

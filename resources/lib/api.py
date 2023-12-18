@@ -17,8 +17,9 @@
 
 import json
 import xbmcvfs
-from os import remove
-from os.path import join
+#from os import remove
+#from os.path import join
+
 try:
     from urllib import urlencode
 except ImportError:
@@ -33,11 +34,10 @@ except ImportError:
     from http.cookiejar import LWPCookieJar
 
 import requests
-import re
 from datetime import timedelta
-from typing import Optional, List, Dict
-from requests.models import Response
-from . import model
+from typing import Optional, Dict
+from model import AccountData, Args
+from . import utils
 
 import xbmc
 
@@ -46,9 +46,9 @@ class API:
     """Api documentation
     https://github.com/CloudMax94/crunchyroll-api/wiki/Api
     """
-    URL    = "https://api.crunchyroll.com/"
-    VERSON = "1.1.21.0"
-    TOKEN  = "LNDJgOit5yaRIWN"
+    URL = "https://api.crunchyroll.com/"
+    VERSION = "1.1.21.0"
+    TOKEN = "LNDJgOit5yaRIWN"
     DEVICE = "com.crunchyroll.windows.desktop"
     TIMEOUT = 30
 
@@ -70,31 +70,31 @@ class API:
     AUTHORIZATION = "Basic aHJobzlxM2F3dnNrMjJ1LXRzNWE6cHROOURteXRBU2Z6QjZvbXVsSzh6cUxzYTczVE1TY1k="
 
     def __init__(
-        self,
-        locale: str="en-US"
+            self,
+            args: Args = None,
+            locale: str = "en-US"
     ) -> None:
         self.http = requests.Session()
         self.locale: str = locale
         self.account_data: AccountData = AccountData(dict())
-        self.api_headers: Dict = self.headers()
+        self.api_headers: Dict = utils.headers()
+        self.args = args
 
-    def start(args):
-        # get login informations
-        username = args._addon.getSetting("crunchyroll_username")
-        password = args._addon.getSetting("crunchyroll_password")
-        session_restart = getattr(args, "_session_restart", False)
+    def start(self) -> bool:
+        session_restart = getattr(self.args, "_session_restart", False)
 
         # session management
-        self.createSession(args, session_restart)
+        self.create_session(session_restart)
 
         return True
 
-    def createSession(self, refresh=False):
-        # get login informations
-        username = self._addon.getSetting("crunchyroll_username")
-        password = self._addon.getSetting("crunchyroll_password")
+    def create_session(self, refresh=False) -> None:
+        # get login information
+        username = self.args.addon.getSetting("crunchyroll_username")
+        password = self.args.addon.getSetting("crunchyroll_password")
 
         headers = {"Authorization": API.AUTHORIZATION}
+        data = {}
 
         if not refresh:
             data = {
@@ -116,7 +116,7 @@ class API:
             headers=headers,
             data=data
         )
-        r_json = self._get_json(r)
+        r_json = utils.get_json_from_response(r)
 
         self.api_headers.clear()
         self.account_data = AccountData({})
@@ -130,102 +130,106 @@ class API:
         self.account_data = AccountData({})
         self.api_headers.update(account_auth)
 
-        r = self._make_request(
+        r = self.make_request(
             method="GET",
             url=API.INDEX_ENDPOINT
         )
         account_data.update(r)
 
-        r = self._make_request(
+        r = self.make_request(
             method="GET",
             url=API.PROFILE_ENDPOINT
         )
         account_data.update(r)
 
-        account_data["expires"] = date_to_str(get_date() + timedelta(seconds=account_data["expires_in"]))
+        account_data["expires"] = utils.date_to_str(utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
         self.account_data = AccountData(account_data)
 
-
-    def close(args):
+    def close(self):
         # @TODO: update
 
         """Saves cookies and session
         """
-        #args._addon.setSetting("session_id", args._session_id)
-        #args._addon.setSetting("auth_token", args._auth_token)
-        #if args._cj:
-        #    args._cj.save(getCookiePath(args), ignore_discard=True)
+        # self._addon.setSetting("session_id", self._session_id)
+        # self._addon.setSetting("auth_token", self._auth_token)
+        # if self._cj:
+        #    self._cj.save(getCookiePath(args), ignore_discard=True)
 
-
-    def destroy(args):
+    def destroy(self):
         # @TODO: update
 
         """Destroys session
         """
-        #args._addon.setSetting("session_id", "")
-        #args._addon.setSetting("auth_token", "")
-        #args._session_id = ""
-        #args._auth_token = ""
-       # args._cj = False
-       # try:
-       #    remove(getCookiePath(args))
-        #except WindowsError:
+        # self._addon.setSetting("session_id", "")
+        # self._addon.setSetting("auth_token", "")
+        # self._session_id = ""
+        # self._auth_token = ""
+        #
+        # self._cj = False
+        # try:
+        #    remove(getCookiePath(self))
+        # except WindowsError:
         #    pass
 
     # @DEPRECATED
-    def request_old(args, method, options, failed=False):
-        # @TODO: remove
-        xbmc.log("[PLUGIN] %s: CALL TO DEPRECATED METHOD 'request' with for %s" % (args._addonname, method), xbmc.LOGINFO)
+    # def request_old(self, method, options, failed=False):
+    #     # @TODO: remove
+    #     xbmc.log("[PLUGIN] %s: CALL TO DEPRECATED METHOD 'request' with for %s" % (self._addonname, method),
+    #              xbmc.LOGINFO)
+    #
+    #     """Make Crunchyroll JSON API call
+    #     """
+    #     # required in every request
+    #     payload = {"version": API.VERSION,
+    #                "locale": self._subtitle}
+    #
+    #     # if not new session add access token
+    #     if not method == "start_session":
+    #         payload["session_id"] = self._session_id
+    #
+    #     # merge payload with parameters
+    #     payload.update(options)
+    #     payload = urlencode(payload)
+    #
+    #     # send payload
+    #     url = API.URL + method + ".0.json"
+    #     response = urlopen(url, payload.encode("utf-8"), API.TIMEOUT)
+    #
+    #     # parse response
+    #     json_data = response.read().decode("utf-8")
+    #     json_data = json.loads(json_data)
+    #
+    #     # check for error
+    #     if json_data["error"]:
+    #         xbmc.log("[PLUGIN] %s: API returned error '%s'" % (self._addonname, str(json_data)), xbmc.LOGINFO)
+    #         self._session_restart = True
+    #         if not failed:
+    #             # retry request, session expired
+    #             start(self)
+    #             return request(self, method, options, True)
+    #         elif failed:
+    #             # destroy session
+    #             destroy(self)
+    #
+    #     return json_data
 
-        """Make Crunchyroll JSON API call
-        """
-        # required in every request
-        payload = {"version": API.VERSON,
-                   "locale":  args._subtitle}
-
-        # if not new session add access token
-        if not method == "start_session":
-            payload["session_id"] = args._session_id
-
-        # merge payload with parameters
-        payload.update(options)
-        payload = urlencode(payload)
-
-        # send payload
-        url = API.URL + method + ".0.json"
-        response = urlopen(url, payload.encode("utf-8"), API.TIMEOUT)
-
-        # parse response
-        json_data = response.read().decode("utf-8")
-        json_data = json.loads(json_data)
-
-        # check for error
-        if json_data["error"]:
-            xbmc.log("[PLUGIN] %s: API returned error '%s'" % (args._addonname, str(json_data)), xbmc.LOGINFO)
-            args._session_restart = True
-            if not failed:
-                # retry request, session expired
-                start(args)
-                return request(args, method, options, True)
-            elif failed:
-                # destroy session
-                destroy(args)
-
-        return json_data
-
-    def _make_request(
-        self,
-        method: str,
-        url: str,
-        headers: Dict=dict(),
-        params: Dict=dict(),
-        data=None
+    def make_request(
+            self,
+            method: str,
+            url: str,
+            headers=None,
+            params=None,
+            data=None
     ) -> Optional[Dict]:
+        if params is None:
+            params = dict()
+        if headers is None:
+            headers = dict()
         if self.account_data:
             if expiration := self.account_data.expires:
-                current_time = self.get_date()
-                if current_time > self.str_to_date(expiration):
-                    self._create_session(refresh=True)
+                current_time = utils.get_date()
+                if current_time > utils.str_to_date(expiration):
+                    self.create_session(refresh=True)
             params.update({
                 "Policy": self.account_data.cms.policy,
                 "Signature": self.account_data.cms.signature,
@@ -239,41 +243,4 @@ class API:
             params=params,
             data=data
         )
-        return self._get_json(r)
-
-    def headers() -> Dict:
-        return {
-            "User-Agent": "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1",
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-
-    def get_date() -> datetime:
-        return datetime.utcnow()
-
-    def date_to_str(date: datetime) -> str:
-        return "{}-{}-{}T{}:{}:{}Z".format(
-            date.year, date.month,
-            date.day, date.hour,
-            date.minute, date.second
-        )
-
-    def str_to_date(string: str) -> datetime:
-        return datetime.strptime(
-            string,
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
-
-    def _get_json(self, r: Response) -> Optional[Dict]:
-        # @TODO: better error handling
-        code: int = r.status_code
-        r_json: Dict = r.json()
-        if "error" in r_json:
-            error_code = r_json.get("error")
-            if error_code == "invalid_grant":
-                raise LoginError(f"[{code}] Invalid login credentials.")
-        elif "message" in r_json and "code" in r_json:
-            message = r_json.get("message")
-            raise CrunchyrollError(f"[{code}] Error occured: {message}")
-        if code != 200:
-            raise CrunchyrollError(f"[{code}] {r.text}")
-        return r_json
+        return utils.get_json_from_response(r)
