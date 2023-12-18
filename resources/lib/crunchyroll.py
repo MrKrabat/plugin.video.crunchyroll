@@ -92,8 +92,6 @@ def main(argv):
         locale=args.subtitle
     )
 
-    # @todo: for unknown reasons, after installing the addon and configuring it, this will always be shown when
-    #        accessing the addon. probably will vanish after reboot?
     if not (username and password):
         # open addon settings
         view.add_item(args, {"title": args.addon.getLocalizedString(30062)})
@@ -136,9 +134,9 @@ def check_mode(args, api: API):
         showMainMenue(args)
 
     elif mode == "queue":
-        controller.showQueue(args, api)
+        controller.show_queue(args, api)
     elif mode == "search":
-        controller.searchAnime(args, api)
+        controller.search_anime(args, api)
     elif mode == "history":
         controller.showHistory(args, api)
     elif mode == "random":
@@ -185,9 +183,9 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30040),
                    "mode": "queue"})
-    # view.add_item(args,
-    #              {"title": args.addon.getLocalizedString(30041),
-    #               "mode":  "search"})
+    view.add_item(args,
+                  {"title": args.addon.getLocalizedString(30041),
+                   "mode": "search"})
     # view.add_item(args,
     #              {"title": args.addon.getLocalizedString(30042),
     #               "mode":  "history"})

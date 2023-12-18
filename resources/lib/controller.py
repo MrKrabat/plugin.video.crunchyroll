@@ -32,8 +32,9 @@ from .api import API
 from . import view
 from . import utils
 
+import json
 
-def showQueue(args, api: API):
+def show_queue(args, api: API):
     """ shows anime queue/playlist
     """
     # api request
@@ -65,7 +66,8 @@ def showQueue(args, api: API):
         # if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
         #    continue
 
-        #    xbmc.log("%s" % (json.dumps(item, indent=4)), xbmc.LOGINFO)
+        xbmc.log("CRUNCHYROLL | dumping queue items", xbmc.LOGINFO)
+        xbmc.log("%s" % (json.dumps(item, indent=4)), xbmc.LOGINFO)
 
         meta = item["panel"]["episode_metadata"]
 
@@ -134,62 +136,77 @@ def showQueue(args, api: API):
     return True
 
 
-def searchAnime(args, api: API):
+def search_anime(args, api: API):
     """Search for anime
     """
 
-    # @TODO: update
+    # ask for search string
+    if not hasattr(args, "search"):
+        d = xbmcgui.Dialog().input(args.addon.getLocalizedString(30041), type=xbmcgui.INPUT_ALPHANUM)
+        if not d:
+            return
+    else:
+        d = args.search
 
-    # # ask for search string
-    # if not hasattr(args, "search"):
-    #     d = xbmcgui.Dialog().input(args.addon.getLocalizedString(30041), type=xbmcgui.INPUT_ALPHANUM)
-    #     if not d:
-    #         return
-    # else:
-    #     d = args.search
-    #
-    # # api request
-    # payload = {"media_types": "anime|drama",
-    #            "q": d,
-    #            "limit": 30,
-    #            "offset": int(getattr(args, "offset", 0)),
-    #            "fields": "series.name,series.series_id,series.description,series.year,series.publisher_name, \
-    #                            series.genres,series.portrait_image,series.landscape_image"}
-    # req = api.request(args, "autocomplete", payload)
-    #
-    # # check for error
-    # if "error" in req:
-    #     view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-    #     view.endofdirectory(args)
-    #     return False
-    #
-    # # display media
-    # for item in req["data"]:
-    #     # add to view
-    #     view.add_item(args,
-    #                   {"title": item["name"],
-    #                    "tvshowtitle": item["name"],
-    #                    "series_id": item["series_id"],
-    #                    "plot": item["description"],
-    #                    "plotoutline": item["description"],
-    #                    "genre": ", ".join(item["genres"]),
-    #                    "year": item["year"],
-    #                    "studio": item["publisher_name"],
-    #                    "thumb": item["portrait_image"]["full_url"],
-    #                    "fanart": item["landscape_image"]["full_url"],
-    #                    "mode": "series"},
-    #                   is_folder=True)
-    #
-    # # show next page button
-    # if len(req["data"]) >= 30:
-    #     view.add_item(args,
-    #                   {"title": args.addon.getLocalizedString(30044),
-    #                    "offset": int(getattr(args, "offset", 0)) + 30,
-    #                    "search": d,
-    #                    "mode": args.mode},
-    #                   is_folder=True)
-    #
-    # view.endofdirectory(args)
+    # api request
+    # available types seem to be: music,series,episode,top_results,movie_listing
+    req = api.make_request(
+        method="GET",
+        url=api.SEARCH_ENDPOINT,
+        params={
+            "n": 50,
+            "q": d,
+            "locale": args.subtitle,
+            "start": int(getattr(args, "offset", 0)),
+            "type": "series"
+        }
+    )
+
+    # check for error
+    if "error" in req:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    items_left = 0
+
+    for types in req["items"]:
+        for item in types["items"]:
+            # add to view
+            view.add_item(
+                args,
+                {
+                    "title": item["title"],
+                    "tvshowtitle": item["title"],
+                    "series_id": item["id"],
+                    "plot": item["description"],
+                    "plotoutline": item["description"],
+                    "genre": "",  # requires fetch from api endpoint
+                    "year": item["series_metadata"]["series_launch_year"],
+                    "studio": "",
+                    "thumb": item["images"]["poster_tall"][-1][-1]["source"],
+                    "fanart": item["images"]["poster_wide"][-1][-1]["source"],
+                    "rating": 0,  # that's on the live api only  int(item["rating"]["average"] * 2),  # it's now a 5-star rating, and we use score of 10?
+                    "mode": "series"
+                },
+                is_folder=True
+            )
+
+        # for now break as we only support one type
+        items_left = types["total"] - (int(getattr(args, "offset", 0)) * 50) - len(types["items"])
+        break
+
+    # show next page button
+    if items_left > 0:
+        view.add_item(args,
+                      {"title": args.addon.getLocalizedString(30044),
+                       "offset": int(getattr(args, "offset", 0)) + 50,
+                       "search": d,
+                       "mode": args.mode},
+                      is_folder=True)
+
+    view.end_of_directory(args)
+
     return True
 
 
