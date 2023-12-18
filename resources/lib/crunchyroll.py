@@ -50,13 +50,13 @@ def main(argv):
     if not args.device_id:
         char_set = "0123456789abcdefghijklmnopqrstuvwxyz0123456789"
         args._device_id = (
-            "".join(random.sample(char_set, 8)) +
-            "-KODI-" +
-            "".join(random.sample(char_set, 4)) +
-            "-" +
-            "".join(random.sample(char_set, 4)) +
-            "-" +
-            "" .join(random.sample(char_set, 12))
+                "".join(random.sample(char_set, 8)) +
+                "-KODI-" +
+                "".join(random.sample(char_set, 4)) +
+                "-" +
+                "".join(random.sample(char_set, 4)) +
+                "-" +
+                "".join(random.sample(char_set, 12))
         )
         args.addon.setSetting("device_id", args.device_id)
 
@@ -92,6 +92,8 @@ def main(argv):
         locale=args.subtitle
     )
 
+    # @todo: for unknown reasons, after installing the addon and configuring it, this will always be shown when
+    #        accessing the addon. probably will vanish after reboot?
     if not (username and password):
         # open addon settings
         view.add_item(args, {"title": args.addon.getLocalizedString(30062)})
@@ -182,7 +184,7 @@ def showMainMenue(args):
     """
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30040),
-                   "mode":  "queue"})
+                   "mode": "queue"})
     # view.add_item(args,
     #              {"title": args.addon.getLocalizedString(30041),
     #               "mode":  "search"})
@@ -206,34 +208,34 @@ def showMainCategory(args, genre):
     """
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30058),
-                   "mode":  "featured",
+                   "mode": "featured",
                    "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30052),
-                   "mode":  "popular",
+                   "mode": "popular",
                    "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30053),
-                   "mode":  "simulcast",
+                   "mode": "simulcast",
                    "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30054),
-                   "mode":  "updated",
+                   "mode": "updated",
                    "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30059),
-                   "mode":  "newest",
+                   "mode": "newest",
                    "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30055),
-                   "mode":  "alpha",
+                   "mode": "alpha",
                    "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30057),
-                   "mode":  "season",
+                   "mode": "season",
                    "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30056),
-                   "mode":  "genre",
+                   "mode": "genre",
                    "genre": genre})
     view.end_of_directory(args)

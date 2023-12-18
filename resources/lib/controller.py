@@ -59,8 +59,6 @@ def showQueue(args, api: API):
         view.end_of_directory(args)
         return False
 
-   # xbmc.log("%s" % (json.dumps(req, indent=4)), xbmc.LOGINFO)
-
     # display media
     for item in req["items"]:
         # video no longer available
@@ -68,32 +66,38 @@ def showQueue(args, api: API):
         # if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
         #    continue
 
-    #    xbmc.log("%s" % (json.dumps(item, indent=4)), xbmc.LOGINFO)
+        #    xbmc.log("%s" % (json.dumps(item, indent=4)), xbmc.LOGINFO)
 
         meta = item["panel"]["episode_metadata"]
 
-        view.add_item(args,
-                      {"title": meta["season_title"] + " #" + meta["episode"] + " - " + item["panel"]["title"],
-                       "tvshowtitle": meta["series_title"],
-                       "duration": meta["duration_ms"],
-                       "playcount": 1 if (100 / (float(meta["duration_ms"]) + 1)) * int(item["playhead"]) > 90 else 0,
-                       "episode": meta["episode"],
-                       "episode_id": meta["identifier"],  # ???
-                       "collection_id": meta["season_id"],
-                       "series_id": meta["series_id"],
-                       "plot": item["panel"]["description"],
-                       "plotoutline": item["panel"]["description"],
-                       "genre": "",  # no longer available
-                       "year": meta["episode_air_date"][:10],
-                       "aired": meta["episode_air_date"][:10],
-                       "premiered": meta["episode_air_date"][:10],
-                       "studio": "",  # no longer available
-                       "rating": 0,  # no longer available
-                       "thumb": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
-                       # that's usually 1080p, not sure if too big?
-                       "fanart": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
-                       "mode": "videoplay"},
-                      is_folder=False)
+        view.add_item(
+            args,
+            {
+                "title": meta["season_title"] + " #" + meta["episode"] + " - " + item["panel"]["title"],
+                "tvshowtitle": meta["series_title"],
+                "duration": meta["duration_ms"],
+                "playcount": 1 if (100 / (float(meta["duration_ms"]) + 1)) * int(item["playhead"]) > 90 else 0,
+                "episode": meta["episode"],
+                "episode_id": meta["identifier"],  # ???
+                "collection_id": meta["season_id"],
+                "series_id": meta["series_id"],
+                "plot": item["panel"]["description"],
+                "plotoutline": item["panel"]["description"],
+                "genre": "",  # no longer available
+                "year": meta["episode_air_date"][:10],
+                "aired": meta["episode_air_date"][:10],
+                "premiered": meta["episode_air_date"][:10],
+                "studio": "",  # no longer available
+                "rating": 0,  # no longer available
+                "thumb": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
+                # that's usually 1080p, not sure if too big?
+                "fanart": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
+                "mode": "videoplay",
+                # note that for fetching streams we need a special guid, not the episode_id
+                "stream_id": meta["versions"][0]["media_guid"]  # @todo that points to jp-JP for me, maybe too static
+            },
+            is_folder=False
+        )
 
         # add to view
     #        view.add_item(args,
@@ -447,7 +451,9 @@ def viewEpisodes(args, api: API):
                 "premiered": item["availability_starts"][:10],  # ???
                 "thumb": item["images"]["thumbnail"][-1][-1]["source"],
                 "fanart": args.fanart,
-                "mode": "videoplay"
+                "mode": "videoplay",
+                # note that for fetching streams we need a special guid, not the episode_id
+                "stream_id": item["versions"][0]["media_guid"]  # @todo that points to jp-JP for me, maybe too static
             },
             is_folder=False
         )
@@ -470,14 +476,10 @@ def viewEpisodes(args, api: API):
 def startplayback(args, api: API):
     """ plays an episode
     """
-
-    xbmc.log("[PLUGIN] Crunchyroll: Start playback: %s" % (api.STREAMS_ENDPOINT.format(api.account_data.cms.bucket, args.episode_id)), xbmc.LOGINFO)
-
-
     # api request
     req = api.make_request(
         method="GET",
-        url=api.STREAMS_ENDPOINT.format(api.account_data.cms.bucket, args.episode_id),
+        url=api.STREAMS_ENDPOINT.format(api.account_data.cms.bucket, args.stream_id),
         params={
             "locale": args.subtitle
         }
@@ -512,7 +514,7 @@ def startplayback(args, api: API):
     # vo_drm_adaptive_hls
 
     try:
-        url = req["streams"]["adaptive_hls"][args._subtitle].url
+        url = req["streams"]["adaptive_hls"][args.subtitle]["url"]
     except IndexError:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)

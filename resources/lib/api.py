@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
+import xbmc
 import xbmcvfs
 #from os import remove
 #from os.path import join
@@ -38,8 +38,6 @@ from datetime import timedelta
 from typing import Optional, Dict
 from .model import AccountData, Args
 from . import utils
-
-import xbmc
 
 
 class API:
@@ -236,6 +234,7 @@ class API:
                 "Key-Pair-Id": self.account_data.cms.key_pair_id
             })
         headers.update(self.api_headers)
+
         r = self.http.request(
             method,
             url,
