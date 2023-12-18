@@ -82,6 +82,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
         raise CrunchyrollError(f"[{code}] Error occurred: {message}")
     if code != 200:
         raise CrunchyrollError(f"[{code}] {r.text}")
+
     return r_json
 
 
@@ -89,4 +90,14 @@ def get_stream_id_from_url(url: str):
     stream_id = re.search('/videos/([^/]+)/streams', url)
     if stream_id is None:
         return None
+
     return stream_id[1]
+
+
+def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
+    if playheads_data and playheads_data["data"]:
+        for info in playheads_data["data"]:
+            if info["content_id"] == episode_id:
+                return 1 if (info["fully_watched"] is True) else 0
+
+    return 0

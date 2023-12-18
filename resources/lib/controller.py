@@ -85,7 +85,7 @@ def showQueue(args, api: API):
                 "duration": meta["duration_ms"],
                 "playcount": 1 if (int(int(item["playhead"]) / (int(meta["duration_ms"]) / 1000) * 100)) > 90 else 0,
                 "episode": meta["episode"],
-                "episode_id": item["panel"]["id"], #meta["identifier"],  # ???
+                "episode_id": item["panel"]["id"],  # meta["identifier"],  # ???
                 "collection_id": meta["season_id"],
                 "series_id": meta["series_id"],
                 "plot": item["panel"]["description"],
@@ -425,18 +425,21 @@ def viewEpisodes(args, api: API):
         view.end_of_directory(args)
         return False
 
-    # episodes_query_string = ""
-    # for item in req.items:
-    #  episodes_query_string += ( (episodes_query_string.len() > 0 ? "," : "") + item.id)
+    # for the watched status, we need an extra call to api, providing it with all episode ids.
+    # this relies fully on the watched status from crunchyroll, the old approach with percentage was better,
+    # but it's much more effort to get the duration of the episodes at this point, as it's not provided by the endpoint
+    episode_ids = []
+    for item in req["items"]:
+        episode_ids.append(item["id"])
 
-    # req_playheads = api.make_request(
-    #    method = "GET",
-    #    url = api.PLAYHEADS_ENDPOINT.format(self.account_data.cms.bucket),
-    #    params = {
-    #      "locale": self._subtitle,
-    #      "content_ids" : episodes_query_string
-    #    }
-    # )
+    req_playheads = api.make_request(
+        method="GET",
+        url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
+        params={
+            "locale": args.subtitle,
+            "content_ids": ','.join(episode_ids)
+        }
+    )
 
     # display media
     for item in req["items"]:
@@ -455,8 +458,7 @@ def viewEpisodes(args, api: API):
                 "title": item["series_title"] + " #" + str(item["episode_number"]) + " - " + item["title"],
                 "tvshowtitle": item["series_title"],
                 "duration": item["duration_ms"],
-                "playcount": 0,
-                # 1 if (100/(float(item["duration_ms"])+1))*int(item["playhead"]) > 90 else 0, # needs separatecall to /playheads
+                "playcount": utils.get_watched_status_from_playheads_data(req_playheads, item["id"]),
                 "episode": item["episode_number"],
                 "episode_id": item["id"],
                 "collection_id": args.collection_id,
@@ -465,7 +467,7 @@ def viewEpisodes(args, api: API):
                 "plotoutline": item["description"],
                 "aired": item["episode_air_date"][:10],
                 "premiered": item["availability_starts"][:10],  # ???
-                "thumb": item["images"]["thumbnail"][-1][-1]["source"],
+                "thumb": item["images"]["thumbnail"][-1][-1]["source"],  # that's usually 1080p, which could be improved
                 "fanart": args.fanart,
                 "mode": "videoplay",
                 # note that for fetching streams we need a special guid, not the episode_id
@@ -475,6 +477,7 @@ def viewEpisodes(args, api: API):
             is_folder=False
         )
 
+    # @todo: do we really need this?
     # show next page button
     # if len(req["data"]) >= 30:
     #    view.add_item(args,
@@ -503,7 +506,6 @@ def startplayback(args, api: API):
     )
 
     # check for error
-    # @TODO: still works this way?
     if "error" in req:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
@@ -516,7 +518,7 @@ def startplayback(args, api: API):
 
     # @TODO: there are tons of different stream types. not sure which one to pick...
     # adaptive_dash
-    # adaptive_hls - i chose this
+    # adaptive_hls - i chose this, which works for me
     # download_dash
     # download_hls
     # drm_adaptive_dash
