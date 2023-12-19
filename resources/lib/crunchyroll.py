@@ -138,7 +138,7 @@ def check_mode(args, api: API):
     elif mode == "search":
         controller.search_anime(args, api)
     elif mode == "history":
-        controller.showHistory(args, api)
+        controller.show_history(args, api)
     elif mode == "random":
         controller.showRandom(args, api)
 
@@ -186,9 +186,9 @@ def showMainMenue(args):
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30041),
                    "mode": "search"})
-    # view.add_item(args,
-    #              {"title": args.addon.getLocalizedString(30042),
-    #               "mode":  "history"})
+    view.add_item(args,
+                 {"title": args.addon.getLocalizedString(30042),
+                  "mode":  "history"})
     # #view.add_item(args,
     # #              {"title": args.addon.getLocalizedString(30043),
     # #               "mode":  "random"})

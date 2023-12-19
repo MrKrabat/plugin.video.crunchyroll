@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import math
 import ssl
 import time
 import inputstreamhelper
@@ -31,6 +32,7 @@ import xbmcplugin
 from .api import API
 from . import view
 from . import utils
+from .model import EpisodeData, MovieData, CrunchyrollError
 
 import json
 
@@ -55,81 +57,53 @@ def show_queue(args, api: API):
         return False
 
     # display media
-    for item in req["items"]:
+    for item in req.get("items"):
         # video no longer available
         # @TODO: re-add filtering of non-available items / premium content
         # if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
         #    continue
 
         try:
-            # @TODO: we need to differ between at least episodes/series and movies, which have different data structures
-            #        it would be nicer to use DTOs like crunpyroll does it and use those to fetch the view items...
-            if item["panel"]["type"] == "episode":
-                meta = item["panel"]["episode_metadata"]
-
-                title = meta["season_title"] + " #" + meta["episode"] + " - " + item["panel"]["title"]
-                tvshowtitle = meta["series_title"]
-                episode = meta["episode"]
-                collection_id = meta["season_id"]
-                series_id = meta["series_id"]
-                air_date = meta["episode_air_date"][:10]
+            if item.get("panel").get("type") == "episode":
+                entry = EpisodeData(item)
             elif item["panel"]["type"] == "movie":
-                meta = item["panel"]["movie_metadata"]
-
-                title = meta["movie_listing_title"]
-                tvshowtitle = meta["movie_listing_title"]
-                episode = 1
-                collection_id = None
-                series_id = None
-                air_date = meta["premium_available_date"][:10]
+                entry = MovieData(item)
             else:
                 xbmc.log(
-                    "[PLUGIN] %s: unhandled index for metadata. %s" % (args.addonname, json.dumps(item, indent=4)),
+                    "[PLUGIN] %s: queue | unhandled index for metadata. %s" % (
+                        args.addonname, json.dumps(item, indent=4)),
                     xbmc.LOGERROR
-                )
-                continue
-
-            stream_id = utils.get_stream_id_from_url(item["panel"]["__links__"]["streams"]["href"])
-            if stream_id is None:
-                xbmc.log(
-                    "[PLUGIN] Crunchyroll | Error : failed to fetch stream_id for %s" % (meta["series_title"]),
-                    xbmc.LOGINFO
                 )
                 continue
 
             view.add_item(
                 args,
                 {
-                    "title": title,
-                    "tvshowtitle": tvshowtitle,
-                    "duration": meta["duration_ms"],
-                    "playcount": 1 if (int(int(item["playhead"]) / (int(meta["duration_ms"]) / 1000) * 100)) > 90 else 0,
-                    "episode": episode,
-                    "episode_id": item["panel"]["id"],  # meta["identifier"],  # ???
-                    "collection_id": collection_id,
-                    "series_id": series_id,
-                    "plot": item["panel"]["description"],
-                    "plotoutline": item["panel"]["description"],
+                    "title": entry.title,
+                    "tvshowtitle": entry.tvshowtitle,
+                    "duration": entry.duration_ms,
+                    "playcount": entry.playcount,
+                    "episode": entry.episode,
+                    "episode_id": entry.episode_id,
+                    "collection_id": entry.collection_id,
+                    "series_id": entry.series_id,
+                    "plot": entry.plot,
+                    "plotoutline": entry.plotoutline,
                     "genre": "",  # no longer available
-                    "year": air_date,
-                    "aired": air_date,
-                    "premiered": air_date,
-                    "studio": "",  # no longer available
-                    "rating": 0,  # no longer available
-                    "thumb": item["panel"]["images"]["thumbnail"][-1][-1]["source"],  # that's usually 1080p, not sure if too big?
-                    "fanart": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
-                    "mode": "videoplay",
-                    # note that for fetching streams we need a special guid, not the episode_id
-                    "stream_id": stream_id,
-                    "playhead": int(item["playhead"])
+                    "year": entry.year,
+                    "aired": entry.aired,
+                    "premiered": entry.premiered,
+                    "thumb": entry.thumb,
+                    "fanart": entry.fanart,
+                    "stream_id": entry.stream_id,
+                    "playhead": entry.playhead,
+                    "mode": "videoplay"
                 },
                 is_folder=False
             )
-        except Exception as e:
-            xbmc.log(
-                "[PLUGIN] %s: | failed to add item to queue view: %s" % (args.addonname, json.dumps(item, indent=4)),
-                xbmc.LOGERROR
-            )
+        except Exception:
+            raise CrunchyrollError("queue | Failed to add item to queue view: %s" % json.dumps(item, indent=4))
+            pass
 
     view.end_of_directory(args)
     return True
@@ -149,6 +123,9 @@ def search_anime(args, api: API):
 
     # api request
     # available types seem to be: music,series,episode,top_results,movie_listing
+    # @todo: we could search for all types, then first present a listing of the types we have search results for
+    #        the user then could pick one of these types and get presented with a filtered search result for that
+    #        type only.
     req = api.make_request(
         method="GET",
         url=api.SEARCH_ENDPOINT,
@@ -210,70 +187,85 @@ def search_anime(args, api: API):
     return True
 
 
-def showHistory(args, api: API):
+def show_history(args, api: API):
     """ shows history of watched anime
     """
+    items_per_page = 50
+    current_page = int(getattr(args, "offset", 1))
 
-    # @TODO: update
-    #
-    # # api request
-    # payload = {"media_types": "anime|drama",
-    #            "limit": 30,
-    #            "offset": int(getattr(args, "offset", 0)),
-    #            "fields": "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
-    #                            media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead, \
-    #                            series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
-    # req = api.request(args, "recently_watched", payload)
-    #
-    # # check for error
-    # if "error" in req:
-    #     view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-    #     view.endofdirectory(args)
-    #     return False
-    #
-    # # display media
-    # for item in req["data"]:
-    #     # video no longer available
-    #     if not ("media" in item and "series" in item and item["media"]["available"] and item["media"][
-    #         "premium_available"]):
-    #         continue
-    #
-    #     # add to view
-    #     view.add_item(args,
-    #                   {"title": item["media"]["collection_name"] + " #" + item["media"]["episode_number"] + " - " +
-    #                             item["media"]["name"],
-    #                    "tvshowtitle": item["media"]["collection_name"],
-    #                    "duration": item["media"]["duration"],
-    #                    "playcount": 1 if (100 / (float(item["media"]["duration"]) + 1)) * int(
-    #                        item["media"]["playhead"]) > 90 else 0,
-    #                    "episode": item["media"]["episode_number"],
-    #                    "episode_id": item["media"]["media_id"],
-    #                    "collection_id": item["media"]["collection_id"],
-    #                    "series_id": item["series"]["series_id"],
-    #                    "plot": item["media"]["description"],
-    #                    "plotoutline": item["media"]["description"],
-    #                    "genre": ", ".join(item["series"]["genres"]),
-    #                    "year": item["series"]["year"],
-    #                    "aired": item["media"]["created"][:10],
-    #                    "premiered": item["media"]["created"][:10],
-    #                    "studio": item["series"]["publisher_name"],
-    #                    "rating": int(item["series"]["rating"]) / 10.0,
-    #                    "thumb": (
-    #                        item["media"]["screenshot_image"]["fwidestar_url"] if item["media"]["premium_only"] else
-    #                        item["media"]["screenshot_image"]["full_url"]) if item["media"]["screenshot_image"] else "",
-    #                    "fanart": item["series"]["landscape_image"]["full_url"],
-    #                    "mode": "videoplay"},
-    #                   is_folder=False)
-    #
-    # # show next page button
-    # if len(req["data"]) >= 30:
-    #     view.add_item(args,
-    #                   {"title": args.addon.getLocalizedString(30044),
-    #                    "offset": int(getattr(args, "offset", 0)) + 30,
-    #                    "mode": args.mode},
-    #                   is_folder=True)
-    #
-    # view.endofdirectory(args)
+    req = api.make_request(
+        method="GET",
+        url=api.HISTORY_ENDPOINT.format(api.account_data.account_id),
+        params={
+            "page_size": items_per_page,
+            "page": current_page,
+            "locale": args.subtitle,
+            # "preferred_audio_language": ""
+        }
+    )
+
+    # check for error
+    if "error" in req:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    num_pages = int(math.ceil(req["total"] / items_per_page))
+
+    for item in req.get("data"):
+        try:
+            if item.get("panel").get("type") == "episode":
+                entry = EpisodeData(item)
+            elif item["panel"]["type"] == "movie":
+                entry = MovieData(item)
+            else:
+                xbmc.log(
+                    "[PLUGIN] %s: history | unhandled index for metadata. %s" % (
+                        args.addonname, json.dumps(item, indent=4)),
+                    xbmc.LOGERROR
+                )
+                continue
+
+            # add to view
+            view.add_item(
+                args,
+                {
+                    "title": entry.title,
+                    "tvshowtitle": entry.tvshowtitle,
+                    "duration": entry.duration_ms,
+                    "playcount": entry.playcount,
+                    "episode": entry.episode,
+                    "episode_id": entry.episode_id,
+                    "collection_id": entry.collection_id,
+                    "series_id": entry.series_id,
+                    "plot": entry.plot,
+                    "plotoutline": entry.plotoutline,
+                    "genre": "",  # no longer available
+                    "year": entry.year,
+                    "aired": entry.aired,
+                    "premiered": entry.premiered,
+                    "thumb": entry.thumb,
+                    "fanart": entry.fanart,
+                    "stream_id": entry.stream_id,
+                    "playhead": entry.playhead,
+                    "mode": "videoplay"
+                },
+                is_folder=False
+            )
+
+        except Exception:
+            raise CrunchyrollError("history | Failed to add item to history view: %s" % json.dumps(item, indent=4))
+            pass
+
+    if current_page < num_pages:
+        view.add_item(args,
+                      {"title": args.addon.getLocalizedString(30044),
+                       "offset": int(getattr(args, "offset", 1)) + 1,
+                       "mode": args.mode},
+                      is_folder=True)
+
+    view.end_of_directory(args)
+
     return True
 
 
@@ -370,7 +362,9 @@ def view_series(args, api: API):
         url=api.SEASONS_ENDPOINT.format(api.account_data.cms.bucket),
         params={
             "locale": args.subtitle,
-            "series_id": args.series_id
+            "series_id": args.series_id,
+            "preferred_audio_language": api.account_data.default_audio_language,
+            "force_locale": ""
         }
     )
 
@@ -382,6 +376,13 @@ def view_series(args, api: API):
 
     # display media
     for item in req["items"]:
+
+        # filter items where either audio or subtitles match my configured language
+        # otherwise it will break things when selecting the correct stream later.
+        # @see: issues.txt
+        if args.subtitle not in item.get("audio_locales", []) and args.subtitle not in item.get("subtitle_locales", []):
+            continue
+
         # add to view
         view.add_item(
             args,
@@ -393,9 +394,9 @@ def view_series(args, api: API):
                 "series_id": args.series_id,
                 "plot": item["description"],
                 "plotoutline": item["description"],
-                "genre": "",  # item["media_type"],
-                "aired": "",  # item["created"][:10],
-                "premiered": "",  # item["created"][:10],
+                "genre": None,  # item["media_type"],
+                "aired": None,  # item["created"][:10],
+                "premiered": None,  # item["created"][:10],
                 "status": u"Completed" if item["is_complete"] else u"Continuing",
                 "thumb": args.thumb,
                 "fanart": args.fanart,

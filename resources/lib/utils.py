@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from requests import Response
 import re
+import xbmc
+from json import dumps
 
 try:
     from urlparse import parse_qs
@@ -101,3 +103,7 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
                 return 1 if (info["fully_watched"] is True) else 0
 
     return 0
+
+
+def dump(data):
+    xbmc.log(dumps(data, indent=4), xbmc.LOGINFO)

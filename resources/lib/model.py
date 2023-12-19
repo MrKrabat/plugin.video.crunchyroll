@@ -130,15 +130,157 @@ class AccountData(Object):
         self.email: str = data.get("email")
         self.maturity_rating: str = data.get("maturity_rating")
         self.account_language: str = data.get("preferred_communication_language")
-        self.default_subtitles_language: str = data.get("preferred_communication_language")
+        self.default_subtitles_language: str = data.get("preferred_content_subtitle_language")
+        self.default_audio_language: str = data.get("preferred_content_audio_language")
         self.username: str = data.get("username")
 
 
+class MovieData(Object):
+    def __init__(self, data: dict):
+        from . import utils
+
+        meta = data.get("panel").get("movie_metadata")
+
+        self.title: str = meta.get("movie_listing_title", "")
+        self.tvshowtitle: str = meta.get("movie_listing_title", "")
+        self.duration_ms: int = meta.get("duration_ms", 0)
+        self.playhead: int = data.get("playhead", 0)
+        self.episode: str = "1"
+        self.episode_id: str | None = data.get("panel", {}).get("id")
+        self.collection_id: str | None = None
+        self.series_id: str | None = None
+        self.plot: str = data.get("panel", {}).get("description", "")
+        self.plotoutline: str = data.get("panel", {}).get("description", "")
+        self.year: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
+        self.aired: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
+        self.premiered: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
+        # that's usually 1080p, not sure if too big?
+        self.thumb: str = data.get("panel").get("images").get("thumbnail")[-1][-1]["source"]
+        # that's usually 1080p, not sure if too big?
+        self.fanart: str = data.get("panel").get("images").get("thumbnail")[-1][-1]["source"]
+        self.playcount: int = 0
+        self.stream_id: str | None = None
+
+        try:
+            # note that for fetching streams we need a special guid, not the episode_id
+            self.stream_id = utils.get_stream_id_from_url(
+                data.get("panel", {}).get("__links__", {}).get("streams", {}).get("href", "")
+            )
+
+            # history data has the stream_id at a different location
+            if self.stream_id is None:
+                self.stream_id = utils.get_stream_id_from_url(
+                    data.get("panel", {}).get("streams_link")
+                )
+
+            if self.stream_id is None:
+                raise Exception("")
+
+        except Exception:
+            raise CrunchyrollError("Failed to get stream id for %s" % self.title)
+
+        if self.playhead is not None and self.duration_ms is not None:
+            self.playcount = 1 if (int(self.playhead / (self.duration_ms / 1000) * 100)) > 90 else 0
+
+
+# dto
+class EpisodeData(Object):
+    def __init__(self, data: dict):
+        from . import utils
+
+        meta = data.get("panel").get("episode_metadata")
+
+        self.title: str = meta.get("season_title") + " #" + meta.get("episode") + " - " + data.get("panel").get("title")
+        self.tvshowtitle: str = meta.get("series_title", "")
+        self.duration_ms: int = meta.get("duration_ms", 0)
+        self.playhead: int = data.get("playhead", 0)
+        self.episode: str = meta.get("episode", "")
+        self.episode_id: str | None = data.get("panel", {}).get("id")
+        self.collection_id: str | None = meta.get("season_id")
+        self.series_id: str | None = meta.get("series_id")
+        self.plot: str = data.get("panel", {}).get("description", "")
+        self.plotoutline: str = data.get("panel", {}).get("description", "")
+        self.year: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
+        self.aired: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
+        self.premiered: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
+        self.thumb: str = data.get("panel").get("images").get("thumbnail")[-1][-1][
+            "source"]  # that's usually 1080p, not sure if too big?
+        self.fanart: str = data.get("panel").get("images").get("thumbnail")[-1][-1]["source"]
+        self.playcount: int = 0
+        self.stream_id: str | None = None
+
+        try:
+            # note that for fetching streams we need a special guid, not the episode_id
+            self.stream_id = utils.get_stream_id_from_url(
+                data.get("panel", {}).get("__links__", {}).get("streams", {}).get("href", "")
+            )
+
+            # history data has the stream_id at a different location
+            if self.stream_id is None:
+                self.stream_id = utils.get_stream_id_from_url(
+                    data.get("panel", {}).get("streams_link")
+                )
+
+            if self.stream_id is None:
+                raise Exception("")
+
+        except Exception:
+            raise CrunchyrollError("Failed to get stream id for %s" % self.title)
+
+        if self.playhead is not None and self.duration_ms is not None:
+            self.playcount = 1 if (int(self.playhead / (self.duration_ms / 1000) * 100)) > 90 else 0
+
+
 class CrunchyrollError(Exception):
-    xbmc.log("[PLUGIN] Crunchyroll: CrunchyrollError : %s" % (str(Exception)), xbmc.LOGERROR)
-    pass
+    def __init__(self, message: str = "generic error"):
+        self.message = message
+        super().__init__(self.message)
+
+        import sys
+        import traceback
+
+        # Get current system exception
+        ex_type, ex_value, ex_traceback = sys.exc_info()
+
+        # Extract unformatter stack traces as tuples
+        trace_back = traceback.extract_tb(ex_traceback)
+
+        # Format stacktrace
+        stack_trace = list()
+
+        for trace in trace_back:
+            stack_trace.append(
+                "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
+
+        xbmc.log("[PLUGIN] Crunchyroll: CrunchyrollError : %s" % (str(self.message)), xbmc.LOGERROR)
+        xbmc.log("[PLUGIN] Crunchyroll: trace :  %s %s %s" % (ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
+
+        pass
 
 
-class LoginError(CrunchyrollError):
-    xbmc.log("[PLUGIN] Crunchyroll: LoginError : %s" % (str(CrunchyrollError)), xbmc.LOGERROR)
-    pass
+class LoginError(Exception):
+    def __init__(self, message: str = "generic login error"):
+        self.message = message
+        super().__init__(self.message)
+
+        import sys
+        import traceback
+
+        # Get current system exception
+        ex_type, ex_value, ex_traceback = sys.exc_info()
+
+        # Extract unformatter stack traces as tuples
+        trace_back = traceback.extract_tb(ex_traceback)
+
+        # Format stacktrace
+        stack_trace = list()
+
+        for trace in trace_back:
+            stack_trace.append(
+                "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
+
+        xbmc.log("[PLUGIN] Crunchyroll: LoginError : %s" % (str(self.message)), xbmc.LOGERROR)
+        xbmc.log("[PLUGIN] Crunchyroll: trace :  %s %s %s" % (ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
+
+        pass
+
