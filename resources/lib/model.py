@@ -143,7 +143,7 @@ class MovieData(Object):
 
         self.title: str = meta.get("movie_listing_title", "")
         self.tvshowtitle: str = meta.get("movie_listing_title", "")
-        self.duration_ms: int = meta.get("duration_ms", 0)
+        self.duration: int = meta.get("duration_ms", 0) / 1000
         self.playhead: int = data.get("playhead", 0)
         self.episode: str = "1"
         self.episode_id: str | None = data.get("panel", {}).get("id")
@@ -179,8 +179,8 @@ class MovieData(Object):
         except Exception:
             raise CrunchyrollError("Failed to get stream id for %s" % self.title)
 
-        if self.playhead is not None and self.duration_ms is not None:
-            self.playcount = 1 if (int(self.playhead / (self.duration_ms / 1000) * 100)) > 90 else 0
+        if self.playhead is not None and self.duration is not None:
+            self.playcount = 1 if (int(self.playhead / self.duration * 100)) > 90 else 0
 
 
 # dto
@@ -192,7 +192,7 @@ class EpisodeData(Object):
 
         self.title: str = meta.get("season_title") + " #" + meta.get("episode") + " - " + data.get("panel").get("title")
         self.tvshowtitle: str = meta.get("series_title", "")
-        self.duration_ms: int = meta.get("duration_ms", 0)
+        self.duration: int = meta.get("duration_ms", 0) / 1000
         self.playhead: int = data.get("playhead", 0)
         self.episode: str = meta.get("episode", "")
         self.episode_id: str | None = data.get("panel", {}).get("id")
@@ -227,8 +227,8 @@ class EpisodeData(Object):
         except Exception:
             raise CrunchyrollError("Failed to get stream id for %s" % self.title)
 
-        if self.playhead is not None and self.duration_ms is not None:
-            self.playcount = 1 if (int(self.playhead / (self.duration_ms / 1000) * 100)) > 90 else 0
+        if self.playhead is not None and self.duration is not None:
+            self.playcount = 1 if (int(self.playhead / self.duration * 100)) > 90 else 0
 
 
 class CrunchyrollError(Exception):

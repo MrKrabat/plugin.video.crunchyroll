@@ -81,7 +81,7 @@ def show_queue(args, api: API):
                 {
                     "title": entry.title,
                     "tvshowtitle": entry.tvshowtitle,
-                    "duration": entry.duration_ms,
+                    "duration": entry.duration,
                     "playcount": entry.playcount,
                     "episode": entry.episode,
                     "episode_id": entry.episode_id,
@@ -232,7 +232,7 @@ def show_history(args, api: API):
                 {
                     "title": entry.title,
                     "tvshowtitle": entry.tvshowtitle,
-                    "duration": entry.duration_ms,
+                    "duration": entry.duration,
                     "playcount": entry.playcount,
                     "episode": entry.episode,
                     "episode_id": entry.episode_id,
@@ -463,7 +463,7 @@ def view_episodes(args, api: API):
             {
                 "title": item["series_title"] + " #" + str(item["episode_number"]) + " - " + item["title"],
                 "tvshowtitle": item["series_title"],
-                "duration": item["duration_ms"],
+                "duration": int(item["duration_ms"] / 1000),
                 "playcount": utils.get_watched_status_from_playheads_data(req_playheads, item["id"]),
                 "episode": item["episode_number"],
                 "episode_id": item["id"],
@@ -602,7 +602,7 @@ def start_playback(args, api: API):
 
         # ask if user want to continue playback
         if args.playhead and args.duration:
-            resume = int(int(args.playhead) / (int(args.duration) / 1000) * 100)
+            resume = int(int(args.playhead) / args.duration * 100)
             if 5 <= resume <= 90:
                 player.pause()
                 if xbmcgui.Dialog().yesno(args.addonname, args.addon.getLocalizedString(30065) % int(resume)):
