@@ -143,26 +143,28 @@ def check_mode(args, api: API):
     #     controller.showRandom(args, api)
 
     elif mode == "anime":
-        showMainCategory(args, "anime")
+        show_main_category(args, "anime")
     elif mode == "drama":
-        showMainCategory(args, "drama")
+        show_main_category(args, "drama")
 
-    elif mode == "featured":
+    elif mode == "featured":  # https://www.crunchyroll.com/content/v2/discover/account_id/home_feed -> hero_carousel ?
         controller.listSeries(args, "featured", api)
-    elif mode == "popular":
-        controller.listSeries(args, "popular", api)
-    elif mode == "simulcast":
-        controller.listSeries(args, "simulcast", api)
-    elif mode == "updated":
-        controller.listSeries(args, "updated", api)
+    elif mode == "popular":  # DONE
+       # setattr(args, "category_filter", "popular")  # @todo: can this be done better? :o)
+        controller.list_filter(args, "popular", api)
+    #elif mode == "simulcast":  # https://www.crunchyroll.com/de/simulcasts/seasons/fall-2023 ???
+    #    controller.listSeries(args, "simulcast", api)
+    #elif mode == "updated":
+    #    controller.listSeries(args, "updated", api)
     elif mode == "newest":
-        controller.listSeries(args, "newest", api)
-    elif mode == "alpha":
-        controller.listSeries(args, "alpha", api)
-    elif mode == "season":
-        controller.listFilter(args, "season", api)
-    elif mode == "genre":
-        controller.listFilter(args, "genre", api)
+       # setattr(args, "category_filter", "newly_added")  # @todo: can this be done better? :o)
+        controller.list_filter(args, "newest", api)
+    #elif mode == "alpha":
+    #    controller.listSeries(args, "alpha", api)
+    elif mode == "season":  # DONE
+        controller.list_seasons(args, "season", api)
+    elif mode == "genre":  # DONE
+        controller.list_filter(args, "genre", api)
 
     elif mode == "series":
         controller.view_series(args, api)
@@ -187,47 +189,51 @@ def showMainMenue(args):
                   {"title": args.addon.getLocalizedString(30041),
                    "mode": "search"})
     view.add_item(args,
-                 {"title": args.addon.getLocalizedString(30042),
-                  "mode":  "history"})
+                  {"title": args.addon.getLocalizedString(30042),
+                   "mode": "history"})
     # #view.add_item(args,
     # #              {"title": args.addon.getLocalizedString(30043),
     # #               "mode":  "random"})
-    # view.add_item(args,
-    #              {"title": args.addon.getLocalizedString(30050),
-    #               "mode":  "anime"})
+    view.add_item(args,
+                  {"title": args.addon.getLocalizedString(30050),
+                   "mode": "anime"})
+    # @TODO: i think there are no longer dramas. should we add music videos and movies?
     # view.add_item(args,
     #              {"title": args.addon.getLocalizedString(30051),
     #               "mode":  "drama"})
     view.end_of_directory(args)
 
 
-def showMainCategory(args, genre):
+def show_main_category(args, genre):
     """Show main category
     """
-    view.add_item(args,
-                  {"title": args.addon.getLocalizedString(30058),
-                   "mode": "featured",
-                   "genre": genre})
+    # view.add_item(args,
+    #               {"title": args.addon.getLocalizedString(30058),
+    #                "mode": "featured",
+    #                "category_filter": "popular",
+    #                "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30052),
+                   "category_filter": "popularity",
                    "mode": "popular",
                    "genre": genre})
-    view.add_item(args,
-                  {"title": args.addon.getLocalizedString(30053),
-                   "mode": "simulcast",
-                   "genre": genre})
-    view.add_item(args,
-                  {"title": args.addon.getLocalizedString(30054),
-                   "mode": "updated",
-                   "genre": genre})
+    # view.add_item(args,
+    #               {"title": "TODO | " + args.addon.getLocalizedString(30053),
+    #                "mode": "simulcast",
+    #                "genre": genre})
+    # view.add_item(args,
+    #               {"title": "TODO | " + args.addon.getLocalizedString(30054),
+    #                "mode": "updated",
+    #                "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30059),
+                   "category_filter": "newly_added",
                    "mode": "newest",
                    "genre": genre})
-    view.add_item(args,
-                  {"title": args.addon.getLocalizedString(30055),
-                   "mode": "alpha",
-                   "genre": genre})
+    # view.add_item(args,
+    #               {"title": "TODO | " + args.addon.getLocalizedString(30055),
+    #                "mode": "alpha",
+    #                "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30057),
                    "mode": "season",

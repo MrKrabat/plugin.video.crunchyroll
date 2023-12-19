@@ -111,3 +111,7 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
 
 def dump(data):
     xbmc.log(dumps(data, indent=4), xbmc.LOGINFO)
+
+
+def log(data):
+    xbmc.log(data, xbmc.LOGINFO)
