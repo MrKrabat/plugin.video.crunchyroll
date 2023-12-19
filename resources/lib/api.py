@@ -170,47 +170,6 @@ class API:
         # except WindowsError:
         #    pass
 
-    # @DEPRECATED
-    # def request_old(self, method, options, failed=False):
-    #     # @TODO: remove
-    #     xbmc.log("[PLUGIN] %s: CALL TO DEPRECATED METHOD 'request' with for %s" % (self._addonname, method),
-    #              xbmc.LOGINFO)
-    #
-    #     """Make Crunchyroll JSON API call
-    #     """
-    #     # required in every request
-    #     payload = {"version": API.VERSION,
-    #                "locale": self._subtitle}
-    #
-    #     # if not new session add access token
-    #     if not method == "start_session":
-    #         payload["session_id"] = self._session_id
-    #
-    #     # merge payload with parameters
-    #     payload.update(options)
-    #     payload = urlencode(payload)
-    #
-    #     # send payload
-    #     url = API.URL + method + ".0.json"
-    #     response = urlopen(url, payload.encode("utf-8"), API.TIMEOUT)
-    #
-    #     # parse response
-    #     json_data = response.read().decode("utf-8")
-    #     json_data = json.loads(json_data)
-    #
-    #     # check for error
-    #     if json_data["error"]:
-    #         xbmc.log("[PLUGIN] %s: API returned error '%s'" % (self._addonname, str(json_data)), xbmc.LOGINFO)
-    #         self._session_restart = True
-    #         if not failed:
-    #             # retry request, session expired
-    #             start(self)
-    #             return request(self, method, options, True)
-    #         elif failed:
-    #             # destroy session
-    #             destroy(self)
-    #
-    #     return json_data
 
     def make_request(
             self,

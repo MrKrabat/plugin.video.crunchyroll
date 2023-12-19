@@ -72,7 +72,6 @@ def str_to_date(string: str) -> datetime:
 
 
 def get_json_from_response(r: Response) -> Optional[Dict]:
-    # @TODO: better error handling
     code: int = r.status_code
     try:
         r_json: Dict = r.json()

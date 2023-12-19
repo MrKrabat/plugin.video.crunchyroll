@@ -25,10 +25,10 @@
             v3.2.0.1 (2023.12.17)[CR]- Update for new API (alpha)
         </news>
         <license>GNU Affero General Public License, v3</license>
-        <forum></forum>
+        <forum />
         <website>https://www.crunchyroll.com/</website>
         <source>https://github.com/MrKrabat/plugin.video.crunchyroll</source>
-        <email></email>
+        <email />
         <assets>
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>

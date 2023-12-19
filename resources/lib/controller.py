@@ -522,10 +522,10 @@ def start_playback(args, api: API):
     # get stream url
     ##############################
 
-    # @TODO: there are tons of different stream types. not sure which one to pick...
-    # @TODO: also, would be super interesting to make the streams switchable in kodi...
+    # there are tons of different stream types. not sure which one to pick...
+    # also, would be super interesting to make the streams switchable in kodi...
     # adaptive_dash
-    # adaptive_hls - i chose this, which works for me
+    # adaptive_hls - I chose this, which works for me
     # download_dash
     # download_hls
     # drm_adaptive_dash

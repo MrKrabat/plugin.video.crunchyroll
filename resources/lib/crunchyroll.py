@@ -139,8 +139,8 @@ def check_mode(args, api: API):
         controller.search_anime(args, api)
     elif mode == "history":
         controller.show_history(args, api)
-    elif mode == "random":
-        controller.showRandom(args, api)
+    # elif mode == "random":
+    #     controller.showRandom(args, api)
 
     elif mode == "anime":
         showMainCategory(args, "anime")

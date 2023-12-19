@@ -22,7 +22,6 @@ try:
 except ImportError:
     from urllib.parse import quote_plus
 
-import xbmc
 import xbmcvfs
 import xbmcgui
 import xbmcplugin
@@ -52,19 +51,19 @@ def add_item(args, info, is_folder=True, total_items=0, mediatype="video"):
     li = xbmcgui.ListItem(label=info["title"])
 
     # get infoLabels
-    infoLabels = make_info_label(args, info)
+    info_labels = make_info_label(args, info)
 
     # get url
     u = build_url(args, info)
 
     if is_folder:
         # directory
-        infoLabels["mediatype"] = "tvshow"
-        li.setInfo(mediatype, infoLabels)
+        info_labels["mediatype"] = "tvshow"
+        li.setInfo(mediatype, info_labels)
     else:
         # playable video
-        infoLabels["mediatype"] = "episode"
-        li.setInfo(mediatype, infoLabels)
+        info_labels["mediatype"] = "episode"
+        li.setInfo(mediatype, info_labels)
         li.setProperty("IsPlayable", "true")
 
         # add context menu
@@ -119,7 +118,7 @@ def build_url(args, info):
 
 
 def make_info_label(args, info):
-    """Generate infoLabels from existing dict
+    """Generate info_labels from existing dict
     """
     info_labels = {}
     # step 1 copy new information from info
