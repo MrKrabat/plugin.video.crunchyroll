@@ -269,6 +269,87 @@ def show_history(args, api: API):
     return True
 
 
+def list_seasons(args, mode, api: API):
+    """ view all available anime seasons and filter by selected season
+    """
+
+    season_filter: str = getattr(args, "season_filter", "")
+
+    # if no seasons filter applied, list all available seasons
+    if not season_filter:
+        req = api.make_request(
+            method="GET",
+            url=api.SEASONAL_TAGS_ENDPOINT,
+            params={
+                "locale": args.subtitle,
+            }
+        )
+
+        # check for error
+        if req.get("error") is not None:
+            view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+            view.end_of_directory(args)
+            return False
+
+        for season_tag_item in req.get("data"):
+            # add to view
+            view.add_item(
+                args,
+                {
+                    "title": season_tag_item.get("localization", {}).get("title"),
+                    "season_filter": season_tag_item.get("id", {}),
+                    "mode": args.mode
+                },
+                is_folder=True
+            )
+
+        view.end_of_directory(args)
+
+        return
+
+    # else, if we have a season filter, show all from season
+    req = api.make_request(
+        method="GET",
+        url=api.BROWSE_ENDPOINT,
+        params={
+            "locale": args.subtitle,
+            "season_tag": season_filter,
+            "n": 100
+        }
+    )
+
+    # check for error
+    if req.get("error") is not None:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    for item in req.get('items'):
+
+        try:
+            view.add_item(
+                args,
+                {
+                    "title": item["title"],
+                    "tvshowtitle": item["title"],
+                    "series_id": item["id"],
+                    "plot": item["description"],
+                    "plotoutline": item["description"],
+                    "year": item["last_public"][:4],
+                    "thumb": item["images"]["poster_tall"][-1][-1]["source"],
+                    "fanart": item["images"]["poster_wide"][-1][-1]["source"],
+                    "mode": "series"
+                },
+                is_folder=True
+            )
+
+        except Exception:
+            raise CrunchyrollError("queue | Failed to add item to seasons view: %s" % json.dumps(item, indent=4))
+            pass
+
+    view.end_of_directory(args)
+
+
 def listSeries(args, mode, api: API):
     """ view all anime from selected mode
     """
@@ -320,9 +401,119 @@ def listSeries(args, mode, api: API):
     return True
 
 
-def listFilter(args, mode, api: API):
+def list_filter(args, mode, api: API):
     """ view all anime from selected mode
     """
+    category_filter: str = getattr(args, "category_filter", "")
+
+    # we re-use this method which is normally used for the categories to also show some special views, that share
+    # the same logic
+    specials = ["popularity", "newly_added"]
+
+    # if no category_filter filter applied, list all available categories
+    if not category_filter or category_filter not in specials:
+        req = api.make_request(
+            method="GET",
+            url=api.CATEGORIES_ENDPOINT,
+            params={
+                "locale": args.subtitle,
+            }
+        )
+
+        # check for error
+        if req.get("error") is not None:
+            view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+            view.end_of_directory(args)
+            return False
+
+        for category_item in req.get("items"):
+            # add to view
+            view.add_item(
+                args,
+                {
+                    "title": category_item.get("localization", {}).get("title"),
+                    "plot": category_item.get("localization", {}).get("description"),
+                    "plotoutline": category_item.get("localization", {}).get("description"),
+                    "thumb": category_item["images"]["low"][-1]["source"],
+                    "fanart": category_item["images"]["background"][-1]["source"],
+                    "category_filter": category_item.get("tenant_category", {}),
+                    "mode": args.mode
+                },
+                is_folder=True
+            )
+
+        view.end_of_directory(args)
+
+        return
+
+    # else, if we have a category filter, show all from category
+
+    items_left = 0
+    items_per_page = 50
+    params = {
+        "locale": args.subtitle,
+        "categories": category_filter,
+        "n": items_per_page,
+        "start": int(getattr(args, "offset", 0)),
+    }
+
+    # hack to re-use this for other views
+    if category_filter in specials:
+        params.update({"sort_by": category_filter})
+        params.pop("categories")
+
+    # newly_added
+
+    req = api.make_request(
+        method="GET",
+        url=api.BROWSE_ENDPOINT,
+        params=params
+    )
+
+    # check for error
+    if req.get("error") is not None:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    for item in req.get('items'):
+        try:
+            view.add_item(
+                args,
+                {
+                    "title": item["title"],
+                    "tvshowtitle": item["title"],
+                    "series_id": item["id"],
+                    "plot": item["description"],
+                    "plotoutline": item["description"],
+                    "year": item["last_public"][:4],
+                    "thumb": item["images"]["poster_tall"][-1][-1]["source"],
+                    "fanart": item["images"]["poster_wide"][-1][-1]["source"],
+                    "mode": "series"
+                },
+                is_folder=True
+            )
+
+            items_left = req.get('total') - int(getattr(args, "offset", 0)) - len(req.get('items'))
+
+        except Exception:
+            raise CrunchyrollError("queue | Failed to add item to seasons view: %s" % json.dumps(item, indent=4))
+            pass
+
+    # show next page button
+    if items_left > 0:
+        view.add_item(
+            args,
+            {
+                "title": args.addon.getLocalizedString(30044),
+                "offset": int(getattr(args, "offset", 0)) + items_per_page,
+                "category_filter": category_filter,
+                "mode": args.mode
+            },
+            is_folder=True
+        )
+
+    view.end_of_directory(args)
 
     # @TODO: update
     #
