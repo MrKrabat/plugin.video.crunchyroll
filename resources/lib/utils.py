@@ -26,6 +26,7 @@ except ImportError:
     from urllib.parse import parse_qs, unquote_plus
 
 from datetime import datetime
+import time
 from typing import Dict, Optional
 
 from .model import Args, LoginError, CrunchyrollError
@@ -60,10 +61,14 @@ def date_to_str(date: datetime) -> str:
 
 
 def str_to_date(string: str) -> datetime:
-    return datetime.strptime(
-        string,
-        "%Y-%m-%dT%H:%M:%SZ"
-    )
+    time_format = "%Y-%m-%dT%H:%M:%SZ"
+
+    try:
+        res = datetime.strptime(string, time_format)
+    except TypeError:
+        res = datetime(*(time.strptime(string, time_format)[0:6]))
+
+    return res
 
 
 def get_json_from_response(r: Response) -> Optional[Dict]:
