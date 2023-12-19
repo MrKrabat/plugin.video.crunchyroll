@@ -61,54 +61,75 @@ def show_queue(args, api: API):
         # if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
         #    continue
 
-        if item["panel"]["type"] == "episode":
-            meta = item["panel"]["episode_metadata"]
-        elif item["panel"]["type"] == "movie":
-            meta = item["panel"]["movie_metadata"]
-        else:
+        try:
+            # @TODO: we need to differ between at least episodes/series and movies, which have different data structures
+            #        it would be nicer to use DTOs like crunpyroll does it and use those to fetch the view items...
+            if item["panel"]["type"] == "episode":
+                meta = item["panel"]["episode_metadata"]
+
+                title = meta["season_title"] + " #" + meta["episode"] + " - " + item["panel"]["title"]
+                tvshowtitle = meta["series_title"]
+                episode = meta["episode"]
+                collection_id = meta["season_id"]
+                series_id = meta["series_id"]
+                air_date = meta["episode_air_date"][:10]
+            elif item["panel"]["type"] == "movie":
+                meta = item["panel"]["movie_metadata"]
+
+                title = meta["movie_listing_title"]
+                tvshowtitle = meta["movie_listing_title"]
+                episode = 1
+                collection_id = None
+                series_id = None
+                air_date = meta["premium_available_date"][:10]
+            else:
+                xbmc.log(
+                    "[PLUGIN] %s: unhandled index for metadata. %s" % (args.addonname, json.dumps(item, indent=4)),
+                    xbmc.LOGERROR
+                )
+                continue
+
+            stream_id = utils.get_stream_id_from_url(item["panel"]["__links__"]["streams"]["href"])
+            if stream_id is None:
+                xbmc.log(
+                    "[PLUGIN] Crunchyroll | Error : failed to fetch stream_id for %s" % (meta["series_title"]),
+                    xbmc.LOGINFO
+                )
+                continue
+
+            view.add_item(
+                args,
+                {
+                    "title": title,
+                    "tvshowtitle": tvshowtitle,
+                    "duration": meta["duration_ms"],
+                    "playcount": 1 if (int(int(item["playhead"]) / (int(meta["duration_ms"]) / 1000) * 100)) > 90 else 0,
+                    "episode": episode,
+                    "episode_id": item["panel"]["id"],  # meta["identifier"],  # ???
+                    "collection_id": collection_id,
+                    "series_id": series_id,
+                    "plot": item["panel"]["description"],
+                    "plotoutline": item["panel"]["description"],
+                    "genre": "",  # no longer available
+                    "year": air_date,
+                    "aired": air_date,
+                    "premiered": air_date,
+                    "studio": "",  # no longer available
+                    "rating": 0,  # no longer available
+                    "thumb": item["panel"]["images"]["thumbnail"][-1][-1]["source"],  # that's usually 1080p, not sure if too big?
+                    "fanart": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
+                    "mode": "videoplay",
+                    # note that for fetching streams we need a special guid, not the episode_id
+                    "stream_id": stream_id,
+                    "playhead": int(item["playhead"])
+                },
+                is_folder=False
+            )
+        except Exception as e:
             xbmc.log(
-                "[PLUGIN] %s: unhandled index for metadata. %s" % (args.addonname, json.dumps(item, indent=4)),
+                "[PLUGIN] %s: | failed to add item to queue view: %s" % (args.addonname, json.dumps(item, indent=4)),
                 xbmc.LOGERROR
             )
-            continue
-
-        stream_id = utils.get_stream_id_from_url(item["panel"]["__links__"]["streams"]["href"])
-        if stream_id is None:
-            xbmc.log(
-                "[PLUGIN] Crunchyroll | Error : failed to fetch stream_id for %s" % (meta["series_title"]),
-                xbmc.LOGINFO
-            )
-            continue
-
-        view.add_item(
-            args,
-            {
-                "title": meta["season_title"] + " #" + meta["episode"] + " - " + item["panel"]["title"],
-                "tvshowtitle": meta["series_title"],
-                "duration": meta["duration_ms"],
-                "playcount": 1 if (int(int(item["playhead"]) / (int(meta["duration_ms"]) / 1000) * 100)) > 90 else 0,
-                "episode": meta["episode"],
-                "episode_id": item["panel"]["id"],  # meta["identifier"],  # ???
-                "collection_id": meta["season_id"],
-                "series_id": meta["series_id"],
-                "plot": item["panel"]["description"],
-                "plotoutline": item["panel"]["description"],
-                "genre": "",  # no longer available
-                "year": meta["episode_air_date"][:10],
-                "aired": meta["episode_air_date"][:10],
-                "premiered": meta["episode_air_date"][:10],
-                "studio": "",  # no longer available
-                "rating": 0,  # no longer available
-                "thumb": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
-                # that's usually 1080p, not sure if too big?
-                "fanart": item["panel"]["images"]["thumbnail"][-1][-1]["source"],
-                "mode": "videoplay",
-                # note that for fetching streams we need a special guid, not the episode_id
-                "stream_id": stream_id,
-                "playhead": int(item["playhead"])
-            },
-            is_folder=False
-        )
 
     view.end_of_directory(args)
     return True
