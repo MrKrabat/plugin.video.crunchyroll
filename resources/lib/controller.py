@@ -731,7 +731,11 @@ def start_playback(args, api: API):
     # vo_drm_adaptive_hls
 
     try:
-        url = req["streams"]["adaptive_hls"][args.subtitle]["url"]
+        url = req["streams"]["adaptive_hls"]
+        if args.subtitle in url:
+            url = url[args.subtitle]["url"]
+        else:
+            url = url[""]["url"]
     except IndexError:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
