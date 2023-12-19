@@ -34,16 +34,11 @@ from . import utils
 
 import json
 
+
 def show_queue(args, api: API):
     """ shows anime queue/playlist
     """
     # api request
-    # payload = {"media_types": "anime|drama",
-    #           "fields":      "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created, \
-    #                           media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration, \
-    #                           series.series_id,series.year,series.publisher_name,series.rating,series.genres,series.landscape_image"}
-    # req = API.request(args, "queue", payload)
-
     req = api.make_request(
         method="GET",
         url=api.WATCHLIST_LIST_ENDPOINT.format(api.account_data.account_id),
@@ -62,14 +57,20 @@ def show_queue(args, api: API):
     # display media
     for item in req["items"]:
         # video no longer available
-        # @TODO: re-add filtering of non-available items
+        # @TODO: re-add filtering of non-available items / premium content
         # if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
         #    continue
 
-        xbmc.log("CRUNCHYROLL | dumping queue items", xbmc.LOGINFO)
-        xbmc.log("%s" % (json.dumps(item, indent=4)), xbmc.LOGINFO)
-
-        meta = item["panel"]["episode_metadata"]
+        if item["panel"]["type"] == "episode":
+            meta = item["panel"]["episode_metadata"]
+        elif item["panel"]["type"] == "movie":
+            meta = item["panel"]["movie_metadata"]
+        else:
+            xbmc.log(
+                "[PLUGIN] %s: unhandled index for metadata. %s" % (args.addonname, json.dumps(item, indent=4)),
+                xbmc.LOGERROR
+            )
+            continue
 
         stream_id = utils.get_stream_id_from_url(item["panel"]["__links__"]["streams"]["href"])
         if stream_id is None:
@@ -108,29 +109,6 @@ def show_queue(args, api: API):
             },
             is_folder=False
         )
-
-        # add to view
-    #        view.add_item(args,
-    #                      {"title":         item["most_likely_media"]["collection_name"] + " #" + item["most_likely_media"]["episode_number"] + " - " + item["most_likely_media"]["name"],
-    #                       "tvshowtitle":   item["most_likely_media"]["collection_name"],
-    #                       "duration":      item["most_likely_media"]["duration"],
-    #                       "playcount":     1 if (100/(float(item["most_likely_media"]["duration"])+1))*int(item["playhead"]) > 90 else 0,
-    #                       "episode":       item["most_likely_media"]["episode_number"],
-    #                       "episode_id":    item["most_likely_media"]["media_id"],
-    #                       "collection_id": item["most_likely_media"]["collection_id"],
-    #                       "series_id":     item["series"]["series_id"],
-    #                       "plot":          item["most_likely_media"]["description"],
-    #                       "plotoutline":   item["most_likely_media"]["description"],
-    #                       "genre":         ", ".join(item["series"]["genres"]),
-    #                       "year":          item["series"]["year"],
-    #                       "aired":         item["most_likely_media"]["created"][:10],
-    #                       "premiered":     item["most_likely_media"]["created"][:10],
-    #                       "studio":        item["series"]["publisher_name"],
-    #                       "rating":        int(item["series"]["rating"])/10.0,
-    #                       "thumb":         (item["most_likely_media"]["screenshot_image"]["fwidestar_url"] if item["most_likely_media"]["premium_only"] else item["most_likely_media"]["screenshot_image"]["full_url"]) if item["most_likely_media"]["screenshot_image"] else "",
-    #                       "fanart":        item["series"]["landscape_image"]["full_url"],
-    #                       "mode":          "videoplay"},
-    #                      is_folder=False)
 
     view.end_of_directory(args)
     return True
@@ -186,7 +164,8 @@ def search_anime(args, api: API):
                     "studio": "",
                     "thumb": item["images"]["poster_tall"][-1][-1]["source"],
                     "fanart": item["images"]["poster_wide"][-1][-1]["source"],
-                    "rating": 0,  # that's on the live api only  int(item["rating"]["average"] * 2),  # it's now a 5-star rating, and we use score of 10?
+                    "rating": 0,
+                    # that's on the live api only  int(item["rating"]["average"] * 2),  # it's now a 5-star rating, and we use score of 10?
                     "mode": "series"
                 },
                 is_folder=True
@@ -361,15 +340,10 @@ def listFilter(args, mode, api: API):
     return True
 
 
-def viewSeries(args, api: API):
+def view_series(args, api: API):
     """ view all seasons/arcs of an anime
     """
     # api request
-    #    payload = {"series_id": args.series_id,
-    #               "fields":    "collection.name,collection.collection_id,collection.description,collection.media_type,collection.created, \
-    #                             collection.season,collection.complete,collection.portrait_image,collection.landscape_image"}
-    #    req = api.request(args, "list_collections", payload)
-
     req = api.make_request(
         method="GET",
         url=api.SEASONS_ENDPOINT.format(api.account_data.cms.bucket),
@@ -413,17 +387,10 @@ def viewSeries(args, api: API):
     return True
 
 
-def viewEpisodes(args, api: API):
+def view_episodes(args, api: API):
     """ view all episodes of season
     """
     # api request
-    # payload = {"collection_id": args.collection_id,
-    # "limit":         30,
-    # "offset":        int(getattr(args, "offset", 0)),
-    # "fields":        "media.name,media.media_id,media.collection_id,media.collection_name,media.description,media.episode_number,media.created,media.series_id, \
-    # media.screenshot_image,media.premium_only,media.premium_available,media.available,media.premium_available,media.duration,media.playhead"}
-    # req = api.request(args, "list_media", payload)
-
     req = api.make_request(
         method="GET",
         url=api.EPISODES_ENDPOINT.format(api.account_data.cms.bucket),
@@ -510,7 +477,7 @@ def viewEpisodes(args, api: API):
     return True
 
 
-def startplayback(args, api: API):
+def start_playback(args, api: API):
     """ plays an episode
     """
     # api request streams
@@ -534,6 +501,7 @@ def startplayback(args, api: API):
     ##############################
 
     # @TODO: there are tons of different stream types. not sure which one to pick...
+    # @TODO: also, would be super interesting to make the streams switchable in kodi...
     # adaptive_dash
     # adaptive_hls - i chose this, which works for me
     # download_dash

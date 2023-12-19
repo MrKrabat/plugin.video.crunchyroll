@@ -165,11 +165,11 @@ def check_mode(args, api: API):
         controller.listFilter(args, "genre", api)
 
     elif mode == "series":
-        controller.viewSeries(args, api)
+        controller.view_series(args, api)
     elif mode == "episodes":
-        controller.viewEpisodes(args, api)
+        controller.view_episodes(args, api)
     elif mode == "videoplay":
-        controller.startplayback(args, api)
+        controller.start_playback(args, api)
     else:
         # unknown mode
         xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" % (args.addonname, str(mode)), xbmc.LOGERROR)
