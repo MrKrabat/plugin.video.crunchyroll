@@ -76,12 +76,12 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     code: int = r.status_code
 
     # no content - possibly POST/DELETE request?
-    if code == 204 or not r:
+    if not r or not r.text:
         return None
 
     try:
         r_json: Dict = r.json()
-    except ValueError | requests.exceptions.JSONDecodeError:
+    except requests.exceptions.JSONDecodeError:
         log_error_with_trace(None, "Failed to parse response data")
         return None
 
@@ -133,8 +133,13 @@ def dump(data):
     xbmc.log(dumps(data, indent=4), xbmc.LOGINFO)
 
 
-def log(data):
-    xbmc.log(data, xbmc.LOGINFO)
+def log(message):
+    xbmc.log(message, xbmc.LOGINFO)
+
+
+def crunchy_log(args, message, loglevel = xbmc.LOGINFO):
+    addon_name = args.addon_name if args is not None else "Crunchyroll"
+    xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), loglevel)
 
 
 def log_error_with_trace(args, message, show_notification: bool = True):
