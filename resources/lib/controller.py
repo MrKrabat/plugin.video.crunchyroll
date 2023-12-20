@@ -32,7 +32,7 @@ import xbmcplugin
 from .api import API
 from . import view
 from . import utils
-from .model import EpisodeData, MovieData
+from .model import EpisodeData, MovieData, CrunchyrollError
 
 import json
 import sys
@@ -769,6 +769,8 @@ def start_playback(args, api: API):
         url = req["streams"]["adaptive_hls"]
         if args.subtitle in url:
             url = url[args.subtitle]["url"]
+        elif args.subtitle_fallback in url:
+            url = url[args.subtitle_fallback]["url"]
         else:
             url = url[""]["url"]
     except IndexError:
@@ -859,7 +861,7 @@ def start_playback(args, api: API):
                                 'Content-Type': 'application/json'
                             }
                         )
-                    except (ssl.SSLError, URLError):
+                    except CrunchyrollError:
                         # catch timeout exception
                         pass
         except RuntimeError:

@@ -61,31 +61,8 @@ def main(argv):
         args.addon.setSetting("device_id", args.device_id)
 
     # get subtitle language
-    args._subtitle = args.addon.getSetting("subtitle_language")
-    if args.subtitle == "0":
-        args._subtitle = "en-US"
-    elif args.subtitle == "1":
-        args._subtitle = "en-GB"
-    elif args.subtitle == "2":
-        args._subtitle = "es-LA"
-    elif args.subtitle == "3":
-        args._subtitle = "es-ES"
-    elif args.subtitle == "4":
-        args._subtitle = "pt-BR"
-    elif args.subtitle == "5":
-        args._subtitle = "pt-PT"
-    elif args.subtitle == "6":
-        args._subtitle = "fr-FR"
-    elif args.subtitle == "7":
-        args._subtitle = "de-DE"
-    elif args.subtitle == "8":
-        args._subtitle = "ar-ME"
-    elif args.subtitle == "9":
-        args._subtitle = "it-IT"
-    elif args.subtitle == "10":
-        args._subtitle = "ru-RU"
-    else:
-        args._subtitle = "en-US"
+    args._subtitle = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language"))
+    args._subtitle_fallback = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language_fallback"))
 
     api = API(
         args=args,

@@ -184,3 +184,11 @@ msgstr "Add to playlist"
 msgctxt "#30068"
 msgid "Remove from playlist"
 msgstr "Remove from playlist"
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Langue alternative des sous-titres"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Rien"

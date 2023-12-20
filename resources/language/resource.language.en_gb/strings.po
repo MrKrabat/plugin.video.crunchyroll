@@ -189,3 +189,11 @@ msgstr ""
 msgctxt "#30068"
 msgid "Remove from playlist"
 msgstr ""
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr ""
+
+msgctxt "#30070"
+msgid "None"
+msgstr ""
