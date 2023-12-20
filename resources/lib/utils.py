@@ -109,9 +109,44 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
     return 0
 
 
+def get_image_from_struct(item: Dict, image_type: str, depth: int = 2):
+    if item.get("images") and item.get("images").get(image_type):
+        src = item.get("images").get(image_type)
+        for i in range(0, depth):
+            if src[-1]:
+                src = src[-1]
+            else:
+                return None
+        if src.get('source'):
+            return src.get('source')
+
+    return None
+
+
 def dump(data):
     xbmc.log(dumps(data, indent=4), xbmc.LOGINFO)
 
 
 def log(data):
     xbmc.log(data, xbmc.LOGINFO)
+
+
+def log_error_with_trace(args, message):
+    import sys
+    import traceback
+
+    # Get current system exception
+    ex_type, ex_value, ex_traceback = sys.exc_info()
+
+    # Extract unformatter stack traces as tuples
+    trace_back = traceback.extract_tb(ex_traceback)
+
+    # Format stacktrace
+    stack_trace = list()
+
+    for trace in trace_back:
+        stack_trace.append(
+            "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
+
+    xbmc.log("[PLUGIN] %s: %s" % (args.addonname, str(message)), xbmc.LOGERROR)
+    xbmc.log("[PLUGIN] %s: %s %s %s" % (args.addonname, ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
