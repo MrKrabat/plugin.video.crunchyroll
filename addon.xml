@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="3.3.0.7" provider-name="MrKrabat">
+<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="3.3.0.8" provider-name="MrKrabat">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
         <import addon="script.module.inputstreamhelper" version="0.3.3"/>
@@ -18,6 +18,7 @@
         <disclaimer lang="en_GB">WARNING: You MUST be a PREMIUM member to use this Plugin</disclaimer>
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <news>
+            v3.3.0.8 (2023.12.10)[CR]- add to watchlist functionality
             v3.3.0.7 (2023.12.10)[CR]- improve session handling, option for alternate subtitle language
             v3.3.0.6 (2023.12.19)[CR]- partially re-implement anime view
             v3.3.0.5 (2023.12.19)[CR]- re-implement history view
