@@ -923,10 +923,10 @@ def add_to_queue(args, api: API) -> bool:
         return False
 
     xbmcgui.Dialog().notification(
-        '%s Success' % args.addonname,
-        'Item added to watchlist',
+        args.addonname,
+        args.addon.getLocalizedString(30071),
         xbmcgui.NOTIFICATION_INFO,
-        3,
+        2,
         False
     )
 
@@ -965,7 +965,7 @@ def remove_from_queue(args, api: API):
     #     '%s Success' % args.addonname,
     #     'Item removed from watchlist',
     #     xbmcgui.NOTIFICATION_INFO,
-    #     3
+    #     2
     # )
     #
     # return True
