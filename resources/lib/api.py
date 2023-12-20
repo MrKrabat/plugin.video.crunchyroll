@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import xbmc
 import xbmcvfs
 
 import requests
@@ -65,6 +66,7 @@ class API:
         self.account_data: AccountData = AccountData(dict())
         self.api_headers: Dict = utils.headers()
         self.args = args
+        self.retry_counter = 0
 
     def start(self) -> bool:
         session_restart = getattr(self.args, "_session_restart", False)
@@ -78,7 +80,6 @@ class API:
 
             # check if tokes are expired
             if utils.get_date() > utils.str_to_date(self.account_data.expires):
-                # @TODO: I'm not sure what happens if the refresh token has also expired...
                 session_restart = True
             else:
                 return True
@@ -121,6 +122,18 @@ class API:
             headers=headers,
             data=data
         )
+
+        # if refreshing and refresh token is expired, it will throw a 400
+        # retry with a fresh login, but limit retries to prevent loop in case something else went wrong
+        if r.status_code == 400:
+            utils.crunchy_log(self.args, "Invalid/Expired credentials, restarting session from scratch")
+            self.retry_counter = self.retry_counter + 1
+            self.delete_storage()
+            if self.retry_counter > 2:
+                utils.crunchy_log(self.args, "Max retries exceeded. Aborting!", xbmc.LOGERROR)
+                return None
+            return self.create_session()
+
         r_json = utils.get_json_from_response(r)
 
         self.api_headers.clear()
@@ -151,6 +164,7 @@ class API:
         self.account_data = AccountData(account_data)
 
         self.write_to_storage(self.account_data)
+        self.retry_counter = 0
 
     def close(self):
         """Saves cookies and session
