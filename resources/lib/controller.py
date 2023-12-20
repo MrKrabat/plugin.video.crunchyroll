@@ -882,12 +882,10 @@ def wait_for_playback(timeout=30):
 def add_to_queue(args, api: API) -> bool:
     utils.dump(args.content_id)
 
-    endpoint = 'https://beta-api.crunchyroll.com/content/v1/watchlist/%s'
-
     # api request
     req = api.make_request(
         method="POST",
-        url=endpoint.format(api.account_data.account_id),
+        url=API.WATCHLIST_LIST_ENDPOINT.format(api.account_data.account_id),
         params={
             "locale": args.subtitle,
             "preferred_audio_language": api.account_data.default_audio_language
@@ -924,16 +922,17 @@ def add_to_queue(args, api: API) -> bool:
 
 def remove_from_queue(args, api: API):
     utils.log(args.content_id)
-    
+
     # api request
     req = api.make_request(
         method="DELETE",
-        url=api.WATCHLIST_LIST_ENDPOINT.format(api.account_data.account_id),
+        url=api.WATCHLIST_LIST_ENDPOINT.format(api.account_data.account_id, args.content_id),
         json={
             "content_id": args.content_id
         },
         headers={
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/plain, */*'
         }
     )
 
