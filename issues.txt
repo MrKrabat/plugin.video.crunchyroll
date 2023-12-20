@@ -11,5 +11,7 @@
   maybe the "is_completed" flag by crunchy determines if the anime as a whole is finished and it is not indicating
   that I have viewed that series?
 
-+ we probably need to store the authentication data. Not sure about how Kodi works, but for everything you do
-  it will re-run the app, thus restart authentication? That might get us blocked if used excessively
+
++ not currently an issue, but we need to see what happens if the refresh-token also expires - we now cache the session
+  data and if the regular token has expired, the refresh token will be used to refresh the session. which also may have
+  expired, but not sure how to check or catch that
