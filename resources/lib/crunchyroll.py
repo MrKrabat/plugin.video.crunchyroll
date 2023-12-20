@@ -44,8 +44,8 @@ def main(argv):
     # get account information
     username = args.addon.getSetting("crunchyroll_username")
     password = args.addon.getSetting("crunchyroll_password")
-    args._session_id = args.addon.getSetting("session_id")
-    args._auth_token = args.addon.getSetting("auth_token")
+    # args._session_id = args.addon.getSetting("session_id")
+    # args._auth_token = args.addon.getSetting("auth_token")
     args._device_id = args.addon.getSetting("device_id")
     if not args.device_id:
         char_set = "0123456789abcdefghijklmnopqrstuvwxyz0123456789"

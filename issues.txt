@@ -10,3 +10,8 @@
 + listing series marks all as already viewed or even not viewed, no matter what I do
   maybe the "is_completed" flag by crunchy determines if the anime as a whole is finished and it is not indicating
   that I have viewed that series?
+
+
++ not currently an issue, but we need to see what happens if the refresh-token also expires - we now cache the session
+  data and if the regular token has expired, the refresh token will be used to refresh the session. which also may have
+  expired, but not sure how to check or catch that
