@@ -816,7 +816,7 @@ def start_playback(args, api: API):
 
         # ask if user want to continue playback
         if args.playhead and args.duration:
-            resume = int(int(args.playhead) / args.duration * 100)
+            resume = int(int(args.playhead) / float(args.duration) * 100)
             if 5 <= resume <= 90:
                 player.pause()
                 if xbmcgui.Dialog().yesno(args.addonname, args.addon.getLocalizedString(30065) % int(resume)):
