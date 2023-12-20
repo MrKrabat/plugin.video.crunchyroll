@@ -182,6 +182,14 @@ msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Wenn das Video nicht abspielt, warte bitte 30 Sekunden, damit der Fallback einsetzen kann."
 
+msgctxt "#30067"
+msgid "Add to playlist"
+msgstr "Zu Playlist hinzufugen"
+
+msgctxt "#30068"
+msgid "Remove from playlist"
+msgstr "Von Playlist entfernen"
+
 msgctxt "#30069"
 msgid "Alternative Subtitle Language"
 msgstr "Alternative Untertitel Sprache"

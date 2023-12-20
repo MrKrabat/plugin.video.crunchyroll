@@ -177,6 +177,14 @@ msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Si la vidéo ne démarre pas, attendez 30 secondes et recommencez."
 
+msgctxt "#30067"
+msgid "Add to playlist"
+msgstr "Add to playlist"
+
+msgctxt "#30068"
+msgid "Remove from playlist"
+msgstr "Remove from playlist"
+
 msgctxt "#30069"
 msgid "Alternative Subtitle Language"
 msgstr "Langue alternative des sous-titres"

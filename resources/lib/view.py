@@ -26,6 +26,8 @@ import xbmcvfs
 import xbmcgui
 import xbmcplugin
 
+from typing import Callable
+
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",
          "tracknumber", "rating", "userrating", "watched", "playcount", "overlay", "cast", "castandrole", "director",
@@ -43,7 +45,14 @@ def end_of_directory(args):
     xbmcplugin.endOfDirectory(handle=int(args.argv[1]))
 
 
-def add_item(args, info, is_folder=True, total_items=0, mediatype="video"):
+def add_item(
+        args,
+        info,
+        is_folder=True,
+        total_items=0,
+        mediatype="video",
+        callback: Callable[[xbmcgui.ListItem], None] = None
+):
     """Add item to directory listing.
     """
 
@@ -83,6 +92,9 @@ def add_item(args, info, is_folder=True, total_items=0, mediatype="video"):
                "banner": info.get("thumb", "DefaultFolder.png"),
                "fanart": info.get("fanart", xbmcvfs.translatePath(args.addon.getAddonInfo("fanart"))),
                "icon": info.get("thumb", "DefaultFolder.png")})
+
+    if callback:
+        callback(li)
 
     # add item to list
     xbmcplugin.addDirectoryItem(handle=int(args.argv[1]),
