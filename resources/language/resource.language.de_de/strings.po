@@ -181,3 +181,11 @@ msgstr "Möchtest du das Video bei %s%% fortsetzen?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Wenn das Video nicht abspielt, warte bitte 30 Sekunden, damit der Fallback einsetzen kann."
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Alternative Untertitel Sprache"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Keine"

@@ -150,3 +150,32 @@ def log_error_with_trace(args, message):
 
     xbmc.log("[PLUGIN] %s: %s" % (args.addonname, str(message)), xbmc.LOGERROR)
     xbmc.log("[PLUGIN] %s: %s %s %s" % (args.addonname, ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
+
+
+def convert_subtitle_index_to_string(subtitle_index: int) -> str:
+    if subtitle_index == "0":
+        return "en-US"
+    elif subtitle_index == "1":
+        return "en-GB"
+    elif subtitle_index == "2":
+        return "es-LA"
+    elif subtitle_index == "3":
+        return "es-ES"
+    elif subtitle_index == "4":
+        return "pt-BR"
+    elif subtitle_index == "5":
+        return "pt-PT"
+    elif subtitle_index == "6":
+        return "fr-FR"
+    elif subtitle_index == "7":
+        return "de-DE"
+    elif subtitle_index == "8":
+        return "ar-ME"
+    elif subtitle_index == "9":
+        return "it-IT"
+    elif subtitle_index == "10":
+        return "ru-RU"
+    elif subtitle_index == "11":
+        return ""
+    else:
+        return "en-US"

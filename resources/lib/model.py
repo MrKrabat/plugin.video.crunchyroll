@@ -47,6 +47,7 @@ class Args(object):
         self._cj = None
         self._device_id = None
         self._subtitle = None
+        self._subtitle_fallback = None
         # needed to pass some data around
         self._playhead = None
 
@@ -77,6 +78,10 @@ class Args(object):
     @property
     def subtitle(self):
         return self._subtitle
+
+    @property
+    def subtitle_fallback(self):
+        return self._subtitle_fallback
 
 
 class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):
