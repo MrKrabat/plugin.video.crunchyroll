@@ -81,7 +81,7 @@ def main(argv):
             # list menu
             xbmcplugin.setContent(int(args.argv[1]), "tvshows")
             check_mode(args, api)
-            api.close()
+            #api.close()
         else:
             # login failed
             xbmc.log("[PLUGIN] %s: Login failed" % args.addonname, xbmc.LOGERROR)
@@ -149,6 +149,10 @@ def check_mode(args, api: API):
         controller.view_episodes(args, api)
     elif mode == "videoplay":
         controller.start_playback(args, api)
+    elif mode == "add_to_queue":
+        controller.add_to_queue(args, api)
+    elif mode == "remove_from_queue":
+        controller.remove_from_queue(args, api)
     else:
         # unknown mode
         xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" % (args.addonname, str(mode)), xbmc.LOGERROR)
