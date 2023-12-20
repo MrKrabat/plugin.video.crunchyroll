@@ -26,7 +26,6 @@ except ImportError:
 from json import dumps
 
 import xbmcaddon
-import xbmc
 
 
 class Args(object):
@@ -154,10 +153,8 @@ class MovieData(Object):
         self.year: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
         self.aired: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
         self.premiered: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
-        # that's usually 1080p, not sure if too big?
-        self.thumb: str = data.get("panel").get("images").get("thumbnail")[-1][-1]["source"]
-        # that's usually 1080p, not sure if too big?
-        self.fanart: str = data.get("panel").get("images").get("thumbnail")[-1][-1]["source"]
+        self.thumb: str|None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
+        self.fanart: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
         self.playcount: int = 0
         self.stream_id: str | None = None
 
@@ -203,9 +200,8 @@ class EpisodeData(Object):
         self.year: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
         self.aired: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
         self.premiered: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
-        self.thumb: str = data.get("panel").get("images").get("thumbnail")[-1][-1][
-            "source"]  # that's usually 1080p, not sure if too big?
-        self.fanart: str = data.get("panel").get("images").get("thumbnail")[-1][-1]["source"]
+        self.thumb: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
+        self.fanart: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
         self.playcount: int = 0
         self.stream_id: str | None = None
 
@@ -232,55 +228,9 @@ class EpisodeData(Object):
 
 
 class CrunchyrollError(Exception):
-    def __init__(self, message: str = "generic error"):
-        self.message = message
-        super().__init__(self.message)
-
-        import sys
-        import traceback
-
-        # Get current system exception
-        ex_type, ex_value, ex_traceback = sys.exc_info()
-
-        # Extract unformatter stack traces as tuples
-        trace_back = traceback.extract_tb(ex_traceback)
-
-        # Format stacktrace
-        stack_trace = list()
-
-        for trace in trace_back:
-            stack_trace.append(
-                "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
-
-        xbmc.log("[PLUGIN] Crunchyroll: CrunchyrollError : %s" % (str(self.message)), xbmc.LOGERROR)
-        xbmc.log("[PLUGIN] Crunchyroll: trace :  %s %s %s" % (ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
-
-        pass
+    pass
 
 
 class LoginError(Exception):
-    def __init__(self, message: str = "generic login error"):
-        self.message = message
-        super().__init__(self.message)
-
-        import sys
-        import traceback
-
-        # Get current system exception
-        ex_type, ex_value, ex_traceback = sys.exc_info()
-
-        # Extract unformatter stack traces as tuples
-        trace_back = traceback.extract_tb(ex_traceback)
-
-        # Format stacktrace
-        stack_trace = list()
-
-        for trace in trace_back:
-            stack_trace.append(
-                "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
-
-        xbmc.log("[PLUGIN] Crunchyroll: LoginError : %s" % (str(self.message)), xbmc.LOGERROR)
-        xbmc.log("[PLUGIN] Crunchyroll: trace :  %s %s %s" % (ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
-
-        pass
+    pass
 
