@@ -15,29 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import xbmc
 import xbmcvfs
-#from os import remove
-#from os.path import join
-
-try:
-    from urllib import urlencode
-except ImportError:
-    from urllib.parse import urlencode
-try:
-    from urllib2 import urlopen, build_opener, HTTPCookieProcessor, install_opener
-except ImportError:
-    from urllib.request import urlopen, build_opener, HTTPCookieProcessor, install_opener
-try:
-    from cookielib import LWPCookieJar
-except ImportError:
-    from http.cookiejar import LWPCookieJar
 
 import requests
 from datetime import timedelta
 from typing import Optional, Dict
 from .model import AccountData, Args
 from . import utils
+import json as JSON
 
 
 class API:
@@ -84,6 +69,20 @@ class API:
     def start(self) -> bool:
         session_restart = getattr(self.args, "_session_restart", False)
 
+        # restore account data from file
+        session_data = self.load_from_storage()
+        if session_data:
+            self.account_data = AccountData(session_data)
+            account_auth = {"Authorization": f"{self.account_data.token_type} {self.account_data.access_token}"}
+            self.api_headers.update(account_auth)
+
+            # check if tokes are expired
+            if utils.get_date() > utils.str_to_date(self.account_data.expires):
+                # @TODO: I'm not sure what happens if the refresh token has also expired...
+                session_restart = True
+            else:
+                return True
+
         # session management
         self.create_session(session_restart)
 
@@ -93,6 +92,11 @@ class API:
         # get login information
         username = self.args.addon.getSetting("crunchyroll_username")
         password = self.args.addon.getSetting("crunchyroll_password")
+
+        if refresh:
+            utils.log("Refreshing session")
+        else:
+            utils.log("Creating new session")
 
         headers = {"Authorization": API.AUTHORIZATION}
         data = {}
@@ -146,31 +150,21 @@ class API:
         account_data["expires"] = utils.date_to_str(utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
         self.account_data = AccountData(account_data)
 
-    def close(self):
-        # @TODO: update
+        self.write_to_storage(self.account_data)
 
+    def close(self):
         """Saves cookies and session
         """
-        # self._addon.setSetting("session_id", self._session_id)
-        # self._addon.setSetting("auth_token", self._auth_token)
-        # if self._cj:
-        #    self._cj.save(getCookiePath(args), ignore_discard=True)
+        # no longer required, data is saved upon session update already
+
 
     def destroy(self):
         # @TODO: update
 
         """Destroys session
         """
-        # self._addon.setSetting("session_id", "")
-        # self._addon.setSetting("auth_token", "")
-        # self._session_id = ""
-        # self._auth_token = ""
-        #
-        # self._cj = False
-        # try:
-        #    remove(getCookiePath(self))
-        # except WindowsError:
-        #    pass
+        utils.log("DESTROY CALLED")
+        self.delete_storage()
 
 
     def make_request(
@@ -207,3 +201,43 @@ class API:
             json=json
         )
         return utils.get_json_from_response(r)
+
+    def get_storage_path(self):
+        """Get cookie file path
+        """
+        profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
+
+        return profile_path + "session_data.json"
+
+    def load_from_storage(self) -> Optional[Dict]:
+        storage_file = self.get_storage_path()
+
+        if not xbmcvfs.exists(storage_file):
+            return None
+
+        with xbmcvfs.File(storage_file) as file:
+            data = JSON.load(file)
+
+        d = dict()
+        d.update(data)
+
+        return d
+
+    def delete_storage(self) -> None:
+        storage_file = self.get_storage_path()
+
+        if not xbmcvfs.exists(storage_file):
+            return None
+
+        xbmcvfs.delete(storage_file)
+
+    def write_to_storage(self, account: AccountData) -> bool:
+        storage_file = self.get_storage_path()
+
+        # serialize (Object has a to_str serializer)
+        json_string = str(account)
+
+        with xbmcvfs.File(storage_file, 'w') as file:
+            result = file.write(json_string)
+
+        return result
