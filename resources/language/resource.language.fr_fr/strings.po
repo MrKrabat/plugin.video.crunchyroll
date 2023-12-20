@@ -176,3 +176,11 @@ msgstr "Voulez vous continuer à regarder depuis %s%% ?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Si la vidéo ne démarre pas, attendez 30 secondes et recommencez."
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Langue alternative des sous-titres"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Rien"

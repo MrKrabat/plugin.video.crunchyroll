@@ -181,3 +181,11 @@ msgstr ""
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr ""
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr ""
+
+msgctxt "#30070"
+msgid "None"
+msgstr ""
