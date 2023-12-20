@@ -92,6 +92,8 @@ def main(argv):
         locale=args.subtitle
     )
 
+    utils.log("Test")
+
     if not (username and password):
         # open addon settings
         view.add_item(args, {"title": args.addon.getLocalizedString(30062)})
@@ -119,6 +121,7 @@ def check_mode(args, api: API):
     """
     if hasattr(args, "mode"):
         mode = args.mode
+        utils.log("Checking mode %s" % args.mode)
     elif hasattr(args, "id"):
         # call from other plugin
         mode = "videoplay"
@@ -172,6 +175,10 @@ def check_mode(args, api: API):
         controller.view_episodes(args, api)
     elif mode == "videoplay":
         controller.start_playback(args, api)
+    elif mode == "add_to_queue":
+        controller.add_to_queue(args, api)
+    elif mode == "remove_from_queue":
+        controller.remove_from_queue(args, api)
     else:
         # unknown mode
         xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" % (args.addonname, str(mode)), xbmc.LOGERROR)

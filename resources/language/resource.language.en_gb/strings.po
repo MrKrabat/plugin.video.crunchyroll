@@ -181,3 +181,11 @@ msgstr ""
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr ""
+
+msgctxt "#30067"
+msgid "Add to playlist"
+msgstr ""
+
+msgctxt "#30068"
+msgid "Remove from playlist"
+msgstr ""

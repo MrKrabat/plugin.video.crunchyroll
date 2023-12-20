@@ -35,6 +35,7 @@ from . import utils
 from .model import EpisodeData, MovieData
 
 import json
+import sys
 
 
 def show_queue(args, api: API):
@@ -99,10 +100,20 @@ def show_queue(args, api: API):
                     "playhead": entry.playhead,
                     "mode": "videoplay"
                 },
-                is_folder=False
+                is_folder=False,
+                callback=lambda li:
+                    li.addContextMenuItems([(args.addon.getLocalizedString(30067), 'RunPlugin(%s?mode=remove_from_queue&content_id=%s)' % (sys.argv[0], entry.episode_id))])
             )
         except Exception:
             utils.log_error_with_trace(args, "Failed to add item to queue view: %s" % (json.dumps(item, indent=4)))
+
+    # # add item to crunchyroll watchlist
+    # li.addContextMenuItems([(args.addon.getLocalizedString(30067), 'RunPlugin(%s?mode=add_to_queue)' % (sys.argv[0]))])
+    #
+    # # remove item from crunchyroll watchlist
+    # li.addContextMenuItems(
+    #     [(args.addon.getLocalizedString(30068), 'RunPlugin(%s?mode=remove_from_queue)' % (sys.argv[0]))])
+
 
     view.end_of_directory(args)
     return True
@@ -338,7 +349,12 @@ def list_seasons(args, mode, api: API):
                     "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
                     "mode": "series"
                 },
-                is_folder=True
+                is_folder=True,
+                callback=lambda li:
+                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s)' % (
+                                             sys.argv[0], item["id"]))])
+
             )
 
         except Exception:
@@ -859,5 +875,85 @@ def wait_for_playback(timeout=30):
         # timeout to prevent infinite loop
         if time.time() > timer:
             return False
+
+    return True
+
+
+def add_to_queue(args, api: API) -> bool:
+    utils.dump(args.content_id)
+
+    endpoint = 'https://beta-api.crunchyroll.com/content/v1/watchlist/%s'
+
+    # api request
+    req = api.make_request(
+        method="POST",
+        url=endpoint.format(api.account_data.account_id),
+        params={
+            "locale": args.subtitle,
+            "preferred_audio_language": api.account_data.default_audio_language
+        },
+        json={
+            "content_id": args.content_id
+        },
+        headers={
+            'Content-Type': 'application/json'
+        }
+    )
+
+    # check for error
+    if req and "error" in req:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        xbmcgui.Dialog().notification(
+            '%s Error' % args.addonname,
+            'Failed to add item to watchlist',
+            xbmcgui.NOTIFICATION_ERROR,
+            3
+        )
+        return False
+
+    xbmcgui.Dialog().notification(
+        '%s Success' % args.addonname,
+        'Item added to watchlist',
+        xbmcgui.NOTIFICATION_INFO,
+        3
+    )
+
+    return True
+
+
+def remove_from_queue(args, api: API):
+    utils.log(args.content_id)
+    
+    # api request
+    req = api.make_request(
+        method="DELETE",
+        url=api.WATCHLIST_LIST_ENDPOINT.format(api.account_data.account_id),
+        json={
+            "content_id": args.content_id
+        },
+        headers={
+            'Content-Type': 'application/json'
+        }
+    )
+
+    # check for error
+    if req and "error" in req:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        xbmcgui.Dialog().notification(
+            '%s Error' % args.addonname,
+            'Failed to remove item from watchlist',
+            xbmcgui.NOTIFICATION_ERROR,
+            3
+        )
+        return False
+
+    xbmcgui.Dialog().notification(
+        '%s Success' % args.addonname,
+        'Item removed from watchlist',
+        xbmcgui.NOTIFICATION_INFO,
+        3
+    )
 
     return True

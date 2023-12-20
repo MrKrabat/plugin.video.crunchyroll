@@ -17,8 +17,9 @@
 
 import xbmc
 import xbmcvfs
-#from os import remove
-#from os.path import join
+
+# from os import remove
+# from os.path import join
 
 try:
     from urllib import urlencode
@@ -143,7 +144,8 @@ class API:
         )
         account_data.update(r)
 
-        account_data["expires"] = utils.date_to_str(utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
+        account_data["expires"] = utils.date_to_str(
+            utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
         self.account_data = AccountData(account_data)
 
     def close(self):
@@ -171,7 +173,6 @@ class API:
         #    remove(getCookiePath(self))
         # except WindowsError:
         #    pass
-
 
     def make_request(
             self,

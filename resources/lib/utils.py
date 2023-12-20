@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from requests import Response
 import re
-import xbmc
+import xbmc, xbmcgui
+import requests
 from json import dumps
 
 try:
@@ -73,11 +74,16 @@ def str_to_date(string: str) -> datetime:
 
 def get_json_from_response(r: Response) -> Optional[Dict]:
     code: int = r.status_code
+
+    # no content - possibly POST/DELETE request?
+    if code == 204 or not r:
+        return None
+
     try:
         r_json: Dict = r.json()
-    except ValueError:
-        # no data, possibly a POST to playheads?
-        return {}
+    except ValueError | requests.exceptions.JSONDecodeError:
+        log_error_with_trace(None, "Failed to parse response data")
+        return None
 
     if "error" in r_json:
         error_code = r_json.get("error")
@@ -88,7 +94,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
         raise CrunchyrollError(f"[{code}] Error occurred: {message}")
     if code != 200:
         raise CrunchyrollError(f"[{code}] {r.text}")
-
+    log("Returned status: %d" % code)
     return r_json
 
 
@@ -131,7 +137,7 @@ def log(data):
     xbmc.log(data, xbmc.LOGINFO)
 
 
-def log_error_with_trace(args, message):
+def log_error_with_trace(args, message, show_notification: bool = True):
     import sys
     import traceback
 
@@ -148,5 +154,15 @@ def log_error_with_trace(args, message):
         stack_trace.append(
             "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
 
-    xbmc.log("[PLUGIN] %s: %s" % (args.addonname, str(message)), xbmc.LOGERROR)
-    xbmc.log("[PLUGIN] %s: %s %s %s" % (args.addonname, ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
+    addon_name = args.addon_name if args is not None else "Crunchyroll"
+
+    xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), xbmc.LOGERROR)
+    xbmc.log("[PLUGIN] %s: %s %s %s" % (addon_name, ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
+
+    if show_notification:
+        xbmcgui.Dialog().notification(
+            '%s Error' % args.addonname,
+            'Please check logs for details',
+            xbmcgui.NOTIFICATION_ERROR,
+            5
+        )
