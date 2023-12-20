@@ -15,3 +15,6 @@
 + not currently an issue, but we need to see what happens if the refresh-token also expires - we now cache the session
   data and if the regular token has expired, the refresh token will be used to refresh the session. which also may have
   expired, but not sure how to check or catch that
+
++ there's warning "Attempt to use invalid handle -1" - it's possible that this is caused by the new "add to playlist"
+  functionality. it's not critical, but should check that.
