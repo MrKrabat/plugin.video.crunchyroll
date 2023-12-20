@@ -47,8 +47,12 @@ class API:
     SIMILAR_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/similar_to"
     NEWSFEED_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/news_feed"
     BROWSE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/browse"
+    # there is also a v2, but that will only deliver content_ids and no details about the entries
     WATCHLIST_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist"
-    WATCHLIST_SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist/{}"
+    # only v2 will allow removal of watchlist entries.
+    # !!!! be super careful and always provide a content_id, or it will delete the whole playlist! *sighs* !!!!
+    WATCHLIST_REMOVE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist/{}"
+    WATCHLIST_ADD_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist"
     PLAYHEADS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/playheads"
     HISTORY_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watch-history"
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
@@ -69,11 +73,11 @@ class API:
         self.retry_counter = 0
 
     def start(self) -> bool:
-        session_restart = getattr(self.args, "_session_restart", False)
+        session_restart = getattr(self.args, "session_restart", False)
 
         # restore account data from file
         session_data = self.load_from_storage()
-        if session_data:
+        if session_data and not session_restart:
             self.account_data = AccountData(session_data)
             account_auth = {"Authorization": f"{self.account_data.token_type} {self.account_data.access_token}"}
             self.api_headers.update(account_auth)
@@ -173,11 +177,8 @@ class API:
 
 
     def destroy(self):
-        # @TODO: update
-
         """Destroys session
         """
-        utils.log("DESTROY CALLED")
         self.delete_storage()
 
 

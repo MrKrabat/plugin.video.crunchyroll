@@ -100,9 +100,10 @@ def show_queue(args, api: API):
                     "playhead": entry.playhead,
                     "mode": "videoplay"
                 },
-                is_folder=False,
-                callback=lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067), 'RunPlugin(%s?mode=remove_from_queue&content_id=%s)' % (sys.argv[0], entry.episode_id))])
+                is_folder=False
+                # potentially unsafe, it can possibly delete the whole playlist if something goes really wrong
+                # callback=lambda li:
+                #     li.addContextMenuItems([(args.addon.getLocalizedString(30068), 'RunPlugin(%s?mode=remove_from_queue&content_id=%s&session_restart=True)' % (sys.argv[0], entry.episode_id))])
             )
         except Exception:
             utils.log_error_with_trace(args, "Failed to add item to queue view: %s" % (json.dumps(item, indent=4)))
@@ -176,7 +177,12 @@ def search_anime(args, api: API):
                     # that's on the live api only  int(item["rating"]["average"] * 2),  # it's now a 5-star rating, and we use score of 10?
                     "mode": "series"
                 },
-                is_folder=True
+                is_folder=True,
+                # for yet unknown reason, adding an item to the watchlist requires a session restart
+                callback=lambda li:
+                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                             sys.argv[0], item["id"]))])
             )
 
         # for now break as we only support one type
@@ -281,7 +287,6 @@ def show_history(args, api: API):
 def list_seasons(args, mode, api: API):
     """ view all available anime seasons and filter by selected season
     """
-
     season_filter: str = getattr(args, "season_filter", "")
 
     # if no seasons filter applied, list all available seasons
@@ -350,9 +355,10 @@ def list_seasons(args, mode, api: API):
                     "mode": "series"
                 },
                 is_folder=True,
+                # for yet unknown reason, adding an item to the watchlist requires a session restart
                 callback=lambda li:
                     li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s)' % (
+                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
                                              sys.argv[0], item["id"]))])
 
             )
@@ -512,7 +518,12 @@ def list_filter(args, mode, api: API):
                     "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
                     "mode": "series"
                 },
-                is_folder=True
+                is_folder=True,
+                # for yet unknown reason, adding an item to the watchlist requires a session restart
+                callback=lambda li:
+                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                             sys.argv[0], item["id"]))])
             )
 
             items_left = req.get('total') - int(getattr(args, "offset", 0)) - len(req.get('items'))
@@ -881,19 +892,18 @@ def wait_for_playback(timeout=30):
     return True
 
 
+# does not work
 def add_to_queue(args, api: API) -> bool:
-    utils.dump(args.content_id)
-
     # api request
     req = api.make_request(
         method="POST",
-        url=API.WATCHLIST_LIST_ENDPOINT.format(api.account_data.account_id),
+        url=API.WATCHLIST_ADD_ENDPOINT.format(api.account_data.account_id),
+        json={
+            "content_id": args.content_id
+        },
         params={
             "locale": args.subtitle,
             "preferred_audio_language": api.account_data.default_audio_language
-        },
-        json={
-            "content_id": args.content_id
         },
         headers={
             'Content-Type': 'application/json'
@@ -916,45 +926,46 @@ def add_to_queue(args, api: API) -> bool:
         '%s Success' % args.addonname,
         'Item added to watchlist',
         xbmcgui.NOTIFICATION_INFO,
-        3
+        3,
+        False
     )
 
     return True
 
 
+# works
+# NOTE: be super careful when moving the content_id to json or params. it might delete the whole playlist! *sadpanda*
 def remove_from_queue(args, api: API):
-    utils.log(args.content_id)
-
-    # api request
-    req = api.make_request(
-        method="DELETE",
-        url=api.WATCHLIST_LIST_ENDPOINT.format(api.account_data.account_id, args.content_id),
-        json={
-            "content_id": args.content_id
-        },
-        headers={
-            'Content-Type': 'application/json',
-            'Accept': 'application/json, text/plain, */*'
-        }
-    )
-
-    # check for error
-    if req and "error" in req:
-        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-        view.end_of_directory(args)
-        xbmcgui.Dialog().notification(
-            '%s Error' % args.addonname,
-            'Failed to remove item from watchlist',
-            xbmcgui.NOTIFICATION_ERROR,
-            3
-        )
-        return False
-
-    xbmcgui.Dialog().notification(
-        '%s Success' % args.addonname,
-        'Item removed from watchlist',
-        xbmcgui.NOTIFICATION_INFO,
-        3
-    )
-
-    return True
+    # currently disabled
+    return False
+    #
+    # # we absolutely need a content_id, otherwise it will delete the whole playlist!
+    # if not args.content_id:
+    #     return False
+    #
+    # # api request
+    # req = api.make_request(
+    #     method="DELETE",
+    #     url=api.WATCHLIST_REMOVE_ENDPOINT.format(api.account_data.account_id, args.content_id, args.content_id),
+    # )
+    #
+    # # check for error - probably does not work
+    # if req and "error" in req:
+    #     view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+    #     view.end_of_directory(args)
+    #     xbmcgui.Dialog().notification(
+    #         '%s Error' % args.addonname,
+    #         'Failed to remove item from watchlist',
+    #         xbmcgui.NOTIFICATION_ERROR,
+    #         3
+    #     )
+    #     return False
+    #
+    # xbmcgui.Dialog().notification(
+    #     '%s Success' % args.addonname,
+    #     'Item removed from watchlist',
+    #     xbmcgui.NOTIFICATION_INFO,
+    #     3
+    # )
+    #
+    # return True

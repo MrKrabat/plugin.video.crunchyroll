@@ -94,7 +94,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
         raise CrunchyrollError(f"[{code}] Error occurred: {message}")
     if code != 200:
         raise CrunchyrollError(f"[{code}] {r.text}")
-    log("Returned status: %d" % code)
+
     return r_json
 
 
@@ -138,7 +138,7 @@ def log(message):
 
 
 def crunchy_log(args, message, loglevel = xbmc.LOGINFO):
-    addon_name = args.addon_name if args is not None else "Crunchyroll"
+    addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), loglevel)
 
 
@@ -159,7 +159,7 @@ def log_error_with_trace(args, message, show_notification: bool = True):
         stack_trace.append(
             "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
 
-    addon_name = args.addon_name if args is not None else "Crunchyroll"
+    addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
 
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), xbmc.LOGERROR)
     xbmc.log("[PLUGIN] %s: %s %s %s" % (addon_name, ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)

@@ -184,7 +184,7 @@ msgstr "Wenn das Video nicht abspielt, warte bitte 30 Sekunden, damit der Fallba
 
 msgctxt "#30067"
 msgid "Add to playlist"
-msgstr "Zu Playlist hinzufügen"
+msgstr "Zu Playlist hinzufugen"
 
 msgctxt "#30068"
 msgid "Remove from playlist"

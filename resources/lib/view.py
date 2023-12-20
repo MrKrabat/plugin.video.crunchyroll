@@ -25,7 +25,6 @@ except ImportError:
 import xbmcvfs
 import xbmcgui
 import xbmcplugin
-import sys
 
 from typing import Callable
 

@@ -69,8 +69,6 @@ def main(argv):
         locale=args.subtitle
     )
 
-    utils.log("Test")
-
     if not (username and password):
         # open addon settings
         view.add_item(args, {"title": args.addon.getLocalizedString(30062)})
@@ -83,7 +81,7 @@ def main(argv):
             # list menu
             xbmcplugin.setContent(int(args.argv[1]), "tvshows")
             check_mode(args, api)
-            api.close()
+            #api.close()
         else:
             # login failed
             xbmc.log("[PLUGIN] %s: Login failed" % args.addonname, xbmc.LOGERROR)
@@ -98,7 +96,6 @@ def check_mode(args, api: API):
     """
     if hasattr(args, "mode"):
         mode = args.mode
-        utils.log("Checking mode %s" % args.mode)
     elif hasattr(args, "id"):
         # call from other plugin
         mode = "videoplay"
