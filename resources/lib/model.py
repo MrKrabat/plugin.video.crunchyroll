@@ -18,10 +18,9 @@
 import sys
 
 try:
-    from urlparse import parse_qs
     from urllib import unquote_plus
 except ImportError:
-    from urllib.parse import parse_qs, unquote_plus
+    from urllib.parse import unquote_plus
 
 from json import dumps
 

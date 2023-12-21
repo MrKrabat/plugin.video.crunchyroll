@@ -44,8 +44,6 @@ def main(argv):
     # get account information
     username = args.addon.getSetting("crunchyroll_username")
     password = args.addon.getSetting("crunchyroll_password")
-    # args._session_id = args.addon.getSetting("session_id")
-    # args._auth_token = args.addon.getSetting("auth_token")
     args._device_id = args.addon.getSetting("device_id")
     if not args.device_id:
         char_set = "0123456789abcdefghijklmnopqrstuvwxyz0123456789"
@@ -108,7 +106,7 @@ def check_mode(args, api: API):
         mode = None
 
     if not mode:
-        showMainMenue(args)
+        show_main_menu(args)
 
     elif mode == "queue":
         controller.show_queue(args, api)
@@ -127,17 +125,15 @@ def check_mode(args, api: API):
     elif mode == "featured":  # https://www.crunchyroll.com/content/v2/discover/account_id/home_feed -> hero_carousel ?
         controller.listSeries(args, "featured", api)
     elif mode == "popular":  # DONE
-       # setattr(args, "category_filter", "popular")  # @todo: can this be done better? :o)
         controller.list_filter(args, "popular", api)
     #elif mode == "simulcast":  # https://www.crunchyroll.com/de/simulcasts/seasons/fall-2023 ???
     #    controller.listSeries(args, "simulcast", api)
     #elif mode == "updated":
     #    controller.listSeries(args, "updated", api)
     elif mode == "newest":
-       # setattr(args, "category_filter", "newly_added")  # @todo: can this be done better? :o)
         controller.list_filter(args, "newest", api)
-    #elif mode == "alpha":
-    #    controller.listSeries(args, "alpha", api)
+    elif mode == "alpha":
+        controller.list_filter(args, "alpha", api)
     elif mode == "season":  # DONE
         controller.list_seasons(args, "season", api)
     elif mode == "genre":  # DONE
@@ -155,12 +151,12 @@ def check_mode(args, api: API):
         controller.remove_from_queue(args, api)
     else:
         # unknown mode
-        xbmc.log("[PLUGIN] %s: Failed in check_mode '%s'" % (args.addonname, str(mode)), xbmc.LOGERROR)
+        utils.crunchy_log(args, "Failed in check_mode '%s'" % str(mode), xbmc.LOGERROR)
         xbmcgui.Dialog().notification(args.addonname, args.addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
-        showMainMenue(args)
+        show_main_menu(args)
 
 
-def showMainMenue(args):
+def show_main_menu(args):
     """Show main menu
     """
     view.add_item(args,
@@ -211,10 +207,12 @@ def show_main_category(args, genre):
                    "category_filter": "newly_added",
                    "mode": "newest",
                    "genre": genre})
-    # view.add_item(args,
-    #               {"title": "TODO | " + args.addon.getLocalizedString(30055),
-    #                "mode": "alpha",
-    #                "genre": genre})
+    view.add_item(args,
+                  {"title": args.addon.getLocalizedString(30055),
+                   "category_filter": "alphabetical",
+                   "items_per_page": 100,
+                   "mode": "alpha",
+                   "genre": genre})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30057),
                    "mode": "season",

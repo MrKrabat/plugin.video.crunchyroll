@@ -18,7 +18,7 @@ What this plugin currently can do:
 - [ ] Browse all simulcasts
 - [x] Browse all updated anime/drama
 - [ ] Browse all new anime/drama
-- [ ] Browse all anime/drama alphabetically
+- [x] Browse all anime/drama alphabetically
 - [x] Browse all genres
 - [x] Browse all seasons
 - [x] View queue/playlist
@@ -27,7 +27,7 @@ What this plugin currently can do:
 - [x] View all seasons/arcs of an anime/drama
 - [x] View all episodes of and season/arc
 - [x] Context menu "Goto series" and "Goto season"
-- [x] Add anime/drama from your queue/playlist
+- [x] Add anime/drama to your queue/playlist
 - [ ] Remove anime/drama from your queue/playlist
 - [x] Display various information
 - [x] Watch videos with premium subscription
