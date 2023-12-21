@@ -407,7 +407,7 @@ def list_filter(args, mode, api: API):
 
     # we re-use this method which is normally used for the categories to also show some special views, that share
     # the same logic
-    specials = ["popularity", "newly_added"]
+    specials = ["popularity", "newly_added", "alphabetical"]
 
     # if no category_filter filter applied, list all available categories
     if not category_filter or category_filter not in specials:
@@ -455,7 +455,7 @@ def list_filter(args, mode, api: API):
     # else, if we have a category filter, show all from category
 
     items_left = 0
-    items_per_page = 50  # change this if desired
+    items_per_page = int(getattr(args, "items_per_page", 50))  # change this if desired
 
     # default query params - might get modified by special categories below
     params = {
