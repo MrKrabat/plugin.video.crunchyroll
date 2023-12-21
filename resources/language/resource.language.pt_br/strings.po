@@ -187,11 +187,11 @@ msgstr "Remove from queue"
 
 msgctxt "#30069"
 msgid "Alternative Subtitle Language"
-msgstr "Idioma de legenda alternativo"
+msgstr "Linguagem de Legendas Alternativa"
 
 msgctxt "#30070"
 msgid "None"
-msgstr "Nada"
+msgstr "Sem Legendas"
 
 msgctxt "#30071"
 msgid "Added to queue"

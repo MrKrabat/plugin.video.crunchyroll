@@ -15,27 +15,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+import sys
 import math
-import ssl
 import time
-import inputstreamhelper
-
-try:
-    from urllib2 import URLError
-except ImportError:
-    from urllib.error import URLError
 
 import xbmc
 import xbmcgui
 import xbmcplugin
+import inputstreamhelper
 
 from .api import API
 from . import view
 from . import utils
 from .model import EpisodeData, MovieData, CrunchyrollError
-
-import json
-import sys
 
 
 def show_queue(args, api: API):
@@ -70,11 +63,7 @@ def show_queue(args, api: API):
             elif item["panel"]["type"] == "movie":
                 entry = MovieData(item)
             else:
-                xbmc.log(
-                    "[PLUGIN] %s: queue | unhandled index for metadata. %s" % (
-                        args.addonname, json.dumps(item, indent=4)),
-                    xbmc.LOGERROR
-                )
+                utils.crunchy_log(args, "queue | unhandled index for metadata. %s" % (json.dumps(item, indent=4)), xbmc.LOGERROR)
                 continue
 
             view.add_item(
@@ -108,14 +97,6 @@ def show_queue(args, api: API):
         except Exception:
             utils.log_error_with_trace(args, "Failed to add item to queue view: %s" % (json.dumps(item, indent=4)))
 
-    # # add item to crunchyroll watchlist
-    # li.addContextMenuItems([(args.addon.getLocalizedString(30067), 'RunPlugin(%s?mode=add_to_queue)' % (sys.argv[0]))])
-    #
-    # # remove item from crunchyroll watchlist
-    # li.addContextMenuItems(
-    #     [(args.addon.getLocalizedString(30068), 'RunPlugin(%s?mode=remove_from_queue)' % (sys.argv[0]))])
-
-
     view.end_of_directory(args)
     return True
 
@@ -123,7 +104,6 @@ def show_queue(args, api: API):
 def search_anime(args, api: API):
     """Search for anime
     """
-
     # ask for search string
     if not hasattr(args, "search"):
         d = xbmcgui.Dialog().input(args.addon.getLocalizedString(30041), type=xbmcgui.INPUT_ALPHANUM)
@@ -230,16 +210,17 @@ def show_history(args, api: API):
 
     for item in req.get("data"):
         try:
+            # skip episodes completely that don't have at least the type information
+            # @see https://github.com/smirgol/plugin.video.crunchyroll/issues/8
+            if not hasattr(item, 'panel') or not hasattr(item.get('panel'), 'type'):
+                continue
+
             if item.get("panel").get("type") == "episode":
                 entry = EpisodeData(item)
-            elif item["panel"]["type"] == "movie":
+            elif item.get("panel").get("type") == "movie":
                 entry = MovieData(item)
             else:
-                xbmc.log(
-                    "[PLUGIN] %s: history | unhandled index for metadata. %s" % (
-                        args.addonname, json.dumps(item, indent=4)),
-                    xbmc.LOGERROR
-                )
+                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)), xbmc.LOGERROR)
                 continue
 
             # add to view
@@ -339,7 +320,6 @@ def list_seasons(args, mode, api: API):
         return False
 
     for item in req.get('items'):
-
         try:
             view.add_item(
                 args,
@@ -609,8 +589,8 @@ def view_series(args, api: API):
             # filter items where either audio or subtitles match my configured language
             # otherwise it will break things when selecting the correct stream later.
             # @see: issues.txt
-            if args.subtitle not in item.get("audio_locales", []) and args.subtitle not in item.get("subtitle_locales",
-                                                                                                    []):
+            if (args.subtitle not in item.get("audio_locales", []) and
+                    args.subtitle not in item.get("subtitle_locales", [])):
                 continue
 
             # add to view
@@ -685,10 +665,7 @@ def view_episodes(args, api: API):
         try:
             stream_id = utils.get_stream_id_from_url(item["__links__"]["streams"]["href"])
             if stream_id is None:
-                xbmc.log(
-                    "[PLUGIN] Crunchyroll | Error : failed to fetch stream_id for %s" % (item["series_title"]),
-                    xbmc.LOGINFO
-                )
+                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item["series_title"]), xbmc.LOGERROR)
                 continue
 
             # add to view
@@ -720,18 +697,6 @@ def view_episodes(args, api: API):
             utils.log_error_with_trace(args,
                                        "Failed to add item to view_episodes view: %s" % (json.dumps(item, indent=4)))
 
-    # @todo: do we really need this?
-    # show next page button
-    # if len(req["data"]) >= 30:
-    #    view.add_item(args,
-    #                  {"title":         args.addon.getLocalizedString(30044),
-    #                   "collection_id": args.collection_id,
-    #                   "offset":        int(getattr(args, "offset", 0)) + 30,
-    #                   "thumb":         args.thumb,
-    #                   "fanart":        args.fanart,
-    #                   "mode":          args.mode},
-    #                  is_folder=True)
-
     view.end_of_directory(args)
     return True
 
@@ -760,7 +725,7 @@ def start_playback(args, api: API):
     ##############################
 
     # there are tons of different stream types. not sure which one to pick...
-    # also, would be super interesting to make the streams switchable in kodi...
+    # also, would be very interesting to make the streams switchable in kodi...
     # adaptive_dash
     # adaptive_hls - I chose this, which works for me
     # download_dash
@@ -814,7 +779,7 @@ def start_playback(args, api: API):
     # start fallback
     if not wait_for_playback(2):
         # start without inputstream adaptive
-        xbmc.log("[PLUGIN] %s: Inputstream Adaptive failed, trying directly with kodi" % args.addonname, xbmc.LOGDEBUG)
+        utils.crunchy_log(args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGDEBUG)
         item.setProperty("inputstream", "")
         xbmc.Player().play(url, item)
 
@@ -839,8 +804,7 @@ def start_playback(args, api: API):
         # wait for video to begin
         player = xbmc.Player()
         if not wait_for_playback(30):
-            xbmc.log("[PLUGIN] %s: Timeout reached, video did not start in 30 seconds" % args.addonname, xbmc.LOGERROR)
-            # xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
+            utils.crunchy_log(args, "Timeout reached, video did not start in 30 seconds", xbmc.LOGERROR)
             return
 
         # ask if user want to continue playback
@@ -876,7 +840,7 @@ def start_playback(args, api: API):
                         # catch timeout exception
                         pass
         except RuntimeError:
-            xbmc.log("[PLUGIN] %s: Playback aborted" % args.addonname, xbmc.LOGDEBUG)
+            utils.crunchy_log(args, "Playback aborted", xbmc.LOGDEBUG)
 
 
 def wait_for_playback(timeout=30):
@@ -892,7 +856,6 @@ def wait_for_playback(timeout=30):
     return True
 
 
-# does not work
 def add_to_queue(args, api: API) -> bool:
     # api request
     req = api.make_request(
@@ -933,7 +896,6 @@ def add_to_queue(args, api: API) -> bool:
     return True
 
 
-# works
 # NOTE: be super careful when moving the content_id to json or params. it might delete the whole playlist! *sadpanda*
 def remove_from_queue(args, api: API):
     # currently disabled

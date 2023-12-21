@@ -84,7 +84,7 @@ def main(argv):
             #api.close()
         else:
             # login failed
-            xbmc.log("[PLUGIN] %s: Login failed" % args.addonname, xbmc.LOGERROR)
+            utils.crunchy_log(args, "Login failed", xbmc.LOGERROR)
             view.add_item(args, {"title": args.addon.getLocalizedString(30060)})
             view.end_of_directory(args)
             xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30060))
