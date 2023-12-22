@@ -104,12 +104,17 @@ def add_item(
                                 totalItems=total_items)
 
 
-def quote_value(value):
+def quote_value(value, PY2):
     """Quote value depending on python
     """
-    if not isinstance(value, str):
-        value = str(value)
-    return quote_plus(value)
+    if PY2:
+        if not isinstance(value, basestring):
+            value = str(value)
+        return quote_plus(value.encode("utf-8") if isinstance(value, unicode) else value)
+    else:
+        if not isinstance(value, str):
+            value = str(value)
+        return quote_plus(value)
 
 
 def build_url(args, info):
