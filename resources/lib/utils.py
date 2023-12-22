@@ -179,7 +179,7 @@ def convert_subtitle_index_to_string(subtitle_index: int) -> str:
     elif subtitle_index == "1":
         return "en-GB"
     elif subtitle_index == "2":
-        return "es-LA"
+        return "es-419"
     elif subtitle_index == "3":
         return "es-ES"
     elif subtitle_index == "4":
