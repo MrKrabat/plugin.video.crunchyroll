@@ -17,7 +17,7 @@ msgstr ""
 # Crunchyroll Settings
 
 msgctxt "#30001"
-msgid "Username"
+msgid "Email"
 msgstr ""
 
 msgctxt "#30002"
@@ -181,3 +181,23 @@ msgstr ""
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr ""
+
+msgctxt "#30067"
+msgid "Add to queue"
+msgstr ""
+
+msgctxt "#30068"
+msgid "Remove from queue"
+msgstr ""
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr ""
+
+msgctxt "#30070"
+msgid "None"
+msgstr ""
+
+msgctxt "#30071"
+msgid "Added to queue"
+msgstr "Added to queue"

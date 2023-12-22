@@ -1,3 +1,9 @@
+v3.2.0.1 (2023.12.17)
+- Update for new api
+
+v3.2.0 (2020.09.01)
+- Update for Kodi 19 Matrix
+
 v3.1.1 (2018.09.29)
 - Remove video quality selection
 

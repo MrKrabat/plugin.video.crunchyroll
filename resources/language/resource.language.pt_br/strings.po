@@ -17,7 +17,7 @@ msgstr ""
 # Crunchyroll Settings
 msgctxt "#30001"
 msgid "Username"
-msgstr "Usuário"
+msgstr "E-mail"
 
 msgctxt "#30002"
 msgid "Password"
@@ -176,3 +176,23 @@ msgstr "Você quer continuar assistindo de %s%%?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Se o vídeo não iniciar, aguarde 30 segundos e tente novamente."
+
+msgctxt "#30067"
+msgid "Add to queue"
+msgstr "Add to queue"
+
+msgctxt "#30068"
+msgid "Remove from queue"
+msgstr "Remove from queue"
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Linguagem de Legendas Alternativa"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Sem Legendas"
+
+msgctxt "#30071"
+msgid "Added to queue"
+msgstr "Added to queue"
