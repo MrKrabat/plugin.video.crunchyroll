@@ -28,7 +28,8 @@ import inputstreamhelper
 from .api import API
 from . import view
 from . import utils
-from .model import EpisodeData, MovieData, CrunchyrollError
+from .model import EpisodeData, MovieData
+from requests import ConnectionError
 
 
 def show_queue(args, api: API):
@@ -837,7 +838,7 @@ def start_playback(args, api: API):
                                 'Content-Type': 'application/json'
                             }
                         )
-                    except CrunchyrollError:
+                    except ConnectionError:
                         # catch timeout exception
                         pass
         except RuntimeError:
