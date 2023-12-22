@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from requests import Response
 import re
 import xbmc, xbmcgui
 import requests
@@ -29,8 +28,6 @@ except ImportError:
 
 from datetime import datetime
 import time
-from typing import Dict, Optional
-
 from .model import Args, LoginError, CrunchyrollError
 
 
@@ -89,12 +86,12 @@ def get_json_from_response(r):
     if "error" in r_json:
         error_code = r_json.get("error")
         if error_code == "invalid_grant":
-            raise LoginError("[{code}] Invalid login credentials.")
+            raise LoginError("[{}] Invalid login credentials.".format(code))
     elif "message" in r_json and "code" in r_json:
         message = r_json.get("message")
-        raise CrunchyrollError("[{code}] Error occurred: {message}")
+        raise CrunchyrollError("[{}] Error occurred: {}".format(code, message))
     if code != 200:
-        raise CrunchyrollError("[{code}] {r.text}")
+        raise CrunchyrollError("[{}] {}".format(code, r.text))
 
     return r_json
 

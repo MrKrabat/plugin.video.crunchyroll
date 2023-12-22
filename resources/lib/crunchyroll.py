@@ -60,7 +60,8 @@ def main(argv):
 
     # get subtitle language
     args._subtitle = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language"))
-    args._subtitle_fallback = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language_fallback"))
+    args._subtitle_fallback = utils.convert_subtitle_index_to_string(
+        args.addon.getSetting("subtitle_language_fallback"))
 
     api = API(
         args=args,
@@ -79,7 +80,7 @@ def main(argv):
             # list menu
             xbmcplugin.setContent(int(args.argv[1]), "tvshows")
             check_mode(args, api)
-            #api.close()
+            # api.close()
         else:
             # login failed
             utils.crunchy_log(args, "Login failed", xbmc.LOGERROR)
@@ -126,9 +127,9 @@ def check_mode(args, api):
         controller.listSeries(args, "featured", api)
     elif mode == "popular":  # DONE
         controller.list_filter(args, "popular", api)
-    #elif mode == "simulcast":  # https://www.crunchyroll.com/de/simulcasts/seasons/fall-2023 ???
+    # elif mode == "simulcast":  # https://www.crunchyroll.com/de/simulcasts/seasons/fall-2023 ???
     #    controller.listSeries(args, "simulcast", api)
-    #elif mode == "updated":
+    # elif mode == "updated":
     #    controller.listSeries(args, "updated", api)
     elif mode == "newest":
         controller.list_filter(args, "newest", api)

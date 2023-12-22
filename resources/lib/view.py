@@ -26,7 +26,6 @@ import xbmcvfs
 import xbmcgui
 import xbmcplugin
 
-from typing import Callable
 
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",

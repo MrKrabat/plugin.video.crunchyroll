@@ -20,8 +20,7 @@ import xbmcvfs
 
 import requests
 from datetime import timedelta
-from typing import Optional, Dict
-from .model import AccountData, Args
+from .model import AccountData
 from . import utils
 import json as JSON
 
@@ -62,8 +61,8 @@ class API:
 
     def __init__(
             self,
-            args = None,
-            locale = "en-US"
+            args=None,
+            locale="en-US"
     ):
         self.http = requests.Session()
         self.locale = locale
@@ -79,7 +78,7 @@ class API:
         session_data = self.load_from_storage()
         if session_data and not session_restart:
             self.account_data = AccountData(session_data)
-            account_auth = {"Authorization": "{self.account_data.token_type} {self.account_data.access_token}"}
+            account_auth = {"Authorization": "{} {}".format(self.account_data.token_type, self.account_data.access_token)}
             self.api_headers.update(account_auth)
 
             # check if tokes are expired
@@ -145,7 +144,7 @@ class API:
 
         access_token = r_json["access_token"]
         token_type = r_json["token_type"]
-        account_auth = {"Authorization": "{token_type} {access_token}"}
+        account_auth = {"Authorization": "{} {}".format(token_type, access_token)}
 
         account_data = dict()
         account_data.update(r_json)
@@ -164,7 +163,8 @@ class API:
         )
         account_data.update(r)
 
-        account_data["expires"] = utils.date_to_str(utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
+        account_data["expires"] = utils.date_to_str(
+            utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
         self.account_data = AccountData(account_data)
 
         self.write_to_storage(self.account_data)
@@ -175,12 +175,10 @@ class API:
         """
         # no longer required, data is saved upon session update already
 
-
     def destroy(self):
         """Destroys session
         """
         self.delete_storage()
-
 
     def make_request(
             self,
@@ -234,8 +232,8 @@ class API:
         if not xbmcvfs.exists(storage_file):
             return None
 
-        with xbmcvfs.File(storage_file) as file:
-            data = JSON.load(file)
+        with xbmcvfs.File(storage_file) as f:
+            data = JSON.load(f)
 
         d = dict()
         d.update(data)

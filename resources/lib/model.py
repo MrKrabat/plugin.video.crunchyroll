@@ -89,6 +89,9 @@ class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):
 
 
 class Object(metaclass=Meta):
+    def __init__(self):
+        pass
+
     @staticmethod
     def default(obj):
         return dict(
