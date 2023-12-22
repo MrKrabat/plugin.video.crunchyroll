@@ -212,7 +212,7 @@ def show_history(args, api: API):
         try:
             # skip episodes completely that don't have at least the type information
             # @see https://github.com/smirgol/plugin.video.crunchyroll/issues/8
-            if not hasattr(item, 'panel') or not hasattr(item.get('panel'), 'type'):
+            if not item.get('panel') or not item.get('panel').get('type'):
                 continue
 
             if item.get("panel").get("type") == "episode":
