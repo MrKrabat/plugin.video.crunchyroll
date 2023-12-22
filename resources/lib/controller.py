@@ -102,7 +102,7 @@ def show_queue(args, api):
     return True
 
 
-def search_anime(args, api: API):
+def search_anime(args, api):
     """Search for anime
     """
     # ask for search string
@@ -184,7 +184,7 @@ def search_anime(args, api: API):
     return True
 
 
-def show_history(args, api: API):
+def show_history(args, api):
     """ shows history of watched anime
     """
     items_per_page = 50
@@ -266,10 +266,10 @@ def show_history(args, api: API):
     return True
 
 
-def list_seasons(args, mode, api: API):
+def list_seasons(args, mode, api):
     """ view all available anime seasons and filter by selected season
     """
-    season_filter: str = getattr(args, "season_filter", "")
+    season_filter = getattr(args, "season_filter", "")
 
     # if no seasons filter applied, list all available seasons
     if not season_filter:
@@ -350,7 +350,7 @@ def list_seasons(args, mode, api: API):
     view.end_of_directory(args)
 
 
-def listSeries(args, mode, api: API):
+def listSeries(args, mode, api):
     """ view all anime from selected mode
     """
 
@@ -401,10 +401,10 @@ def listSeries(args, mode, api: API):
     return True
 
 
-def list_filter(args, mode, api: API):
+def list_filter(args, mode, api):
     """ view all anime from selected mode
     """
-    category_filter: str = getattr(args, "category_filter", "")
+    category_filter = getattr(args, "category_filter", "")
 
     # we re-use this method which is normally used for the categories to also show some special views, that share
     # the same logic
@@ -563,7 +563,7 @@ def list_filter(args, mode, api: API):
     return True
 
 
-def view_series(args, api: API):
+def view_series(args, api):
     """ view all seasons/arcs of an anime
     """
     # api request
@@ -624,7 +624,7 @@ def view_series(args, api: API):
     return True
 
 
-def view_episodes(args, api: API):
+def view_episodes(args, api):
     """ view all episodes of season
     """
     # api request
@@ -703,7 +703,7 @@ def view_episodes(args, api: API):
     return True
 
 
-def start_playback(args, api: API):
+def start_playback(args, api):
     """ plays an episode
     """
     # api request streams
@@ -858,7 +858,7 @@ def wait_for_playback(timeout=30):
     return True
 
 
-def add_to_queue(args, api: API):
+def add_to_queue(args, api):
     # api request
     req = api.make_request(
         method="POST",
@@ -899,7 +899,7 @@ def add_to_queue(args, api: API):
 
 
 # NOTE: be super careful when moving the content_id to json or params. it might delete the whole playlist! *sadpanda*
-def remove_from_queue(args, api: API):
+def remove_from_queue(args, api):
     # currently disabled
     return False
     #

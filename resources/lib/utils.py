@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from requests import Response
 import re
 import xbmc, xbmcgui
@@ -88,12 +89,12 @@ def get_json_from_response(r):
     if "error" in r_json:
         error_code = r_json.get("error")
         if error_code == "invalid_grant":
-            raise LoginError(f"[{code}] Invalid login credentials.")
+            raise LoginError("[{code}] Invalid login credentials.")
     elif "message" in r_json and "code" in r_json:
         message = r_json.get("message")
-        raise CrunchyrollError(f"[{code}] Error occurred: {message}")
+        raise CrunchyrollError("[{code}] Error occurred: {message}")
     if code != 200:
-        raise CrunchyrollError(f"[{code}] {r.text}")
+        raise CrunchyrollError("[{code}] {r.text}")
 
     return r_json
 
@@ -103,7 +104,7 @@ def get_stream_id_from_url(url):
     if stream_id is None:
         return None
 
-    return stream_id[1]
+    return stream_id.group(1)
 
 
 def get_watched_status_from_playheads_data(playheads_data, episode_id):
@@ -115,7 +116,7 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id):
     return 0
 
 
-def get_image_from_struct(item, image_type, depth = 2):
+def get_image_from_struct(item, image_type, depth=2):
     if item.get("images") and item.get("images").get(image_type):
         src = item.get("images").get(image_type)
         for i in range(0, depth):
@@ -142,7 +143,7 @@ def crunchy_log(args, message, loglevel=xbmc.LOGINFO):
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), loglevel)
 
 
-def log_error_with_trace(args, message, show_notification: bool = True):
+def log_error_with_trace(args, message, show_notification=True):
     import sys
     import traceback
 

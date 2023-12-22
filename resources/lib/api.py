@@ -62,13 +62,13 @@ class API:
 
     def __init__(
             self,
-            args: Args = None,
-            locale: str = "en-US"
+            args = None,
+            locale = "en-US"
     ):
         self.http = requests.Session()
-        self.locale: str = locale
-        self.account_data: AccountData = AccountData(dict())
-        self.api_headers: Dict = utils.headers()
+        self.locale = locale
+        self.account_data = AccountData(dict())
+        self.api_headers = utils.headers()
         self.args = args
         self.retry_counter = 0
 
@@ -79,7 +79,7 @@ class API:
         session_data = self.load_from_storage()
         if session_data and not session_restart:
             self.account_data = AccountData(session_data)
-            account_auth = {"Authorization": f"{self.account_data.token_type} {self.account_data.access_token}"}
+            account_auth = {"Authorization": "{self.account_data.token_type} {self.account_data.access_token}"}
             self.api_headers.update(account_auth)
 
             # check if tokes are expired
@@ -145,7 +145,7 @@ class API:
 
         access_token = r_json["access_token"]
         token_type = r_json["token_type"]
-        account_auth = {"Authorization": f"{token_type} {access_token}"}
+        account_auth = {"Authorization": "{token_type} {access_token}"}
 
         account_data = dict()
         account_data.update(r_json)
@@ -184,8 +184,8 @@ class API:
 
     def make_request(
             self,
-            method: str,
-            url: str,
+            method,
+            url,
             headers=None,
             params=None,
             data=None,
@@ -196,7 +196,8 @@ class API:
         if headers is None:
             headers = dict()
         if self.account_data:
-            if expiration := self.account_data.expires:
+            expiration = self.account_data.expires
+            if expiration:
                 current_time = utils.get_date()
                 if current_time > utils.str_to_date(expiration):
                     self.create_session(refresh=True)
@@ -249,13 +250,13 @@ class API:
 
         xbmcvfs.delete(storage_file)
 
-    def write_to_storage(self, account: AccountData):
+    def write_to_storage(self, account):
         storage_file = self.get_storage_path()
 
         # serialize (Object has a to_str serializer)
         json_string = str(account)
 
-        with xbmcvfs.File(storage_file, 'w') as file:
-            result = file.write(json_string)
+        with xbmcvfs.File(storage_file, 'w') as f:
+            result = f.write(json_string)
 
         return result
