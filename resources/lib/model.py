@@ -109,6 +109,7 @@ class Object(metaclass=Meta):
 
 class CMS(Object):
     def __init__(self, data):
+        Object.__init__(self)
         self.bucket = data.get("bucket")
         self.policy = data.get("policy")
         self.signature = data.get("signature")
@@ -117,6 +118,7 @@ class CMS(Object):
 
 class AccountData(Object):
     def __init__(self, data):
+        Object.__init__(self)
         self.cms = None
         self.expires = None
         self.refresh_token = None
@@ -145,6 +147,7 @@ class AccountData(Object):
 
 class MovieData(Object):
     def __init__(self, data):
+        Object.__init__(self)
         from . import utils
 
         meta = data.get("panel").get("movie_metadata")
@@ -193,6 +196,7 @@ class MovieData(Object):
 # dto
 class EpisodeData(Object):
     def __init__(self, data):
+        Object.__init__(self)
         from . import utils
 
         meta = data.get("panel").get("episode_metadata")
