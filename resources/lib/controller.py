@@ -408,9 +408,10 @@ def list_filter(args, mode, api: API):
     # we re-use this method which is normally used for the categories to also show some special views, that share
     # the same logic
     specials = ["popularity", "newly_added", "alphabetical"]
+    utils.log("Category: %s" % category_filter)
 
     # if no category_filter filter applied, list all available categories
-    if not category_filter or category_filter not in specials:
+    if not category_filter and category_filter not in specials:
         # api request for category names / tags
         req = api.make_request(
             method="GET",
