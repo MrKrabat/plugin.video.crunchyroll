@@ -89,7 +89,7 @@ def main(argv):
             return False
 
 
-def check_mode(args, api: API):
+def check_mode(args, api):
     """Run mode-specific functions
     """
     if hasattr(args, "mode"):

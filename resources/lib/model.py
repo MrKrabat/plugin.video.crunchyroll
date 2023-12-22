@@ -90,7 +90,7 @@ class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):
 
 class Object(metaclass=Meta):
     @staticmethod
-    def default(obj: "Object"):
+    def default(obj):
         return {
             "_": obj.__class__.__name__,
             **{
@@ -105,7 +105,7 @@ class Object(metaclass=Meta):
             }
         }
 
-    def __str__(self) -> str:
+    def __str__(self):
         return dumps(self, indent=4, default=Object.default, ensure_ascii=False)
 
 

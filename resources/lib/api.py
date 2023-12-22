@@ -64,7 +64,7 @@ class API:
             self,
             args: Args = None,
             locale: str = "en-US"
-    ) -> None:
+    ):
         self.http = requests.Session()
         self.locale: str = locale
         self.account_data: AccountData = AccountData(dict())
@@ -72,7 +72,7 @@ class API:
         self.args = args
         self.retry_counter = 0
 
-    def start(self) -> bool:
+    def start(self):
         session_restart = getattr(self.args, "session_restart", False)
 
         # restore account data from file
@@ -93,7 +93,7 @@ class API:
 
         return True
 
-    def create_session(self, refresh=False) -> None:
+    def create_session(self, refresh=False):
         # get login information
         username = self.args.addon.getSetting("crunchyroll_username")
         password = self.args.addon.getSetting("crunchyroll_password")
@@ -190,7 +190,7 @@ class API:
             params=None,
             data=None,
             json=None
-    ) -> Optional[Dict]:
+    ):
         if params is None:
             params = dict()
         if headers is None:
@@ -227,7 +227,7 @@ class API:
 
         return profile_path + "session_data.json"
 
-    def load_from_storage(self) -> Optional[Dict]:
+    def load_from_storage(self):
         storage_file = self.get_storage_path()
 
         if not xbmcvfs.exists(storage_file):
@@ -241,7 +241,7 @@ class API:
 
         return d
 
-    def delete_storage(self) -> None:
+    def delete_storage(self):
         storage_file = self.get_storage_path()
 
         if not xbmcvfs.exists(storage_file):
@@ -249,7 +249,7 @@ class API:
 
         xbmcvfs.delete(storage_file)
 
-    def write_to_storage(self, account: AccountData) -> bool:
+    def write_to_storage(self, account: AccountData):
         storage_file = self.get_storage_path()
 
         # serialize (Object has a to_str serializer)

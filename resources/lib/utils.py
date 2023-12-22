@@ -42,18 +42,18 @@ def parse(argv):
         return Args(argv, {})
 
 
-def headers() -> Dict:
+def headers():
     return {
         "User-Agent": "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1",
         "Content-Type": "application/x-www-form-urlencoded"
     }
 
 
-def get_date() -> datetime:
+def get_date():
     return datetime.utcnow()
 
 
-def date_to_str(date: datetime) -> str:
+def date_to_str(date):
     return "{}-{}-{}T{}:{}:{}Z".format(
         date.year, date.month,
         date.day, date.hour,
@@ -61,7 +61,7 @@ def date_to_str(date: datetime) -> str:
     )
 
 
-def str_to_date(string: str) -> datetime:
+def str_to_date(string):
     time_format = "%Y-%m-%dT%H:%M:%SZ"
 
     try:
@@ -72,15 +72,15 @@ def str_to_date(string: str) -> datetime:
     return res
 
 
-def get_json_from_response(r: Response) -> Optional[Dict]:
-    code: int = r.status_code
+def get_json_from_response(r):
+    code = r.status_code
 
     # no content - possibly POST/DELETE request?
     if not r or not r.text:
         return None
 
     try:
-        r_json: Dict = r.json()
+        r_json = r.json()
     except requests.exceptions.JSONDecodeError:
         log_error_with_trace(None, "Failed to parse response data")
         return None
@@ -98,7 +98,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     return r_json
 
 
-def get_stream_id_from_url(url: str):
+def get_stream_id_from_url(url):
     stream_id = re.search('/videos/([^/]+)/streams', url)
     if stream_id is None:
         return None
@@ -106,7 +106,7 @@ def get_stream_id_from_url(url: str):
     return stream_id[1]
 
 
-def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
+def get_watched_status_from_playheads_data(playheads_data, episode_id):
     if playheads_data and playheads_data["data"]:
         for info in playheads_data["data"]:
             if info["content_id"] == episode_id:
@@ -115,7 +115,7 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
     return 0
 
 
-def get_image_from_struct(item: Dict, image_type: str, depth: int = 2):
+def get_image_from_struct(item, image_type, depth = 2):
     if item.get("images") and item.get("images").get(image_type):
         src = item.get("images").get(image_type)
         for i in range(0, depth):
@@ -137,7 +137,7 @@ def log(message):
     xbmc.log(message, xbmc.LOGINFO)
 
 
-def crunchy_log(args, message, loglevel = xbmc.LOGINFO):
+def crunchy_log(args, message, loglevel=xbmc.LOGINFO):
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), loglevel)
 
@@ -173,7 +173,7 @@ def log_error_with_trace(args, message, show_notification: bool = True):
         )
 
 
-def convert_subtitle_index_to_string(subtitle_index: int) -> str:
+def convert_subtitle_index_to_string(subtitle_index):
     if subtitle_index == "0":
         return "en-US"
     elif subtitle_index == "1":

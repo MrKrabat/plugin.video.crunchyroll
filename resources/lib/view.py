@@ -51,7 +51,7 @@ def add_item(
         is_folder=True,
         total_items=0,
         mediatype="video",
-        callback: Callable[[xbmcgui.ListItem], None] = None
+        callback=None
 ):
     """Add item to directory listing.
     """

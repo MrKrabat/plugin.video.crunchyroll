@@ -32,7 +32,7 @@ from .model import EpisodeData, MovieData
 from requests import ConnectionError
 
 
-def show_queue(args, api: API):
+def show_queue(args, api):
     """ shows anime queue/playlist
     """
     # api request
@@ -858,7 +858,7 @@ def wait_for_playback(timeout=30):
     return True
 
 
-def add_to_queue(args, api: API) -> bool:
+def add_to_queue(args, api: API):
     # api request
     req = api.make_request(
         method="POST",
