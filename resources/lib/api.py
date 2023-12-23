@@ -237,7 +237,17 @@ class API:
         with closing(xbmcvfs.File(storage_file)) as f:
             data = JSON.load(f)
 
-        data = data.decode('utf-8')
+        if len(data) == 0:
+            self.delete_storage()
+            return None
+
+        try:
+            data = data.decode('utf-8')
+        except Exception:
+            self.delete_storage()
+            utils.crunchy_log(self.args, "Failed to decode JSON session data")
+            return None
+
         d = dict()
         d.update(data)
 
