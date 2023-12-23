@@ -15,14 +15,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import xbmc
-import xbmcvfs
+import json as JSON
 
 import requests
+import xbmc
+import xbmcvfs
 from datetime import timedelta
-from .model import AccountData
+
 from . import utils
-import json as JSON
+from .model import AccountData
 
 
 class API:

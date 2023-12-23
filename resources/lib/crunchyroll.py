@@ -16,17 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import random
-import inputstreamhelper
 
+import inputstreamhelper
 import xbmc
-import xbmcgui
 import xbmcaddon
+import xbmcgui
 import xbmcplugin
 
-from .api import API
-from . import view
-from . import utils
 from . import controller
+from . import utils
+from . import view
+from .api import API
 
 
 def main(argv):

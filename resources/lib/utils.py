@@ -16,9 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import xbmc, xbmcgui
-import requests
 from json import dumps
+
+import requests
+import xbmc
+import xbmcgui
 
 try:
     from urlparse import parse_qs

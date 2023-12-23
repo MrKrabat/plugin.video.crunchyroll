@@ -17,19 +17,19 @@
 
 import json
 import sys
+
+import inputstreamhelper
 import math
 import time
-
 import xbmc
 import xbmcgui
 import xbmcplugin
-import inputstreamhelper
-
-from .api import API
-from . import view
-from . import utils
-from .model import EpisodeData, MovieData
 from requests import ConnectionError
+
+from . import utils
+from . import view
+from .api import API
+from .model import EpisodeData, MovieData
 
 
 def show_queue(args, api):
