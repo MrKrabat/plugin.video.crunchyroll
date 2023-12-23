@@ -21,6 +21,7 @@ import requests
 import xbmc
 import xbmcvfs
 from datetime import timedelta
+from contextlib import closing
 
 from . import utils
 from .model import AccountData
@@ -233,7 +234,7 @@ class API:
         if not xbmcvfs.exists(storage_file):
             return None
 
-        with xbmcvfs.File(storage_file) as f:
+        with closing(xbmcvfs.File(storage_file)) as f:
             data = JSON.load(f)
 
         data = data.decode('utf-8')
@@ -256,7 +257,7 @@ class API:
         # serialize (Object has a to_str serializer)
         json_string = str(account).encode('utf-8')
 
-        with xbmcvfs.File(storage_file, 'w') as f:
+        with closing(xbmcvfs.File(storage_file, 'w')) as f:
             result = f.write(json_string)
 
         return result
