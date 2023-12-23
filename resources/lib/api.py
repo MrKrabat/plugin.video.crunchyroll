@@ -15,15 +15,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json as JSON
+from datetime import timedelta
+from typing import Optional, Dict
+
+import requests
 import xbmc
 import xbmcvfs
 
-import requests
-from datetime import timedelta
-from typing import Optional, Dict
-from .model import AccountData, Args
 from . import utils
-import json as JSON
+from .model import AccountData, Args
 
 
 class API:
@@ -164,23 +165,22 @@ class API:
         )
         account_data.update(r)
 
-        account_data["expires"] = utils.date_to_str(utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
+        account_data["expires"] = utils.date_to_str(
+            utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
         self.account_data = AccountData(account_data)
 
         self.write_to_storage(self.account_data)
         self.retry_counter = 0
 
-    def close(self):
+    def close(self) -> None:
         """Saves cookies and session
         """
         # no longer required, data is saved upon session update already
 
-
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroys session
         """
         self.delete_storage()
-
 
     def make_request(
             self,
@@ -217,7 +217,7 @@ class API:
         )
         return utils.get_json_from_response(r)
 
-    def get_storage_path(self):
+    def get_storage_path(self) -> str:
         """Get cookie file path
         """
         profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))

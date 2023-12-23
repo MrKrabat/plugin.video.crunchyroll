@@ -95,9 +95,6 @@ class Object(metaclass=Meta):
             "_": obj.__class__.__name__,
             **{
                 attr: (
-                    #"*" * 5
-                    #if attr in ("access_token", "refresh_token")
-                    #else
                     getattr(obj, attr)
                 )
                 for attr in filter(lambda x: not x.startswith("_"), obj.__dict__)
@@ -137,9 +134,6 @@ class AccountData(Object):
         self.default_subtitles_language: str = data.get("preferred_content_subtitle_language")
         self.default_audio_language: str = data.get("preferred_content_audio_language")
         self.username: str = data.get("username")
-
-    #def to_json(self):
-     #   return dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class MovieData(Object):
