@@ -5,10 +5,10 @@
     when trying to fetch the german (my configured language) stream from the streamdata for the Polish series.
 
     we either only display results that match the configured language, or we need to pass the language information for
-    the series/episods around?
+    the series/episodes around?
 
 + listing series marks all as already viewed or even not viewed, no matter what I do
-  maybe the "is_completed" flag by crunchy determines if the anime as a whole is finished and it is not indicating
+  maybe the "is_completed" flag by crunchy determines if the anime as a whole is finished, and it is not indicating
   that I have viewed that series?
 
 

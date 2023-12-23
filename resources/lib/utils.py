@@ -14,11 +14,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from requests import Response
 import re
-import xbmc, xbmcgui
-import requests
 from json import dumps
+
+import requests
+import xbmc
+import xbmcgui
+from requests import Response
 
 try:
     from urlparse import parse_qs
@@ -33,7 +35,7 @@ from typing import Dict, Optional
 from .model import Args, LoginError, CrunchyrollError
 
 
-def parse(argv):
+def parse(argv) -> Args:
     """Decode arguments
     """
     if argv[2]:
@@ -98,7 +100,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     return r_json
 
 
-def get_stream_id_from_url(url: str):
+def get_stream_id_from_url(url: str) -> str | None:
     stream_id = re.search('/videos/([^/]+)/streams', url)
     if stream_id is None:
         return None
@@ -115,7 +117,7 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
     return 0
 
 
-def get_image_from_struct(item: Dict, image_type: str, depth: int = 2):
+def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> str | None:
     if item.get("images") and item.get("images").get(image_type):
         src = item.get("images").get(image_type)
         for i in range(0, depth):
@@ -129,20 +131,20 @@ def get_image_from_struct(item: Dict, image_type: str, depth: int = 2):
     return None
 
 
-def dump(data):
+def dump(data) -> None:
     xbmc.log(dumps(data, indent=4), xbmc.LOGINFO)
 
 
-def log(message):
+def log(message) -> None:
     xbmc.log(message, xbmc.LOGINFO)
 
 
-def crunchy_log(args, message, loglevel = xbmc.LOGINFO):
+def crunchy_log(args, message, loglevel = xbmc.LOGINFO) -> None:
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), loglevel)
 
 
-def log_error_with_trace(args, message, show_notification: bool = True):
+def log_error_with_trace(args, message, show_notification: bool = True) -> None:
     import sys
     import traceback
 

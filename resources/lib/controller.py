@@ -16,20 +16,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import sys
 import math
+import sys
 import time
 
+import inputstreamhelper
 import xbmc
 import xbmcgui
 import xbmcplugin
-import inputstreamhelper
-
-from .api import API
-from . import view
-from . import utils
-from .model import EpisodeData, MovieData
 from requests import ConnectionError
+
+from . import utils
+from . import view
+from .api import API
+from .model import EpisodeData, MovieData
 
 
 def show_queue(args, api: API):
