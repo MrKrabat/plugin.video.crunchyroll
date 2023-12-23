@@ -64,7 +64,8 @@ def show_queue(args, api: API):
             elif item["panel"]["type"] == "movie":
                 entry = MovieData(item)
             else:
-                utils.crunchy_log(args, "queue | unhandled index for metadata. %s" % (json.dumps(item, indent=4)), xbmc.LOGERROR)
+                utils.crunchy_log(args, "queue | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
+                                  xbmc.LOGERROR)
                 continue
 
             view.add_item(
@@ -161,8 +162,8 @@ def search_anime(args, api: API):
                 is_folder=True,
                 # for yet unknown reason, adding an item to the watchlist requires a session restart
                 callback=lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
                                              sys.argv[0], item["id"]))])
             )
 
@@ -221,7 +222,8 @@ def show_history(args, api: API):
             elif item.get("panel").get("type") == "movie":
                 entry = MovieData(item)
             else:
-                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)), xbmc.LOGERROR)
+                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
+                                  xbmc.LOGERROR)
                 continue
 
             # add to view
@@ -338,8 +340,8 @@ def list_seasons(args, mode, api: API):
                 is_folder=True,
                 # for yet unknown reason, adding an item to the watchlist requires a session restart
                 callback=lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
                                              sys.argv[0], item["id"]))])
 
             )
@@ -743,7 +745,9 @@ def start_playback(args, api: API):
     # vo_drm_adaptive_dash
     # vo_drm_adaptive_hls
 
-    try:        
+    url_subtitles_soft = None
+
+    try:
         if args.addon.getSetting("soft_subtitles") == "false":
             url = req["streams"]["adaptive_hls"]
             if args.subtitle in url:
@@ -753,8 +757,17 @@ def start_playback(args, api: API):
             else:
                 url = url[""]["url"]
         else:
-            #multitrack_adaptive_hls_v2 includes soft subtitles in the stream
+            # multitrack_adaptive_hls_v2 includes soft subtitles in the stream
             url = req["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+
+            # set soft subtitles
+            if args.subtitle in req["subtitles"]:
+                url_subtitles_soft = req.get("subtitles").get(args.subtitle).get("url")
+            elif args.subtitle_fallback in req["subtitles"]:
+                url_subtitles_soft = req.get("subtitles").get(args.subtitle_fallback).get("url")
+            else:
+                url_subtitles_soft = None
+
     except IndexError:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
@@ -771,7 +784,10 @@ def start_playback(args, api: API):
     if is_helper.check_inputstream():
         item.setProperty("inputstream", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
-        item.setSubtitles([req["subtitles"][args.subtitle]["url"]])
+        # add soft subtitles url for configured language
+        if url_subtitles_soft:
+            item.setSubtitles([url_subtitles_soft])
+
         # start playback
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
 
