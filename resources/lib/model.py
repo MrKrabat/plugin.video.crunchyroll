@@ -83,12 +83,14 @@ class Args(object):
         return self._subtitle_fallback
 
 
-class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):
+class Meta(type):
     def __str__(self):
-        return "<class 'crunchyroll_beta.types.{self.__name__}'>"
+        return "<class 'crunchyroll_beta.types.{}'>".format(self.__name__)
 
 
-class Object(metaclass=Meta):
+class Object:
+    __metaclass__ = Meta
+
     def __init__(self):
         pass
 
