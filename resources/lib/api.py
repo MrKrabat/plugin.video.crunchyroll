@@ -236,6 +236,7 @@ class API:
         with xbmcvfs.File(storage_file) as f:
             data = JSON.load(f)
 
+        data = data.decode('utf-8')
         d = dict()
         d.update(data)
 
@@ -253,7 +254,7 @@ class API:
         storage_file = self.get_storage_path()
 
         # serialize (Object has a to_str serializer)
-        json_string = str(account)
+        json_string = str(account).encode('utf-8')
 
         with xbmcvfs.File(storage_file, 'w') as f:
             result = f.write(json_string)
