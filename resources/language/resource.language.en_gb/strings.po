@@ -32,6 +32,10 @@ msgctxt "#30004"
 msgid "Configure InputStream Adaptive"
 msgstr ""
 
+msgctxt "#30005"
+msgid "Soft Subtitles"
+msgstr ""
+
 msgctxt "#30020"
 msgid "Subtitle Language"
 msgstr ""
