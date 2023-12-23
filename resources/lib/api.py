@@ -221,11 +221,11 @@ class API:
         """Get cookie file path
         """
         if self.args.PY2:
-            profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile")).decode("utf-8")
+            profile_path = xbmc.translatePath(self.args.addon.getAddonInfo("profile")).decode("utf-8")
         else:
-            profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
+            profile_path = xbmc.translatePath(self.args.addon.getAddonInfo("profile"))
 
-        return profile_path + "session_data.json"
+        return profile_path + u"session_data.json"
 
     def load_from_storage(self):
         storage_file = self.get_storage_path()
