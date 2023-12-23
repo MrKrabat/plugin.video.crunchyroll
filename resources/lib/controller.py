@@ -743,14 +743,18 @@ def start_playback(args, api: API):
     # vo_drm_adaptive_dash
     # vo_drm_adaptive_hls
 
-    try:
-        url = req["streams"]["adaptive_hls"]
-        if args.subtitle in url:
-            url = url[args.subtitle]["url"]
-        elif args.subtitle_fallback in url:
-            url = url[args.subtitle_fallback]["url"]
+    try:        
+        if args.addon.getSetting("soft_subtitles") == "false":
+            url = req["streams"]["adaptive_hls"]
+            if args.subtitle in url:
+                url = url[args.subtitle]["url"]
+            elif args.subtitle_fallback in url:
+                url = url[args.subtitle_fallback]["url"]
+            else:
+                url = url[""]["url"]
         else:
-            url = url[""]["url"]
+            #multitrack_adaptive_hls_v2 includes soft subtitles in the stream
+            url = req["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
     except IndexError:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
@@ -767,6 +771,7 @@ def start_playback(args, api: API):
     if is_helper.check_inputstream():
         item.setProperty("inputstream", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
+        item.setSubtitles([req["subtitles"][args.subtitle]["url"]])
         # start playback
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
 
