@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import math
 import sys
+import time
 
 import inputstreamhelper
-import math
-import time
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -743,14 +743,29 @@ def start_playback(args, api):
     # vo_drm_adaptive_dash
     # vo_drm_adaptive_hls
 
+    url_subtitles_soft = None
+
     try:
-        url = req["streams"]["adaptive_hls"]
-        if args.subtitle in url:
-            url = url[args.subtitle]["url"]
-        elif args.subtitle_fallback in url:
-            url = url[args.subtitle_fallback]["url"]
+        if args.addon.getSetting("soft_subtitles") == "false":
+            url = req["streams"]["adaptive_hls"]
+            if args.subtitle in url:
+                url = url[args.subtitle]["url"]
+            elif args.subtitle_fallback in url:
+                url = url[args.subtitle_fallback]["url"]
+            else:
+                url = url[""]["url"]
         else:
-            url = url[""]["url"]
+            # multitrack_adaptive_hls_v2 includes soft subtitles in the stream
+            url = req["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+
+            # set soft subtitles
+            if args.subtitle in req["subtitles"]:
+                url_subtitles_soft = req.get("subtitles").get(args.subtitle).get("url")
+            elif args.subtitle_fallback in req["subtitles"]:
+                url_subtitles_soft = req.get("subtitles").get(args.subtitle_fallback).get("url")
+            else:
+                url_subtitles_soft = None
+
     except IndexError:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
@@ -767,6 +782,10 @@ def start_playback(args, api):
     if is_helper.check_inputstream():
         item.setProperty("inputstream", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
+        # add soft subtitles url for configured language
+        if url_subtitles_soft:
+            item.setSubtitles([url_subtitles_soft])
+
         # start playback
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
 
