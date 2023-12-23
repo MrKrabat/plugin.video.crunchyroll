@@ -241,13 +241,6 @@ class API:
             self.delete_storage()
             return None
 
-        try:
-            data = data.decode('utf-8')
-        except Exception:
-            self.delete_storage()
-            utils.crunchy_log(self.args, "Failed to decode JSON session data")
-            return None
-
         d = dict()
         d.update(data)
 
@@ -265,7 +258,7 @@ class API:
         storage_file = self.get_storage_path()
 
         # serialize (Object has a to_str serializer)
-        json_string = str(account).encode('utf-8')
+        json_string = str(account)
 
         with closing(xbmcvfs.File(storage_file, 'w')) as f:
             result = f.write(json_string)
