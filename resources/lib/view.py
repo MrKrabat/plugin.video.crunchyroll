@@ -23,7 +23,6 @@ except ImportError:
     from urllib.parse import quote_plus
 
 import xbmc
-import xbmcvfs
 import xbmcgui
 import xbmcplugin
 

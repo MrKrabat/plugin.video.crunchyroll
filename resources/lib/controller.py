@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import math
 import sys
-import time
 
 import inputstreamhelper
+import math
+import time
 import xbmc
 import xbmcgui
 import xbmcplugin

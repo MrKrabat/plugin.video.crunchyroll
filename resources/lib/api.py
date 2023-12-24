@@ -16,12 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json as JSON
+from contextlib import closing
 
 import requests
 import xbmc
 import xbmcvfs
 from datetime import timedelta
-from contextlib import closing
 
 from . import utils
 from .model import AccountData
