@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import re
 from json import dumps
 
@@ -30,6 +29,7 @@ except ImportError:
 
 from datetime import datetime
 import time
+
 from .model import Args, LoginError, CrunchyrollError
 
 
@@ -200,3 +200,24 @@ def convert_subtitle_index_to_string(subtitle_index):
         return ""
     else:
         return "en-US"
+
+
+def filter_series(args, item):
+
+    # is it a dub in my main language?
+    if args.subtitle == item.get('audio_locale', ""):
+        return True
+
+    # is it a dub in my alternate language?
+    if args.subtitle_fallback and args.subtitle_fallback == item.get('audio_locale', ""):
+        return True
+
+    # is it japanese audio, but there are subtitles in my main language?
+    if item.get("audio_locale") == "ja-JP":
+        if args.subtitle in item.get("subtitle_locales", []):
+            return True
+
+        if args.subtitle_fallback and args.subtitle_fallback in item.get("subtitle_locales", []):
+            return True
+
+    return False
