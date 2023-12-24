@@ -761,7 +761,7 @@ def start_playback(args, api: API):
             # set soft subtitles
             if args.subtitle in req["subtitles"]:
                 url_subtitles_soft = req.get("subtitles").get(args.subtitle).get("url")
-            elif args.subtitle_fallback in req["subtitles"]:
+            elif args.subtitle_fallback and args.subtitle_fallback in req["subtitles"]:
                 url_subtitles_soft = req.get("subtitles").get(args.subtitle_fallback).get("url")
             else:
                 url_subtitles_soft = None
