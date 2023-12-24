@@ -30,7 +30,7 @@ except ImportError:
 
 from datetime import datetime
 import time
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from .model import Args, LoginError, CrunchyrollError
 
@@ -100,7 +100,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     return r_json
 
 
-def get_stream_id_from_url(url: str) -> str | None:
+def get_stream_id_from_url(url: str) -> Union[str, None]:
     stream_id = re.search('/videos/([^/]+)/streams', url)
     if stream_id is None:
         return None
@@ -117,7 +117,7 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
     return 0
 
 
-def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> str | None:
+def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
     if item.get("images") and item.get("images").get(image_type):
         src = item.get("images").get(image_type)
         for i in range(0, depth):
@@ -202,3 +202,28 @@ def convert_subtitle_index_to_string(subtitle_index: int) -> str:
         return ""
     else:
         return "en-US"
+
+
+def filter_series(args: Args, item: Dict) -> bool:
+
+    # is it a dub in my main language?
+    if args.subtitle == item.get('audio_locale', ""):
+        return True
+
+    # is it a dub in my alternate language?
+    if args.subtitle_fallback and args.subtitle_fallback == item.get('audio_locale', ""):
+        return True
+
+    # is it japanese audio, but there are subtitles in my main language?
+    if item.get("audio_locale") == "ja-JP":
+        if args.subtitle in item.get("subtitle_locales", []):
+            return True
+
+        if args.subtitle_fallback and args.subtitle_fallback in item.get("subtitle_locales", []):
+            return True
+
+    return False
+
+
+# if (args.subtitle not in item.get("audio_locales", []) and
+#         args.subtitle not in item.get("subtitle_locales", [])):

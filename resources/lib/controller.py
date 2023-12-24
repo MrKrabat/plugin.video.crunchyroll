@@ -589,12 +589,10 @@ def view_series(args, api: API):
     # display media
     for item in req["items"]:
         try:
-
             # filter items where either audio or subtitles match my configured language
             # otherwise it will break things when selecting the correct stream later.
             # @see: issues.txt
-            if (args.subtitle not in item.get("audio_locales", []) and
-                    args.subtitle not in item.get("subtitle_locales", [])):
+            if not utils.filter_series(args, item):
                 continue
 
             # add to view
