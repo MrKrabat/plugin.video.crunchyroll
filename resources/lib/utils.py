@@ -30,7 +30,7 @@ except ImportError:
 
 from datetime import datetime
 import time
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from .model import Args, LoginError, CrunchyrollError
 
@@ -100,7 +100,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     return r_json
 
 
-def get_stream_id_from_url(url: str) -> str | None:
+def get_stream_id_from_url(url: str) -> Union[str, None]:
     stream_id = re.search('/videos/([^/]+)/streams', url)
     if stream_id is None:
         return None
@@ -117,7 +117,7 @@ def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
     return 0
 
 
-def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> str | None:
+def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
     if item.get("images") and item.get("images").get(image_type):
         src = item.get("images").get(image_type)
         for i in range(0, depth):
