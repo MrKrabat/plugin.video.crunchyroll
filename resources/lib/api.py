@@ -17,7 +17,7 @@
 
 import json as JSON
 from datetime import timedelta
-from typing import Optional, Dict, Union
+from typing import Optional, Dict
 
 import requests
 import xbmc
@@ -189,9 +189,8 @@ class API:
             headers=None,
             params=None,
             data=None,
-            json=None,
-            expected_response_type='json'
-    ) -> Optional[Union[Dict, str]]:
+            json=None
+    ) -> Optional[Dict]:
         if params is None:
             params = dict()
         if headers is None:
@@ -216,7 +215,7 @@ class API:
             data=data,
             json=json
         )
-        return utils.get_json_from_response(r) if expected_response_type == 'json' else r.text
+        return utils.get_json_from_response(r)
 
     def get_storage_path(self) -> str:
         """Get cookie file path

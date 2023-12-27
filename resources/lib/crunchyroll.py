@@ -149,8 +149,6 @@ def check_mode(args, api: API):
         controller.add_to_queue(args, api)
     elif mode == "remove_from_queue":
         controller.remove_from_queue(args, api)
-    elif mode == 'subtitle_proxy':
-        return utils.subtitles_proxy(args, api)
     else:
         # unknown mode
         utils.crunchy_log(args, "Failed in check_mode '%s'" % str(mode), xbmc.LOGERROR)

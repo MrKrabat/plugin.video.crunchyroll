@@ -29,7 +29,8 @@ from requests import ConnectionError
 from . import utils
 from . import view
 from .api import API
-from .model import EpisodeData, MovieData, VideoStream
+from .model import EpisodeData, MovieData
+from .videostream import VideoStream
 
 
 def show_queue(args, api: API):
@@ -669,7 +670,8 @@ def view_episodes(args, api: API):
         try:
             stream_id = utils.get_stream_id_from_url(item.get('__links__', []).get('streams', []).get('href', ''))
             if stream_id is None:
-                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item.get('series_title', 'undefined')), xbmc.LOGERROR)
+                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item.get('series_title', 'undefined')),
+                                  xbmc.LOGERROR)
                 continue
 
             # add to view
@@ -732,7 +734,7 @@ def start_playback(args, api: API):
     video_stream_helper = VideoStream(args, api)
 
     try:
-        stream_info = video_stream_helper.get_player_stream_data(args.stream_id)
+        stream_info = video_stream_helper.get_player_stream_data()
         if not stream_info or not stream_info.stream_url:
             utils.crunchy_log(args, "Failed to load stream info for playback", xbmc.LOGERROR)
 
@@ -740,8 +742,14 @@ def start_playback(args, api: API):
             xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
             xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
 
+        utils.log("Video Stream URL: %s" % stream_info.stream_url)
+        if stream_info.subtitle_urls:
+            for i in stream_info.subtitle_urls:
+                utils.log("Subtitle URL: %s" % i)
+
 
     except Exception:
+        utils.log_error_with_trace(args, "Failed to prepare stream info data")
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
         xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
@@ -759,9 +767,9 @@ def start_playback(args, api: API):
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
         # add soft subtitles url for configured language
         if stream_info.subtitle_urls:
-            utils.log("Test path: %s" % ('special://' + api.get_storage_path() + 'test.txt'))
+            for subtitle_url in stream_info.subtitle_urls:
+                utils.log("subtitle path: %s" % subtitle_url)
             item.setSubtitles(stream_info.subtitle_urls)
-           # item.addStreamInfo('subtitle', {'language': 'test'})
 
         # start playback
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
