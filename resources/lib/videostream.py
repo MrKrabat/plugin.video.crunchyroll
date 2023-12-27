@@ -109,9 +109,11 @@ class VideoStream(Object):
 
         if self.args.subtitle in api_stream_data["subtitles"]:
             subtitles_data_raw.append(api_stream_data.get("subtitles").get(self.args.subtitle))
-        elif self.args.subtitle_fallback and self.args.subtitle_fallback in api_stream_data["subtitles"]:
+
+        if self.args.subtitle_fallback and self.args.subtitle_fallback in api_stream_data["subtitles"]:
             subtitles_data_raw.append(api_stream_data.get("subtitles").get(self.args.subtitle_fallback))
-        else:
+
+        if not subtitles_data_raw:
             return None
 
         # we need to download the subtitles, cache and rename them to show proper labels in the kodi video player
