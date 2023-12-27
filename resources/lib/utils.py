@@ -202,3 +202,13 @@ def convert_subtitle_index_to_string(subtitle_index: int) -> str:
         return ""
     else:
         return "en-US"
+
+
+def subtitles_proxy(args, api):
+    log("Subtitles proxy")
+    log(args.url)
+    # make api request to fetch subtitles
+
+    # return subtitles as str
+
+    return ""

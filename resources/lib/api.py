@@ -17,7 +17,7 @@
 
 import json as JSON
 from datetime import timedelta
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 
 import requests
 import xbmc
@@ -189,8 +189,9 @@ class API:
             headers=None,
             params=None,
             data=None,
-            json=None
-    ) -> Optional[Dict]:
+            json=None,
+            expected_response_type='json'
+    ) -> Optional[Union[Dict, str]]:
         if params is None:
             params = dict()
         if headers is None:
@@ -215,17 +216,17 @@ class API:
             data=data,
             json=json
         )
-        return utils.get_json_from_response(r)
+        return utils.get_json_from_response(r) if expected_response_type == 'json' else r.text
 
     def get_storage_path(self) -> str:
         """Get cookie file path
         """
         profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
 
-        return profile_path + "session_data.json"
+        return profile_path
 
     def load_from_storage(self) -> Optional[Dict]:
-        storage_file = self.get_storage_path()
+        storage_file = self.get_storage_path() + "session_data.json"
 
         if not xbmcvfs.exists(storage_file):
             return None
@@ -239,7 +240,7 @@ class API:
         return d
 
     def delete_storage(self) -> None:
-        storage_file = self.get_storage_path()
+        storage_file = self.get_storage_path() + "session_data.json"
 
         if not xbmcvfs.exists(storage_file):
             return None
@@ -247,7 +248,7 @@ class API:
         xbmcvfs.delete(storage_file)
 
     def write_to_storage(self, account: AccountData) -> bool:
-        storage_file = self.get_storage_path()
+        storage_file = self.get_storage_path() + "session_data.json"
 
         # serialize (Object has a to_str serializer)
         json_string = str(account)
