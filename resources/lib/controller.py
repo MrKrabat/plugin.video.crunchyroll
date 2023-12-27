@@ -29,7 +29,8 @@ from requests import ConnectionError
 from . import utils
 from . import view
 from .api import API
-from .model import EpisodeData, MovieData, VideoStream
+from .model import EpisodeData, MovieData
+from .videostream import VideoStream
 
 
 def show_queue(args, api):
@@ -730,7 +731,7 @@ def start_playback(args, api):
     video_stream_helper = VideoStream(args, api)
 
     try:
-        stream_info = video_stream_helper.get_player_stream_data(args.stream_id)
+        stream_info = video_stream_helper.get_player_stream_data()
         if not stream_info or not stream_info.stream_url:
             utils.crunchy_log(args, "Failed to load stream info for playback", xbmc.LOGERROR)
 
@@ -739,6 +740,7 @@ def start_playback(args, api):
             xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
 
     except Exception:
+        utils.log_error_with_trace(args, "Failed to prepare stream info data")
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
         xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))

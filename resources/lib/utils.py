@@ -75,10 +75,19 @@ def str_to_date(string):
 
 def get_json_from_response(r):
     code = r.status_code
+    response_type = r.headers.get("Content-Type")
 
     # no content - possibly POST/DELETE request?
     if not r or not r.text:
         return None
+
+    # handle text/plain response (e.g. fetch subtitle)
+    if response_type == "text/plain":
+        d = dict()
+        d.update({
+            'data': r.text
+        })
+        return d
 
     try:
         r_json = r.json()
@@ -201,6 +210,33 @@ def convert_subtitle_index_to_string(subtitle_index):
         return ""
     else:
         return "en-US"
+
+
+def convert_language_iso_to_string(args, language_iso):
+    if language_iso == "en-US":
+        return args.addon.getLocalizedString(30021)
+    elif language_iso == "en-GB":
+        return args.addon.getLocalizedString(30022)
+    elif language_iso == "es-419":
+        return args.addon.getLocalizedString(30023)
+    elif language_iso == "es-ES":
+        return args.addon.getLocalizedString(30024)
+    elif language_iso == "pt-BR":
+        return args.addon.getLocalizedString(30025)
+    elif language_iso == "pt-PT":
+        return args.addon.getLocalizedString(30026)
+    elif language_iso == "fr-FR":
+        return args.addon.getLocalizedString(30027)
+    elif language_iso == "de-DE":
+        return args.addon.getLocalizedString(30028)
+    elif language_iso == "ar-ME":
+        return args.addon.getLocalizedString(30029)
+    elif language_iso == "it-IT":
+        return args.addon.getLocalizedString(30030)
+    elif language_iso == "ru-RU":
+        return args.addon.getLocalizedString(30031)
+    else:
+        return language_iso
 
 
 def filter_series(args, item):
