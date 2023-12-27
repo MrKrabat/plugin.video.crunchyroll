@@ -185,7 +185,8 @@ class API:
             headers=None,
             params=None,
             data=None,
-            json=None
+            json=None,
+            expected_response_type='json'
     ):
         if params is None:
             params = dict()
@@ -212,7 +213,7 @@ class API:
             data=data,
             json=json
         )
-        return utils.get_json_from_response(r)
+        return utils.get_json_from_response(r) if expected_response_type == 'json' else r.text
 
     def get_storage_path(self):
         """Get cookie file path

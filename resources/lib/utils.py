@@ -158,7 +158,7 @@ def log_error_with_trace(args, message, show_notification=True):
 
     for trace in trace_back:
         stack_trace.append(
-            "File : %s , Line : %d, Func.Name : %s, Message : %s\n" % (trace[0], trace[1], trace[2], trace[3]))
+            "File : %s , Line : %d, Func.Name : %s, Message : %s\n" % (trace.group(0), trace.group(1), trace.group(2), trace.group(3)))
 
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
 

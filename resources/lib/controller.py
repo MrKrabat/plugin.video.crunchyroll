@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import math
 import sys
+import time
 
 import inputstreamhelper
-import math
-import time
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -29,7 +29,7 @@ from requests import ConnectionError
 from . import utils
 from . import view
 from .api import API
-from .model import EpisodeData, MovieData
+from .model import EpisodeData, MovieData, VideoStream
 
 
 def show_queue(args, api):
@@ -587,6 +587,7 @@ def view_series(args, api):
     # display media
     for item in req["items"]:
         try:
+
             # filter items where either audio or subtitles match my configured language
             # otherwise it will break things when selecting the correct stream later.
             # @see: issues.txt
@@ -705,22 +706,6 @@ def view_episodes(args, api):
 def start_playback(args, api):
     """ plays an episode
     """
-    # api request streams
-    req = api.make_request(
-        method="GET",
-        url=api.STREAMS_ENDPOINT.format(api.account_data.cms.bucket, args.stream_id),
-        params={
-            "locale": args.subtitle
-        }
-    )
-
-    # check for error
-    if "error" in req:
-        item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
-        xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
-        xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
-        return False
-
     ##############################
     # get stream url
     ##############################
@@ -742,37 +727,25 @@ def start_playback(args, api):
     # vo_drm_adaptive_dash
     # vo_drm_adaptive_hls
 
-    url_subtitles_soft = None
+    video_stream_helper = VideoStream(args, api)
 
     try:
-        if args.addon.getSetting("soft_subtitles") == "false":
-            url = req["streams"]["adaptive_hls"]
-            if args.subtitle in url:
-                url = url[args.subtitle]["url"]
-            elif args.subtitle_fallback in url:
-                url = url[args.subtitle_fallback]["url"]
-            else:
-                url = url[""]["url"]
-        else:
-            # multitrack_adaptive_hls_v2 includes soft subtitles in the stream
-            url = req["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+        stream_info = video_stream_helper.get_player_stream_data(args.stream_id)
+        if not stream_info or not stream_info.stream_url:
+            utils.crunchy_log(args, "Failed to load stream info for playback", xbmc.LOGERROR)
 
-            # set soft subtitles
-            if args.subtitle in req["subtitles"]:
-                url_subtitles_soft = req.get("subtitles").get(args.subtitle).get("url")
-            elif args.subtitle_fallback and args.subtitle_fallback in req["subtitles"]:
-                url_subtitles_soft = req.get("subtitles").get(args.subtitle_fallback).get("url")
-            else:
-                url_subtitles_soft = None
+            item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
+            xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
 
-    except IndexError:
+    except Exception:
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
         xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
         return False
 
     # prepare playback
-    item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=url)
+    item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=stream_info.stream_url)
     item.setMimeType("application/vnd.apple.mpegurl")
     item.setContentLookup(False)
 
@@ -782,8 +755,8 @@ def start_playback(args, api):
         item.setProperty("inputstream", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
         # add soft subtitles url for configured language
-        if url_subtitles_soft:
-            item.setSubtitles([url_subtitles_soft])
+        if stream_info.subtitle_urls:
+            item.setSubtitles(stream_info.subtitle_urls)
 
         # start playback
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
@@ -800,7 +773,7 @@ def start_playback(args, api):
         # start without inputstream adaptive
         utils.crunchy_log(args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGDEBUG)
         item.setProperty("inputstream", "")
-        xbmc.Player().play(url, item)
+        xbmc.Player().play(stream_info.stream_url, item)
 
     # sync playtime with crunchyroll
     if args.addon.getSetting("sync_playtime") == "true":
@@ -837,11 +810,11 @@ def start_playback(args, api):
 
         # update playtime at crunchyroll
         try:
-            while url == player.getPlayingFile():
+            while stream_info.stream_url == player.getPlayingFile():
                 # wait 10 seconds
                 xbmc.sleep(10000)
 
-                if url == player.getPlayingFile():
+                if stream_info.stream_url == player.getPlayingFile():
                     # api request
                     try:
                         api.make_request(
