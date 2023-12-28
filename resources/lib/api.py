@@ -60,6 +60,7 @@ class API:
     RESUME_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/{}/history"
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
+    SKIP_EVENTS_ENDPOINT = "https://static.crunchyroll.com/skip-events/production/{}.json"  # requires unauthenticated request
 
     AUTHORIZATION = "Basic aHJobzlxM2F3dnNrMjJ1LXRzNWE6cHROOURteXRBU2Z6QjZvbXVsSzh6cUxzYTczVE1TY1k="
 
@@ -212,6 +213,24 @@ class API:
             data=data,
             json=json
         )
+
+        return utils.get_json_from_response(r)
+
+    def make_unauthenticated_request(
+            self,
+            method: str,
+            url: str,
+            headers=None,
+            params=None,
+            data=None,
+            json=None,
+    ) -> Optional[Dict]:
+        """ Send a raw request without any session information """
+
+        req = requests.Request(method, url, data=data, params=params, headers=headers, json=json)
+        prepped = req.prepare()
+        r = self.http.send(prepped)
+
         return utils.get_json_from_response(r)
 
     def get_storage_path(self) -> str:

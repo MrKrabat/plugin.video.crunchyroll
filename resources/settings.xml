@@ -76,7 +76,7 @@
                             <option label="30029">8</option>
                             <option label="30030">9</option>
                             <option label="30031">10</option>
-                            <option label="30070">11</option>                            
+                            <option label="30070">11</option>
                         </options>
                     </constraints>
                     <control type="list" format="string">
@@ -93,6 +93,11 @@
                 <setting id="sync_playtime" type="boolean" label="30003" help="">
                     <level>0</level>
                     <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="enable_skip_intro" type="boolean" label="30011" help="">
+                    <level>0</level>
+                    <default>false</default>
                     <control type="toggle"/>
                 </setting>
             </group>

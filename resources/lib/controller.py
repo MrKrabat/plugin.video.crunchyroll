@@ -20,17 +20,14 @@ import math
 import sys
 import time
 
-import inputstreamhelper
 import xbmc
 import xbmcgui
-import xbmcplugin
-from requests import ConnectionError
 
 from . import utils
 from . import view
 from .api import API
 from .model import EpisodeData, MovieData
-from .videostream import VideoStream
+from .videoplayer import VideoPlayer
 
 
 def show_queue(args, api: API):
@@ -834,147 +831,15 @@ def view_episodes(args, api: API):
 def start_playback(args, api: API):
     """ plays an episode
     """
-    ##############################
-    # get stream url
-    ##############################
+    video_player = VideoPlayer(args, api)
+    video_player.start_playback()
 
-    # there are tons of different stream types. not sure which one to pick...
-    # also, would be very interesting to make the streams switchable in kodi...
-    # adaptive_dash
-    # adaptive_hls - I chose this, which works for me
-    # download_dash
-    # download_hls
-    # drm_adaptive_dash
-    # drm_adaptive_hls
-    # drm_download_dash
-    # drm_download_hls
-    # drm_multitrack_adaptive_hls_v2
-    # multitrack_adaptive_hls_v2
-    # vo_adaptive_dash
-    # vo_adaptive_hls
-    # vo_drm_adaptive_dash
-    # vo_drm_adaptive_hls
+    utils.crunchy_log(args, "Starting loop", xbmc.LOGINFO)
+    # stay in this method while playing to not lose video_player, as backgrounds threads reference it
+    while video_player.is_playing():
+        time.sleep(1)
 
-    video_stream_helper = VideoStream(args, api)
-
-    try:
-        stream_info = video_stream_helper.get_player_stream_data()
-        if not stream_info or not stream_info.stream_url:
-            utils.crunchy_log(args, "Failed to load stream info for playback", xbmc.LOGERROR)
-
-            item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
-            xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
-            xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
-
-    except Exception:
-        utils.log_error_with_trace(args, "Failed to prepare stream info data")
-        item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
-        xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
-        xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
-        return False
-
-    # prepare playback
-    item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=stream_info.stream_url)
-    item.setMimeType("application/vnd.apple.mpegurl")
-    item.setContentLookup(False)
-
-    # inputstream adaptive
-    is_helper = inputstreamhelper.Helper("hls")
-    if is_helper.check_inputstream():
-        item.setProperty("inputstream", "inputstream.adaptive")
-        item.setProperty("inputstream.adaptive.manifest_type", "hls")
-        # add soft subtitles url for configured language
-        if stream_info.subtitle_urls:
-            item.setSubtitles(stream_info.subtitle_urls)
-
-        # start playback
-        xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
-
-        # wait for playback
-        if wait_for_playback(10):
-            # if successful wait more
-            xbmc.sleep(3000)
-
-    # @TODO: fallbacks not tested
-
-    # start fallback
-    if not wait_for_playback(2):
-        # start without inputstream adaptive
-        utils.crunchy_log(args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGDEBUG)
-        item.setProperty("inputstream", "")
-        xbmc.Player().play(stream_info.stream_url, item)
-
-    # sync playtime with crunchyroll
-    if args.addon.getSetting("sync_playtime") == "true":
-        # fetch playhead info from api
-        if hasattr(args, 'playhead') is False or args.playhead is None:
-            args.playhead = 0
-
-            req_episode_data = api.make_request(
-                method="GET",
-                url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
-                params={
-                    "locale": args.subtitle,
-                    "content_ids": args.episode_id
-                }
-            )
-
-            if req_episode_data and req_episode_data["data"]:
-                args.playhead = int(req_episode_data["data"][0]["playhead"])
-
-        # wait for video to begin
-        player = xbmc.Player()
-        if not wait_for_playback(30):
-            utils.crunchy_log(args, "Timeout reached, video did not start in 30 seconds", xbmc.LOGERROR)
-            return
-
-        # ask if user want to continue playback
-        if args.playhead and args.duration:
-            resume = int(int(args.playhead) / float(args.duration) * 100)
-            if 5 <= resume <= 90:
-                player.pause()
-                if xbmcgui.Dialog().yesno(args.addonname, args.addon.getLocalizedString(30065) % int(resume)):
-                    player.seekTime(float(args.playhead) - 5)
-                player.pause()
-
-        # update playtime at crunchyroll
-        try:
-            while stream_info.stream_url == player.getPlayingFile():
-                # wait 10 seconds
-                xbmc.sleep(10000)
-
-                if stream_info.stream_url == player.getPlayingFile():
-                    # api request
-                    try:
-                        api.make_request(
-                            method="POST",
-                            url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
-                            json={
-                                "playhead": int(player.getTime()),
-                                "content_id": args.episode_id
-                            },
-                            headers={
-                                'Content-Type': 'application/json'
-                            }
-                        )
-                    except ConnectionError:
-                        # catch timeout exception
-                        pass
-        except RuntimeError:
-            utils.crunchy_log(args, "Playback aborted", xbmc.LOGDEBUG)
-
-
-def wait_for_playback(timeout=30):
-    """ function that waits for playback
-    """
-    timer = time.time() + timeout
-    while not xbmc.getCondVisibility("Player.HasMedia"):
-        xbmc.sleep(50)
-        # timeout to prevent infinite loop
-        if time.time() > timer:
-            return False
-
-    return True
+    utils.crunchy_log(args, "playback stopped", xbmc.LOGINFO)
 
 
 def add_to_queue(args, api: API) -> bool:

@@ -51,6 +51,8 @@ class Args(object):
         # needed to pass some data around
         self.playhead = None
         self.stream_id = None
+        self.episode_id = None
+        self.duration = None
 
         for key, value in kwargs.items():
             if value:
