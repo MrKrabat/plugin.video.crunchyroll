@@ -113,6 +113,21 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     return r_json
 
 
+def get_series_data_from_series_ids(args, ids: list, api) -> dict:
+    req = api.make_request(
+        method="GET",
+        url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids)),
+        params={
+            "locale": args.subtitle,
+            # "preferred_audio_language": ""
+        }
+    )
+    if not req or "error" in req:
+        return {}
+
+    return {item.get("id") : item for item in req.get("data")}
+
+
 def get_stream_id_from_url(url: str) -> Union[str, None]:
     stream_id = re.search('/videos/([^/]+)/streams', url)
     if stream_id is None:
