@@ -194,10 +194,11 @@ class EpisodeData(Object):
 
         meta = data.get("panel").get("episode_metadata")
 
-        self.title: str = meta.get("season_title") + " #" + meta.get("episode") + " - " + data.get("panel").get("title")
+        self.title: str = (str(meta.get("season_number")) + "x" if meta.get("season_number") else "") + utils.twoDigits(meta.get("episode_number")) + ". " + data.get("panel").get("title")
         self.tvshowtitle: str = meta.get("series_title", "")
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)
+        self.season: int = meta.get("season_number", "")
         self.episode: str = meta.get("episode", "")
         self.episode_id: str | None = data.get("panel", {}).get("id")
         self.collection_id: str | None = meta.get("season_id")
