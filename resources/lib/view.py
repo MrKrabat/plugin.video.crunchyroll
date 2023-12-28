@@ -92,7 +92,7 @@ def add_item(
 
     # set media image
     li.setArt({"thumb": info.get("thumb", "DefaultFolder.png"),
-               "poster": info.get("thumb", "DefaultFolder.png"),
+               "poster": info.get("poster", info.get("thumb", "DefaultFolder.png")),
                "banner": info.get("thumb", "DefaultFolder.png"),
                "fanart": info.get("fanart", xbmcvfs.translatePath(args.addon.getAddonInfo("fanart"))),
                "icon": info.get("thumb", "DefaultFolder.png")})

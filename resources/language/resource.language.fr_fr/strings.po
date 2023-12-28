@@ -132,6 +132,10 @@ msgctxt "#30046"
 msgid "Goto season"
 msgstr "Aller à saisons"
 
+msgctxt "#30047"
+msgid "Resume"
+msgstr "Reprendre"
+
 msgctxt "#30050"
 msgid "Anime"
 msgstr "Animes"
