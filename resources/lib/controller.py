@@ -274,35 +274,7 @@ def list_seasons(args, mode, api: API):
 
     # if no seasons filter applied, list all available seasons
     if not season_filter:
-        req = api.make_request(
-            method="GET",
-            url=api.SEASONAL_TAGS_ENDPOINT,
-            params={
-                "locale": args.subtitle,
-            }
-        )
-
-        # check for error
-        if req.get("error") is not None:
-            view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-            view.end_of_directory(args)
-            return False
-
-        for season_tag_item in req.get("data"):
-            # add to view
-            view.add_item(
-                args,
-                {
-                    "title": season_tag_item.get("localization", {}).get("title"),
-                    "season_filter": season_tag_item.get("id", {}),
-                    "mode": args.mode
-                },
-                is_folder=True
-            )
-
-        view.end_of_directory(args)
-
-        return
+        return list_seasons_without_filter(args, mode, api)
 
     # else, if we have a season filter, show all from season
     req = api.make_request(
@@ -349,6 +321,40 @@ def list_seasons(args, mode, api: API):
             utils.log_error_with_trace(args, "Failed to add item to seasons view: %s" % (json.dumps(item, indent=4)))
 
     view.end_of_directory(args)
+
+
+def list_seasons_without_filter(args, mode, api: API):
+    """ view all available anime seasons and filter by selected season
+    """
+    req = api.make_request(
+        method="GET",
+        url=api.SEASONAL_TAGS_ENDPOINT,
+        params={
+            "locale": args.subtitle,
+        }
+    )
+
+    # check for error
+    if req.get("error") is not None:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    for season_tag_item in req.get("data"):
+        # add to view
+        view.add_item(
+            args,
+            {
+                "title": season_tag_item.get("localization", {}).get("title"),
+                "season_filter": season_tag_item.get("id", {}),
+                "mode": args.mode
+            },
+            is_folder=True
+        )
+
+    view.end_of_directory(args)
+
+    return True
 
 
 def listSeries(args, mode, api: API):
@@ -413,46 +419,7 @@ def list_filter(args, mode, api: API):
 
     # if no category_filter filter applied, list all available categories
     if not category_filter and category_filter not in specials:
-        # api request for category names / tags
-        req = api.make_request(
-            method="GET",
-            url=api.CATEGORIES_ENDPOINT,
-            params={
-                "locale": args.subtitle,
-            }
-        )
-
-        # check for error
-        if req.get("error") is not None:
-            view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-            view.end_of_directory(args)
-            return False
-
-        for category_item in req.get("items"):
-            try:
-                # add to view
-                view.add_item(
-                    args,
-                    {
-                        "title": category_item.get("localization", {}).get("title"),
-                        "plot": category_item.get("localization", {}).get("description"),
-                        "plotoutline": category_item.get("localization", {}).get("description"),
-                        "thumb": utils.get_image_from_struct(category_item, "low", 1),
-                        "fanart": utils.get_image_from_struct(category_item, "background", 1),
-                        "category_filter": category_item.get("tenant_category", {}),
-                        "mode": args.mode
-                    },
-                    is_folder=True
-                )
-            except Exception:
-                utils.log_error_with_trace(
-                    args,
-                    "Failed to add category name item to list_filter view: %s" % (json.dumps(category_item, indent=4))
-                )
-
-        view.end_of_directory(args)
-
-        return
+        return list_filter_without_category(args, mode, api)
 
     # else, if we have a category filter, show all from category
 
@@ -480,7 +447,7 @@ def list_filter(args, mode, api: API):
     )
 
     # check for error
-    if req.get("error") is not None:
+    if req is None or req.get("error") is not None:
         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
         view.end_of_directory(args)
         return False
@@ -563,6 +530,49 @@ def list_filter(args, mode, api: API):
     return True
 
 
+def list_filter_without_category(args, mode, api: API):
+    # api request for category names / tags
+    req = api.make_request(
+        method="GET",
+        url=api.CATEGORIES_ENDPOINT,
+        params={
+            "locale": args.subtitle,
+        }
+    )
+
+    # check for error
+    if req.get("error") is not None:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    for category_item in req.get("items"):
+        try:
+            # add to view
+            view.add_item(
+                args,
+                {
+                    "title": category_item.get("localization", {}).get("title"),
+                    "plot": category_item.get("localization", {}).get("description"),
+                    "plotoutline": category_item.get("localization", {}).get("description"),
+                    "thumb": utils.get_image_from_struct(category_item, "low", 1),
+                    "fanart": utils.get_image_from_struct(category_item, "background", 1),
+                    "category_filter": category_item.get("tenant_category", {}),
+                    "mode": args.mode
+                },
+                is_folder=True
+            )
+        except Exception:
+            utils.log_error_with_trace(
+                args,
+                "Failed to add category name item to list_filter view: %s" % (json.dumps(category_item, indent=4))
+            )
+
+    view.end_of_directory(args)
+
+    return True
+
+
 def view_series(args, api: API):
     """ view all seasons/arcs of an anime
     """
@@ -579,7 +589,7 @@ def view_series(args, api: API):
     )
 
     # check for error
-    if "error" in req:
+    if not req or "error" in req:
         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
         view.end_of_directory(args)
         return False
