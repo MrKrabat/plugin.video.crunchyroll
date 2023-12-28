@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="3.3.0" provider-name="MrKrabat">
+<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="4.0.0" provider-name="Xtero">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
         <import addon="script.module.inputstreamhelper" version="0.3.3"/>
+        <import addon="script.module.requests" version="2.31.0" />
+        <import addon="script.module.codequick" version="1.0.3" />
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>
@@ -12,11 +14,14 @@
         <language>en es pt fr de ar it ru</language>
         <summary lang="en_GB">Watch videos from Crunchyroll.com!</summary>
         <summary lang="de_DE">Schaue Videos von Crunchyroll.com!</summary>
+        <summary lang="fr_FR">Regardez les vidéos de Crunchyroll.com!</summary>
         <description lang="en_GB">Crunchyroll is an online video service and community that offers full-length episodes and movies of the very best in Japanese anime and Asian entertainment.</description>
         <description lang="de_DE">Crunchyroll ist ein online Video-Streaming-Dienst und bietet Zugang zu vollen Episoden und Filmen der besten japanischen Anime und asiatischer Unterhaltung.</description>
+        <description lang="fr_FR">Crunchyroll est un service de vidéo en ligne et une communauté qui offres des épisodes et des filmes en entier, issue du meilleur de l'animation japonaise et du divertissement asiatique.</description>
         <disclaimer lang="en_GB">WARNING: You MUST be a PREMIUM member to use this Plugin</disclaimer>
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
-        <news>v3.3.0 (2023.03.08)[CR]- Update for Kodi 20 Nexus</news>
+        <disclaimer lang="fr_FR">ATTENTION: Vous DEVEZ être un utilisateur PREMIUM pour pouvoir utiliser ce plugin</disclaimer>
+        <news>v4.0.0 (20XX.XX.XX)[CR]- Update to use beta api</news>
         <license>GNU Affero General Public License, v3</license>
         <forum></forum>
         <website>http://www.crunchyroll.com/</website>

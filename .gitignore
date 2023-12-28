@@ -1,3 +1,6 @@
 Thumbs.db
 *.pyo
 __pycache__
+.idea
+*.mo
+*.swp
