@@ -37,6 +37,7 @@ class Args(object):
         """Initialize arguments object
         Hold also references to the addon which can't be kept at module level.
         """
+        self.mode = None
         self.PY2 = sys.version_info[0] == 2  #: True for Python 2
         self._argv = argv
         self._addonid = self._argv[0][9:-1]
