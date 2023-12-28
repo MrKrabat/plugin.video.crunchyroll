@@ -37,7 +37,11 @@ types = ["count", "size", "date", "genre", "country", "year", "episode", "season
          "lastplayed", "album", "artist", "votes", "path", "trailer", "dateadded", "mediatype", "dbid"]
 
 
-def end_of_directory(args):
+def end_of_directory(args, content_type = None):
+    # let xbmc know the items type in current directory
+    if content_type is not None:
+        xbmcplugin.setContent(int(args._argv[1]), content_type)
+
     # sort methods are required in library mode
     xbmcplugin.addSortMethod(int(args.argv[1]), xbmcplugin.SORT_METHOD_NONE)
 

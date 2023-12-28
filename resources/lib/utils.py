@@ -267,3 +267,11 @@ def filter_series(args: Args, item: Dict) -> bool:
             return True
 
     return False
+
+
+def twoDigits(n):
+    if not n:
+        return "00"
+    if n < 10:
+        return "0" + str(n)
+    return str(n)
