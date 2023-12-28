@@ -745,7 +745,6 @@ def start_playback(args, api: API):
             for i in stream_info.subtitle_urls:
                 utils.log("Subtitle URL: %s" % i)
 
-
     except Exception:
         utils.log_error_with_trace(args, "Failed to prepare stream info data")
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
