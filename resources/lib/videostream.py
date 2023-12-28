@@ -35,6 +35,7 @@ class VideoPlayerStreamData(Object):
     def __init__(self):
         self.stream_url: str | None = None
         self.subtitle_urls: list[str] | None = None
+        self.skip_events_data: Dict = {}
 
 
 class VideoStream(Object):
@@ -70,6 +71,7 @@ class VideoStream(Object):
 
         video_player_stream_data.stream_url = self._get_stream_url_from_api_data(api_stream_data)
         video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(api_stream_data)
+        video_player_stream_data.skip_events_data = self._get_skip_events(self.args.episode_id)
 
         return video_player_stream_data
 
@@ -237,6 +239,7 @@ class VideoStream(Object):
 
     def get_cache_file_name(self, subtitle_language: str, subtitle_format: str) -> str:
         """ build a file name for the subtitles file that kodi can display with a readable label """
+
         # kodi ignores the first part of e.g. de-DE - split and use only first part in uppercase
         iso_parts = subtitle_language.split('-')
 
@@ -251,3 +254,22 @@ class VideoStream(Object):
             filename = filename[:-1]
 
         return filename
+
+    def _get_skip_events(self, episode_id) -> Optional[Dict]:
+        try:
+            crunchy_log(self.args, "Requesting skip data from %s" % self.api.SKIP_EVENTS_ENDPOINT.format(episode_id))
+
+            # api request streams
+            req = self.api.make_unauthenticated_request(
+                method="GET",
+                url=self.api.SKIP_EVENTS_ENDPOINT.format(episode_id)
+            )
+        except Exception:
+            log_error_with_trace(self.args, "_get_skip_events: error in requesting skip events data from api")
+            return None
+
+        if req and "error" in req:
+            crunchy_log(self.args, "_get_skip_events: error in requesting skip events data from api (2)")
+            return None
+
+        return req

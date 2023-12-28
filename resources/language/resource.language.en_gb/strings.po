@@ -55,6 +55,14 @@ msgctxt "#30010"
 msgid "General"
 msgstr ""
 
+msgctxt "#30011"
+msgid "Skip intro"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Skip"
+msgstr ""
+
 msgctxt "#30020"
 msgid "Subtitle Language"
 msgstr ""
