@@ -210,6 +210,9 @@ def show_history(args, api: API):
 
     num_pages = int(math.ceil(req["total"] / items_per_page))
 
+    series_ids = [item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get("episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in req.get("data")]
+    series_data = get_series_data_from_series_ids(args, series_ids, api)
+
     for item in req.get("data"):
         try:
             # skip episodes completely that don't have at least the type information
@@ -226,6 +229,17 @@ def show_history(args, api: API):
                                   xbmc.LOGERROR)
                 continue
 
+            series_obj = None
+            poster = entry.thumb
+            fanart = entry.fanart
+            if entry.series_id:
+                series_obj = series_data.get(entry.series_id)
+                if series_obj:
+                    poster = utils.get_image_from_struct(series_obj, "poster_tall", 2)
+                    fanart = utils.get_image_from_struct(series_obj, "poster_wide", 2)
+                else:
+                    utils.log("Cannot retrieve series %s" % entry.series_id)
+
             # add to view
             view.add_item(
                 args,
@@ -234,6 +248,7 @@ def show_history(args, api: API):
                     "tvshowtitle": entry.tvshowtitle,
                     "duration": entry.duration,
                     "playcount": entry.playcount,
+                    "season": entry.season,
                     "episode": entry.episode,
                     "episode_id": entry.episode_id,
                     "collection_id": entry.collection_id,
@@ -245,7 +260,8 @@ def show_history(args, api: API):
                     "aired": entry.aired,
                     "premiered": entry.premiered,
                     "thumb": entry.thumb,
-                    "fanart": entry.fanart,
+                    "poster": poster,
+                    "fanart": fanart,
                     "stream_id": entry.stream_id,
                     "playhead": entry.playhead,
                     "mode": "videoplay"
@@ -266,6 +282,111 @@ def show_history(args, api: API):
     view.end_of_directory(args, "episodes")
 
     return True
+
+
+def show_resume_episodes(args, api: API):
+    """ shows episode to resume for watching animes
+    """
+    items_per_page = 20
+
+    req = api.make_request(
+        method="GET",
+        url=api.RESUME_ENDPOINT.format(api.account_data.account_id),
+        params={
+            "n": items_per_page,
+            "locale": args.subtitle,
+            # "preferred_audio_language": ""
+        }
+    )
+
+    # check for error
+    if "error" in req:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    num_pages = int(math.ceil(req["total"] / items_per_page))
+
+    series_ids = [item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get("episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in req.get("data")]
+    series_data = get_series_data_from_series_ids(args, series_ids, api)
+
+    for item in req.get("data"):
+        try:
+            # skip episodes completely that don't have at least the type information
+            # @see https://github.com/smirgol/plugin.video.crunchyroll/issues/8
+            if not item.get('panel') or not item.get('panel').get('type'):
+                continue
+
+            if item.get("panel").get("type") == "episode":
+                entry = EpisodeData(item)
+            elif item.get("panel").get("type") == "movie":
+                entry = MovieData(item)
+            else:
+                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
+                                  xbmc.LOGERROR)
+                continue
+
+            series_obj = None
+            poster = entry.thumb
+            fanart = entry.fanart
+            if entry.series_id:
+                series_obj = series_data.get(entry.series_id)
+                if series_obj:
+                    poster = utils.get_image_from_struct(series_obj, "poster_tall", 2)
+                    fanart = utils.get_image_from_struct(series_obj, "poster_wide", 2)
+                else:
+                    utils.log("Cannot retrieve series %s" % entry.series_id)
+
+            # add to view
+            view.add_item(
+                args,
+                {
+                    "title": entry.title,
+                    "tvshowtitle": entry.tvshowtitle,
+                    "duration": entry.duration,
+                    "playcount": entry.playcount,
+                    "season": entry.season,
+                    "episode": entry.episode,
+                    "episode_id": entry.episode_id,
+                    "collection_id": entry.collection_id,
+                    "series_id": entry.series_id,
+                    "plot": entry.plot,
+                    "plotoutline": entry.plotoutline,
+                    "genre": "",  # no longer available
+                    "year": entry.year,
+                    "aired": entry.aired,
+                    "premiered": entry.premiered,
+                    "thumb": entry.thumb,
+                    "poster": poster,
+                    "fanart": fanart,
+                    "stream_id": entry.stream_id,
+                    "playhead": entry.playhead,
+                    "mode": "videoplay"
+                },
+                is_folder=False
+            )
+
+        except Exception:
+            utils.log_error_with_trace(args, "Failed to add item to resume view: %s" % (json.dumps(item, indent=4)))
+
+    view.end_of_directory(args, "episodes")
+
+    return True
+
+
+def get_series_data_from_series_ids(args, ids: list, api: API) -> dict:
+    req = api.make_request(
+        method="GET",
+        url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids)),
+        params={
+            "locale": args.subtitle,
+            # "preferred_audio_language": ""
+        }
+    )
+    if not req or "error" in req:
+        return {}
+
+    return {item.get("id") : item for item in req.get("data")}
 
 
 def list_seasons(args, mode, api: API):

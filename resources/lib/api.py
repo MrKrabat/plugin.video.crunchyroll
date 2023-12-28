@@ -45,6 +45,7 @@ class API:
     SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
     SEASONS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/seasons"
     EPISODES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/episodes"
+    OBJECTS_BY_ID_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/cms/objects/{}"
     SIMILAR_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/similar_to"
     NEWSFEED_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/news_feed"
     BROWSE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/browse"
@@ -56,6 +57,7 @@ class API:
     WATCHLIST_ADD_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist"
     PLAYHEADS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/playheads"
     HISTORY_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watch-history"
+    RESUME_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/{}/history"
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
 
