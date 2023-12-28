@@ -81,6 +81,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
 
     # no content - possibly POST/DELETE request?
     if not r or not r.text:
+        log("Empty response data")
         return None
 
     # handle text/plain response (e.g. fetch subtitle)
