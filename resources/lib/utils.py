@@ -139,7 +139,7 @@ def log(message) -> None:
     xbmc.log(message, xbmc.LOGINFO)
 
 
-def crunchy_log(args, message, loglevel = xbmc.LOGINFO) -> None:
+def crunchy_log(args, message, loglevel=xbmc.LOGINFO) -> None:
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), loglevel)
 
@@ -202,3 +202,30 @@ def convert_subtitle_index_to_string(subtitle_index: int) -> str:
         return ""
     else:
         return "en-US"
+
+
+def filter_series(args: Args, item: Dict) -> bool:
+    # is it a dub in my main language?
+    if args.subtitle == item.get('audio_locale', ""):
+        return True
+
+    # is it a dub in my alternate language?
+    if args.subtitle_fallback and args.subtitle_fallback == item.get('audio_locale', ""):
+        return True
+
+    # is it japanese audio, but there are subtitles in my main language?
+    if item.get("audio_locale") == "ja-JP":
+        # fix for missing subtitles in data
+        if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
+            return True
+
+        if args.subtitle in item.get("subtitle_locales", []):
+            return True
+
+        if args.subtitle_fallback and args.subtitle_fallback in item.get("subtitle_locales", []):
+            return True
+
+    return False
+
+# if (args.subtitle not in item.get("audio_locales", []) and
+#         args.subtitle not in item.get("subtitle_locales", [])):
