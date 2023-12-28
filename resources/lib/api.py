@@ -192,7 +192,6 @@ class API:
             params = dict()
         if headers is None:
             headers = dict()
-        utils.log("Request: %s - Params: %s" % (url, params))
         if self.account_data:
             if expiration := self.account_data.expires:
                 current_time = utils.get_date()

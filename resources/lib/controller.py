@@ -237,8 +237,6 @@ def show_history(args, api: API):
                 if series_obj:
                     poster = utils.get_image_from_struct(series_obj, "poster_tall", 2)
                     fanart = utils.get_image_from_struct(series_obj, "poster_wide", 2)
-                else:
-                    utils.log("Cannot retrieve series %s" % entry.series_id)
 
             # add to view
             view.add_item(
@@ -287,7 +285,7 @@ def show_history(args, api: API):
 def show_resume_episodes(args, api: API):
     """ shows episode to resume for watching animes
     """
-    items_per_page = 20
+    items_per_page = 50
 
     req = api.make_request(
         method="GET",
