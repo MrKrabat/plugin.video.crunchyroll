@@ -76,10 +76,19 @@ def str_to_date(string: str) -> datetime:
 
 def get_json_from_response(r: Response) -> Optional[Dict]:
     code: int = r.status_code
+    response_type: str = r.headers.get("Content-Type")
 
     # no content - possibly POST/DELETE request?
     if not r or not r.text:
         return None
+
+    # handle text/plain response (e.g. fetch subtitle)
+    if response_type == "text/plain":
+        d = dict()
+        d.update({
+            'data': r.text
+        })
+        return d
 
     try:
         r_json: Dict = r.json()
@@ -159,7 +168,7 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
 
     for trace in trace_back:
         stack_trace.append(
-            "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
+            "File : %s , Line : %d, Func.Name : %s, Message : %s\n" % (trace[0], trace[1], trace[2], trace[3]))
 
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
 
@@ -204,28 +213,28 @@ def convert_subtitle_index_to_string(subtitle_index: int) -> str:
         return "en-US"
 
 
-def filter_series(args: Args, item: Dict) -> bool:
-    # is it a dub in my main language?
-    if args.subtitle == item.get('audio_locale', ""):
-        return True
-
-    # is it a dub in my alternate language?
-    if args.subtitle_fallback and args.subtitle_fallback == item.get('audio_locale', ""):
-        return True
-
-    # is it japanese audio, but there are subtitles in my main language?
-    if item.get("audio_locale") == "ja-JP":
-        # fix for missing subtitles in data
-        if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
-            return True
-
-        if args.subtitle in item.get("subtitle_locales", []):
-            return True
-
-        if args.subtitle_fallback and args.subtitle_fallback in item.get("subtitle_locales", []):
-            return True
-
-    return False
-
-# if (args.subtitle not in item.get("audio_locales", []) and
-#         args.subtitle not in item.get("subtitle_locales", [])):
+def convert_language_iso_to_string(args: Args, language_iso: str) -> str:
+    if language_iso == "en-US":
+        return args.addon.getLocalizedString(30021)
+    elif language_iso == "en-GB":
+        return args.addon.getLocalizedString(30022)
+    elif language_iso == "es-419":
+        return args.addon.getLocalizedString(30023)
+    elif language_iso == "es-ES":
+        return args.addon.getLocalizedString(30024)
+    elif language_iso == "pt-BR":
+        return args.addon.getLocalizedString(30025)
+    elif language_iso == "pt-PT":
+        return args.addon.getLocalizedString(30026)
+    elif language_iso == "fr-FR":
+        return args.addon.getLocalizedString(30027)
+    elif language_iso == "de-DE":
+        return args.addon.getLocalizedString(30028)
+    elif language_iso == "ar-ME":
+        return args.addon.getLocalizedString(30029)
+    elif language_iso == "it-IT":
+        return args.addon.getLocalizedString(30030)
+    elif language_iso == "ru-RU":
+        return args.addon.getLocalizedString(30031)
+    else:
+        return language_iso

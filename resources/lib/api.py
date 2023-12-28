@@ -222,10 +222,10 @@ class API:
         """
         profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
 
-        return profile_path + "session_data.json"
+        return profile_path
 
     def load_from_storage(self) -> Optional[Dict]:
-        storage_file = self.get_storage_path()
+        storage_file = self.get_storage_path() + "session_data.json"
 
         if not xbmcvfs.exists(storage_file):
             return None
@@ -239,7 +239,7 @@ class API:
         return d
 
     def delete_storage(self) -> None:
-        storage_file = self.get_storage_path()
+        storage_file = self.get_storage_path() + "session_data.json"
 
         if not xbmcvfs.exists(storage_file):
             return None
@@ -247,7 +247,7 @@ class API:
         xbmcvfs.delete(storage_file)
 
     def write_to_storage(self, account: AccountData) -> bool:
-        storage_file = self.get_storage_path()
+        storage_file = self.get_storage_path() + "session_data.json"
 
         # serialize (Object has a to_str serializer)
         json_string = str(account)
