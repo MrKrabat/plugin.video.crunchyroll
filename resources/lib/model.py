@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import sys
 
 try:
@@ -49,6 +48,7 @@ class Args(object):
         self._subtitle_fallback = None
         # needed to pass some data around
         self._playhead = None
+        self.stream_id = None
 
         for key, value in kwargs.items():
             if value:
@@ -152,10 +152,13 @@ class MovieData(Object):
         self.series_id: str | None = None
         self.plot: str = data.get("panel", {}).get("description", "")
         self.plotoutline: str = data.get("panel", {}).get("description", "")
-        self.year: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
-        self.aired: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
-        self.premiered: str = meta.get("premium_available_date")[:10] if meta.get("premium_available_date") is not None else ""
-        self.thumb: str|None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
+        self.year: str = meta.get("premium_available_date")[:10] if meta.get(
+            "premium_available_date") is not None else ""
+        self.aired: str = meta.get("premium_available_date")[:10] if meta.get(
+            "premium_available_date") is not None else ""
+        self.premiered: str = meta.get("premium_available_date")[:10] if meta.get(
+            "premium_available_date") is not None else ""
+        self.thumb: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
         self.fanart: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
         self.playcount: int = 0
         self.stream_id: str | None = None

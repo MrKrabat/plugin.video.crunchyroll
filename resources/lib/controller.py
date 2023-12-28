@@ -30,6 +30,7 @@ from . import utils
 from . import view
 from .api import API
 from .model import EpisodeData, MovieData
+from .videostream import VideoStream
 
 
 def show_queue(args, api: API):
@@ -651,7 +652,7 @@ def view_episodes(args, api: API):
     # but it's much more effort to get the duration of the episodes at this point, as it's not provided by the endpoint
     episode_ids = []
     for item in req["items"]:
-        episode_ids.append(item["id"])
+        episode_ids.append(item.get('id'))
 
     req_playheads = api.make_request(
         method="GET",
@@ -665,9 +666,10 @@ def view_episodes(args, api: API):
     # display media
     for item in req["items"]:
         try:
-            stream_id = utils.get_stream_id_from_url(item["__links__"]["streams"]["href"])
+            stream_id = utils.get_stream_id_from_url(item.get('__links__', []).get('streams', []).get('href', ''))
             if stream_id is None:
-                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item["series_title"]), xbmc.LOGERROR)
+                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item.get('series_title', 'undefined')),
+                                  xbmc.LOGERROR)
                 continue
 
             # add to view
@@ -706,22 +708,6 @@ def view_episodes(args, api: API):
 def start_playback(args, api: API):
     """ plays an episode
     """
-    # api request streams
-    req = api.make_request(
-        method="GET",
-        url=api.STREAMS_ENDPOINT.format(api.account_data.cms.bucket, args.stream_id),
-        params={
-            "locale": args.subtitle
-        }
-    )
-
-    # check for error
-    if "error" in req:
-        item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
-        xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
-        xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
-        return False
-
     ##############################
     # get stream url
     ##############################
@@ -743,37 +729,32 @@ def start_playback(args, api: API):
     # vo_drm_adaptive_dash
     # vo_drm_adaptive_hls
 
-    url_subtitles_soft = None
+    video_stream_helper = VideoStream(args, api)
 
     try:
-        if args.addon.getSetting("soft_subtitles") == "false":
-            url = req["streams"]["adaptive_hls"]
-            if args.subtitle in url:
-                url = url[args.subtitle]["url"]
-            elif args.subtitle_fallback in url:
-                url = url[args.subtitle_fallback]["url"]
-            else:
-                url = url[""]["url"]
-        else:
-            # multitrack_adaptive_hls_v2 includes soft subtitles in the stream
-            url = req["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+        stream_info = video_stream_helper.get_player_stream_data()
+        if not stream_info or not stream_info.stream_url:
+            utils.crunchy_log(args, "Failed to load stream info for playback", xbmc.LOGERROR)
 
-            # set soft subtitles
-            if args.subtitle in req["subtitles"]:
-                url_subtitles_soft = req.get("subtitles").get(args.subtitle).get("url")
-            elif args.subtitle_fallback and args.subtitle_fallback in req["subtitles"]:
-                url_subtitles_soft = req.get("subtitles").get(args.subtitle_fallback).get("url")
-            else:
-                url_subtitles_soft = None
+            item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
+            xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
 
-    except IndexError:
+        utils.log("Video Stream URL: %s" % stream_info.stream_url)
+        if stream_info.subtitle_urls:
+            for i in stream_info.subtitle_urls:
+                utils.log("Subtitle URL: %s" % i)
+
+
+    except Exception:
+        utils.log_error_with_trace(args, "Failed to prepare stream info data")
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
         xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
         xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
         return False
 
     # prepare playback
-    item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=url)
+    item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=stream_info.stream_url)
     item.setMimeType("application/vnd.apple.mpegurl")
     item.setContentLookup(False)
 
@@ -783,8 +764,10 @@ def start_playback(args, api: API):
         item.setProperty("inputstream", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
         # add soft subtitles url for configured language
-        if url_subtitles_soft:
-            item.setSubtitles([url_subtitles_soft])
+        if stream_info.subtitle_urls:
+            for subtitle_url in stream_info.subtitle_urls:
+                utils.log("subtitle path: %s" % subtitle_url)
+            item.setSubtitles(stream_info.subtitle_urls)
 
         # start playback
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
@@ -802,7 +785,7 @@ def start_playback(args, api: API):
         # start without inputstream adaptive
         utils.crunchy_log(args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGDEBUG)
         item.setProperty("inputstream", "")
-        xbmc.Player().play(url, item)
+        xbmc.Player().play(stream_info.stream_url, item)
 
     # sync playtime with crunchyroll
     if args.addon.getSetting("sync_playtime") == "true":
@@ -839,11 +822,11 @@ def start_playback(args, api: API):
 
         # update playtime at crunchyroll
         try:
-            while url == player.getPlayingFile():
+            while stream_info.stream_url == player.getPlayingFile():
                 # wait 10 seconds
                 xbmc.sleep(10000)
 
-                if url == player.getPlayingFile():
+                if stream_info.stream_url == player.getPlayingFile():
                     # api request
                     try:
                         api.make_request(

@@ -78,7 +78,7 @@ def main(argv):
         if api.start():
             # list menu
             xbmcplugin.setContent(int(args.argv[1]), "tvshows")
-            check_mode(args, api)
+            return check_mode(args, api)
             #api.close()
         else:
             # login failed
