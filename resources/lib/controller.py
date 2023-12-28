@@ -211,7 +211,7 @@ def show_history(args, api: API):
     num_pages = int(math.ceil(req["total"] / items_per_page))
 
     series_ids = [item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get("episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in req.get("data")]
-    series_data = get_series_data_from_series_ids(args, series_ids, api)
+    series_data = utils.get_series_data_from_series_ids(args, series_ids, api)
 
     for item in req.get("data"):
         try:
@@ -306,7 +306,7 @@ def show_resume_episodes(args, api: API):
     num_pages = int(math.ceil(req["total"] / items_per_page))
 
     series_ids = [item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get("episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in req.get("data")]
-    series_data = get_series_data_from_series_ids(args, series_ids, api)
+    series_data = utils.get_series_data_from_series_ids(args, series_ids, api)
 
     for item in req.get("data"):
         try:
@@ -370,21 +370,6 @@ def show_resume_episodes(args, api: API):
     view.end_of_directory(args, "episodes")
 
     return True
-
-
-def get_series_data_from_series_ids(args, ids: list, api: API) -> dict:
-    req = api.make_request(
-        method="GET",
-        url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids)),
-        params={
-            "locale": args.subtitle,
-            # "preferred_audio_language": ""
-        }
-    )
-    if not req or "error" in req:
-        return {}
-
-    return {item.get("id") : item for item in req.get("data")}
 
 
 def list_seasons(args, mode, api: API):
