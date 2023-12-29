@@ -19,6 +19,7 @@ from codequick import run, Route, Resolver, Listitem
 from .client import CrunchyrollClient
 import xbmcaddon
 import xbmc
+import string
 from . import utils
 
 addon = xbmcaddon.Addon(id=utils.ADDON_ID)
@@ -33,6 +34,7 @@ def root(plugin, content_type="video"):
     yield Listitem.from_dict(watchlist, label=addon.getLocalizedString(30067))
     yield Listitem.from_dict(popular, label=addon.getLocalizedString(30052))
     yield Listitem.from_dict(newly_added, label=addon.getLocalizedString(30059))
+    yield Listitem.from_dict(alpha, label=addon.getLocalizedString(30055))
 
 @Route.register
 def search(plugin, search_query, start=0):
@@ -91,6 +93,22 @@ def show_season(plugin, id):
         infos = episode.to_dict()
         item = Listitem.from_dict(play_show,**infos)
         yield item
+
+@Route.register
+def alpha(plugin):
+    index = cr.alpha()
+    for item in index:
+        yield Listitem.from_dict(alpha_one, params = {'start': item['start'], 'number': item['number']}, label = item['prefix'])
+
+@Route.register
+def alpha_one(plugin, start, number):
+    # We don't care about nextLink, but it's send anyway by browse method
+    series, nextLink = cr.browse('alphabetical', start, number)
+    for serie in series:
+        infos = serie.to_dict()
+        item = Listitem.from_dict(show_series,**infos)
+        yield item
+    
 
 @Resolver.register
 def play_show(plugin, id):

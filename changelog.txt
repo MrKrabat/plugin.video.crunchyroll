@@ -1,3 +1,10 @@
+v4.0.1 (2023.12.29)
+-Fix the way a stream is selected
+Now, in first case, it tries to use prefered lang for subtitles
+Otherwise, it will try to fallback on english
+In ultimate case, it will use no subtitle at all
+-Add alphabetical search for anime
+
 v4.0.0 (2023.12.28)
 - New implementation with Beta-Api
 - A lot of regression in term of features

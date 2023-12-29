@@ -21,7 +21,7 @@
         <disclaimer lang="en_GB">WARNING: You MUST be a PREMIUM member to use this Plugin</disclaimer>
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <disclaimer lang="fr_FR">ATTENTION: Vous DEVEZ être un utilisateur PREMIUM pour pouvoir utiliser ce plugin</disclaimer>
-        <news>v4.0.0 (20XX.XX.XX)[CR]- Update to use beta api</news>
+        <news>v4.0.1 (2023.12.29)Readd alphabetical search</news>
         <license>GNU Affero General Public License, v3</license>
         <forum></forum>
         <website>http://www.crunchyroll.com/</website>

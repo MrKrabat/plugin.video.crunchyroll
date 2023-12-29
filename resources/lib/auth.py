@@ -17,7 +17,6 @@
 
 
 import requests
-import xbmc
 from requests.auth import AuthBase
 from datetime import datetime
 from codequick.storage import PersistentDict
@@ -45,7 +44,6 @@ class CrunchyrollAuth(AuthBase):
 
     def _response_is_error(self, response):
         # TODO if there is errror, we need to clear data
-        xbmc.log("Not Yet Implemented")
         return False
         
 

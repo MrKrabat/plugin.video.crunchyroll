@@ -174,7 +174,13 @@ class CrunchyrollClient:
         self._log(f"Resolved stream id {stream_id}")
         url = f"https://beta-api.crunchyroll.com/cms/v2{self.cms['bucket']}/videos/{stream_id}/streams"
         data = self._get_cms(url).json()
-        return data['streams']['adaptive_hls'][audio_local]["url"]
+        # TODO need fallback lang (like en-US for instance)
+        if self.locale in data['streams']['adaptive_hls']:
+            return data['streams']['adaptive_hls'][self.locale]["url"]
+        elif 'en-US' in data['streams']['adaptive_hls']:
+            return data['streams']['adaptive_hls']["en-US"]["url"]
+        else:
+            return data['streams']['adaptive_hls'][""]["url"]
 
 
     def update_playhead(self, episode_id, time):
@@ -199,14 +205,33 @@ class CrunchyrollClient:
         # TODO handle errors
         data = response.json()
         result = []
-        import json
-        print(json.dumps(data,indent=4))
         for item in data['items']:
             result.append(Series(item))
         nextLink=None
         if "__links__" in data and "continuation" in data['__links__']:
             nextLink = {"start":start+number}
         return result, nextLink
+
+    def browse_index(self, sort_by):
+        url = "https://beta-api.crunchyroll.com/content/v1/browse/index"
+        params = {
+            "locale": self.locale,
+            "sort_by": sort_by,
+        }
+        response = self._get(url, params=params)
+        # TODO handle errors
+        return response.json()
+
+    def alpha(self):
+        data = self.browse_index('alphabetical')
+        result=[]
+        for item in data['items']:
+            result.append({
+                'prefix': item['prefix'],
+                'start': item['offset'],
+                'number': item['count']
+            })
+        return result
 
     def popular(self, start=0, number=10):
         self._log(f"Looking up for popular animes from {start}")
