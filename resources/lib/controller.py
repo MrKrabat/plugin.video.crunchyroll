@@ -298,7 +298,7 @@ def show_resume_episodes(args, api: API):
     )
 
     # check for error
-    if "error" in req:
+    if not req or "error" in req:
         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
         view.end_of_directory(args)
         return False
@@ -788,7 +788,7 @@ def view_episodes(args, api: API):
             view.add_item(
                 args,
                 {
-                    "title": (str(item["season_number"]) + "x" if item["season_number"] else "") + utils.twoDigits(item["episode_number"]) + ". " + item["title"],
+                    "title": utils.format_short_episode_title(item["season_number"], item["episode_number"], item["title"]),
                     "tvshowtitle": item["series_title"],
                     "duration": int(item["duration_ms"] / 1000),
                     "playcount": utils.get_watched_status_from_playheads_data(req_playheads, item["id"]),

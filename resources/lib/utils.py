@@ -283,9 +283,18 @@ def filter_series(args: Args, item: Dict) -> bool:
     return False
 
 
-def twoDigits(n):
+def format_long_episode_title(season_title: str, episode_number: str, title: str):
+    return season_title + " #" + str(episode_number) + " - " + title
+
+
+def format_short_episode_title(season_number: int, episode_number: str, title: str):
+    return (str(season_number) + "x" if season_number else "") + utils.two_digits(episode_number) + ". " + title
+
+
+def two_digits(n):
     if not n:
         return "00"
     if n < 10:
         return "0" + str(n)
     return str(n)
+

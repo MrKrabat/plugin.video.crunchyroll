@@ -148,6 +148,7 @@ class MovieData(Object):
         self.tvshowtitle: str = meta.get("movie_listing_title", "")
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)
+        self.season: str = ""
         self.episode: str = "1"
         self.episode_id: str | None = data.get("panel", {}).get("id")
         self.collection_id: str | None = None
@@ -194,7 +195,7 @@ class EpisodeData(Object):
 
         meta = data.get("panel").get("episode_metadata")
 
-        self.title: str = (str(meta.get("season_number")) + "x" if meta.get("season_number") else "") + utils.twoDigits(meta.get("episode_number")) + ". " + data.get("panel").get("title")
+        self.title: str = utils.format_long_episode_title(meta.get("season_title"), meta.get("episode_number"), data.get("panel").get("title"))
         self.tvshowtitle: str = meta.get("series_title", "")
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)
