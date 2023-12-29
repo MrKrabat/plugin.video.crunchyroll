@@ -145,9 +145,6 @@ class AccountData(Object):
         self.default_audio_language = data.get("preferred_content_audio_language")
         self.username = data.get("username")
 
-    # def to_json(self):
-    #   return dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-
 
 class MovieData(Object):
     def __init__(self, data):

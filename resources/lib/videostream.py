@@ -1,20 +1,41 @@
-import datetime
-import os
-from typing import Union, Dict, Optional
+# -*- coding: utf-8 -*-
+# Crunchyroll
+# Copyright (C) 2018 MrKrabat
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
+import datetime
 import xbmcgui
 import xbmcplugin
 import xbmcvfs
+import xbmc
 
-from resources.lib.api import API
-from resources.lib.model import Object, Args, CrunchyrollError
+from resources.lib.model import Object, CrunchyrollError
 from resources.lib.utils import log, log_error_with_trace, convert_language_iso_to_string, crunchy_log
+
+""" 
+DTO for playback that contains all relevant stream data
+"""
 
 
 class VideoPlayerStreamData(Object):
     def __init__(self):
-        self.stream_url: str | None = None
-        self.subtitle_urls: list[str] | None = None
+        Object.__init__(self)
+        self.stream_url = None
+        self.subtitle_urls = None
 
 
 """
@@ -30,14 +51,15 @@ instead of a proper label
 
 
 class VideoStream(Object):
-    def __init__(self, args: Args, api: API):
-        self.api: API = api
-        self.args: Args = args
-        self.cache_expiration_time: int = 60 * 60 * 24 * 7  # 7 days
+    def __init__(self, args, api):
+        Object.__init__(self)
+        self.api = api
+        self.args = args
+        self.cache_expiration_time = 60 * 60 * 24 * 7  # 7 days
         # cache cleanup
         self._clean_cache_subtitles()
 
-    def get_player_stream_data(self) -> Optional[VideoPlayerStreamData]:
+    def get_player_stream_data(self):
         if not hasattr(self.args, 'stream_id') or not self.args.stream_id:
             return None
 
@@ -54,7 +76,7 @@ class VideoStream(Object):
 
     """ get json stream data from cr api for given args.stream_id """
 
-    def _get_stream_data_from_api(self) -> Union[Dict, bool]:
+    def _get_stream_data_from_api(self):
         # api request streams
         req = self.api.make_request(
             method="GET",
@@ -75,7 +97,7 @@ class VideoStream(Object):
 
     """ retrieve appropriate stream url from api data """
 
-    def _get_stream_url_from_api_data(self, api_data: Dict) -> Union[str, None]:
+    def _get_stream_url_from_api_data(self, api_data):
         try:
             if self.args.addon.getSetting("soft_subtitles") == "false":
                 url = api_data["streams"]["adaptive_hls"]
@@ -99,7 +121,7 @@ class VideoStream(Object):
 
     """ retrieve appropriate subtitle urls from api data, using local caching and renaming """
 
-    def _get_subtitles_from_api_data(self, api_stream_data) -> Union[str, None]:
+    def _get_subtitles_from_api_data(self, api_stream_data):
         # we only need those urls if soft-subs are enabled in addon settings
         if self.args.addon.getSetting("soft_subtitles") == "false":
             return None
@@ -131,7 +153,7 @@ class VideoStream(Object):
 
     """ cache a subtitle from the given url and rename it for kodi to label it correctly """
 
-    def _cache_subtitle(self, subtitle_url: str, subtitle_language: str, subtitle_format: str) -> bool:
+    def _cache_subtitle(self, subtitle_url, subtitle_language, subtitle_format):
         try:
             # api request streams
             subtitles_req = self.api.make_request(
@@ -148,19 +170,19 @@ class VideoStream(Object):
             # error
             raise CrunchyrollError("Returned data is not text")
 
-        cache_target = xbmcvfs.translatePath(self.get_cache_path() + self.args.stream_id + '/')
+        cache_target = xbmc.translatePath(self.get_cache_path() + self.args.stream_id + '/')
         xbmcvfs.mkdirs(cache_target)
 
         cache_file = self.get_cache_file_name(subtitle_language, subtitle_format)
 
-        with open(cache_target + cache_file, 'w', encoding='utf-8') as file:
-            result = file.write(subtitles_req.get('data'))
+        with open(cache_target + cache_file, 'wb') as f:
+            result = f.write(subtitles_req.get('data').encode('utf-8'))
 
         return True if result > 0 else False
 
     """ try to get a subtitle using it's url, language info and format. may call _cache_subtitle if it doesn't exist """
 
-    def _get_subtitle_from_cache(self, subtitle_url: str, subtitle_language: str, subtitle_format: str) -> Union[str, None]:
+    def _get_subtitle_from_cache(self, subtitle_url, subtitle_language, subtitle_format):
         if not subtitle_url or not subtitle_language or not subtitle_format:
             log("get_subtitle_from_cache: missing argument")
             return None
@@ -169,7 +191,7 @@ class VideoStream(Object):
         cache_file = self.get_cache_file_name(subtitle_language, subtitle_format)
 
         # build full path to cached file
-        cache_target = xbmcvfs.translatePath(self.get_cache_path() + self.args.stream_id + '/') + cache_file
+        cache_target = xbmc.translatePath(self.get_cache_path() + self.args.stream_id + '/') + cache_file
 
         # check if cached file exists
         if not xbmcvfs.exists(cache_target):
@@ -187,7 +209,7 @@ class VideoStream(Object):
 
     """ clean up all cached subtitles """
 
-    def _clean_cache_subtitles(self) -> bool:
+    def _clean_cache_subtitles(self):
         expires = datetime.datetime.now() - datetime.timedelta(seconds=self.cache_expiration_time)
 
         cache_base_dir = self.get_cache_path()
@@ -206,10 +228,10 @@ class VideoStream(Object):
 
     """ return base path for subtitles caching """
 
-    def get_cache_path(self) -> str:
-        return xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile") + 'cache_subtitles/')
+    def get_cache_path(self):
+        return xbmc.translatePath(self.args.addon.getAddonInfo("profile") + 'cache_subtitles/')
 
-    def get_cache_file_name(self, subtitle_language: str, subtitle_format: str) -> str:
+    def get_cache_file_name(self, subtitle_language, subtitle_format):
         # kodi ignores the first part of e.g. de-DE - split and use only first part in uppercase
         iso_parts = subtitle_language.split('-')
 

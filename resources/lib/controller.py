@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import math
 import sys
-import time
 
 import inputstreamhelper
+import math
+import time
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -588,7 +588,6 @@ def view_series(args, api):
     # display media
     for item in req["items"]:
         try:
-
             # filter items where either audio or subtitles match my configured language
             # otherwise it will break things when selecting the correct stream later.
             # @see: issues.txt
