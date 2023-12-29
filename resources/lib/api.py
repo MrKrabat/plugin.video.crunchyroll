@@ -213,7 +213,13 @@ class API:
             data=data,
             json=json
         )
-        return utils.get_json_from_response(r) if expected_response_type == 'json' else r.text
+
+        if expected_response_type == 'json':
+            return utils.get_json_from_response(r)
+
+        # make sure we get utf-8 data from r.text
+        r.encoding = 'utf-8'
+        return r.text
 
     def get_storage_path(self):
         """Get cookie file path

@@ -83,6 +83,9 @@ def get_json_from_response(r):
 
     # handle text/plain response (e.g. fetch subtitle)
     if response_type == "text/plain":
+        # if encoding is not provided in the response, Requests will make an educated guess and very likely fail
+        # messing encoding up - which did cost me hours. We will always receive utf-8 from crunchy, so enforce that
+        r.encoding = "utf-8"
         d = dict()
         d.update({
             'data': r.text
@@ -168,7 +171,7 @@ def log_error_with_trace(args, message, show_notification=True):
     for trace in trace_back:
         stack_trace.append(
             "File : %s , Line : %d, Func.Name : %s, Message : %s\n" % (
-                trace.group[0], trace.group[1], trace.group[2], trace.group[3]
+                trace[0], trace[1], trace[2], trace[3]
             )
         )
 

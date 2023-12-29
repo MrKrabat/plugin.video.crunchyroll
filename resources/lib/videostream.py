@@ -22,6 +22,7 @@ import xbmcgui
 import xbmcplugin
 import xbmcvfs
 import xbmc
+import codecs
 
 from resources.lib.model import Object, CrunchyrollError
 from resources.lib.utils import log, log_error_with_trace, convert_language_iso_to_string, crunchy_log
@@ -175,10 +176,17 @@ class VideoStream(Object):
 
         cache_file = self.get_cache_file_name(subtitle_language, subtitle_format)
 
-        with open(cache_target + cache_file, 'wb') as f:
-            result = f.write(subtitles_req.get('data').encode('utf-8'))
-
-        return True if result > 0 else False
+        try:
+            with codecs.open(cache_target + cache_file, 'wb', encoding='utf-8') as f:
+                try:
+                    f.write(subtitles_req.get('data'))
+                    return True
+                except UnicodeEncodeError:
+                    log_error_with_trace(self.args, "UnicodeEncodeError: Failed to write data to cache file")
+                    return False
+        except Exception as e:
+            log_error_with_trace(self.args, "Failed to open cache file: {}".format(e))
+            return False
 
     """ try to get a subtitle using it's url, language info and format. may call _cache_subtitle if it doesn't exist """
 
@@ -213,6 +221,10 @@ class VideoStream(Object):
         expires = datetime.datetime.now() - datetime.timedelta(seconds=self.cache_expiration_time)
 
         cache_base_dir = self.get_cache_path()
+
+        if not xbmcvfs.exists(cache_base_dir):
+            return
+
         dirs, files = xbmcvfs.listdir(cache_base_dir)
 
         for cache_dir in dirs:
@@ -235,7 +247,7 @@ class VideoStream(Object):
         # kodi ignores the first part of e.g. de-DE - split and use only first part in uppercase
         iso_parts = subtitle_language.split('-')
 
-        filename = xbmcvfs.makeLegalFilename(
+        filename = xbmc.makeLegalFilename(
             convert_language_iso_to_string(self.args, subtitle_language) +
             '.' + iso_parts[0] +
             '.' + subtitle_format
