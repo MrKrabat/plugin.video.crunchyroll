@@ -199,7 +199,6 @@ def show_history(args, api: API):
             "page_size": items_per_page,
             "page": current_page,
             "locale": args.subtitle,
-            # "preferred_audio_language": ""
         }
     )
 
@@ -412,7 +411,6 @@ def list_filter(args, mode, api: API):
     # we re-use this method which is normally used for the categories to also show some special views, that share
     # the same logic
     specials = ["popularity", "newly_added", "alphabetical"]
-    utils.log("Category: %s" % category_filter)
 
     # if no category_filter filter applied, list all available categories
     if not category_filter and category_filter not in specials:
@@ -740,11 +738,6 @@ def start_playback(args, api: API):
             xbmcplugin.setResolvedUrl(int(args.argv[1]), False, item)
             xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30064))
 
-        utils.log("Video Stream URL: %s" % stream_info.stream_url)
-        if stream_info.subtitle_urls:
-            for i in stream_info.subtitle_urls:
-                utils.log("Subtitle URL: %s" % i)
-
     except Exception:
         utils.log_error_with_trace(args, "Failed to prepare stream info data")
         item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"))
@@ -772,7 +765,6 @@ def start_playback(args, api: API):
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
 
         # wait for playback
-        # xbmcgui.Dialog().notification(args.addonname, args.addon.getLocalizedString(30066), xbmcgui.NOTIFICATION_INFO)
         if wait_for_playback(10):
             # if successful wait more
             xbmc.sleep(3000)
