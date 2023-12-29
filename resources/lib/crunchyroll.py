@@ -60,7 +60,8 @@ def main(argv):
 
     # get subtitle language
     args._subtitle = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language"))
-    args._subtitle_fallback = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language_fallback"))
+    args._subtitle_fallback = utils.convert_subtitle_index_to_string(
+        args.addon.getSetting("subtitle_language_fallback"))
 
     api = API(
         args=args,
