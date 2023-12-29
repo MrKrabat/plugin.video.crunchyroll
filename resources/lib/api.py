@@ -99,11 +99,6 @@ class API:
         username = self.args.addon.getSetting("crunchyroll_username")
         password = self.args.addon.getSetting("crunchyroll_password")
 
-        if refresh:
-            utils.log("Refreshing session")
-        else:
-            utils.log("Creating new session")
-
         headers = {"Authorization": API.AUTHORIZATION}
         data = {}
 
