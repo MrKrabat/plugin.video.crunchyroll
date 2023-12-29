@@ -757,8 +757,6 @@ def start_playback(args, api: API):
         item.setProperty("inputstream.adaptive.manifest_type", "hls")
         # add soft subtitles url for configured language
         if stream_info.subtitle_urls:
-            for subtitle_url in stream_info.subtitle_urls:
-                utils.log("subtitle path: %s" % subtitle_url)
             item.setSubtitles(stream_info.subtitle_urls)
 
         # start playback
