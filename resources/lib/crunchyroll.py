@@ -165,6 +165,9 @@ def show_main_menu(args):
                   {"title": args.addon.getLocalizedString(30040),
                    "mode": "queue"})
     view.add_item(args,
+                  {"title": args.addon.getLocalizedString(30047),
+                   "mode": "resume"})
+    view.add_item(args,
                   {"title": args.addon.getLocalizedString(30041),
                    "mode": "search"})
     view.add_item(args,
@@ -173,9 +176,6 @@ def show_main_menu(args):
     # #view.add_item(args,
     # #              {"title": args.addon.getLocalizedString(30043),
     # #               "mode":  "random"})
-    view.add_item(args,
-                  {"title": args.addon.getLocalizedString(30047),
-                   "mode": "resume"})
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30050),
                    "mode": "anime"})
