@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+# Crunchyroll
+# Copyright (C) 2018 MrKrabat
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 import os
 from typing import Union, Dict, Optional
@@ -9,6 +26,10 @@ import xbmcvfs
 from resources.lib.api import API
 from resources.lib.model import Object, Args, CrunchyrollError
 from resources.lib.utils import log, log_error_with_trace, convert_language_iso_to_string, crunchy_log
+
+""" 
+DTO for playback that contains all relevant stream data
+"""
 
 
 class VideoPlayerStreamData(Object):
@@ -160,7 +181,12 @@ class VideoStream(Object):
 
     """ try to get a subtitle using it's url, language info and format. may call _cache_subtitle if it doesn't exist """
 
-    def _get_subtitle_from_cache(self, subtitle_url: str, subtitle_language: str, subtitle_format: str) -> Union[str, None]:
+    def _get_subtitle_from_cache(
+            self,
+            subtitle_url: str,
+            subtitle_language: str,
+            subtitle_format: str
+    ) -> Union[str, None]:
         if not subtitle_url or not subtitle_language or not subtitle_format:
             log("get_subtitle_from_cache: missing argument")
             return None
