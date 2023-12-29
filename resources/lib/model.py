@@ -38,6 +38,7 @@ class Args(object):
         """Initialize arguments object
         Hold also references to the addon which can't be kept at module level.
         """
+        self.mode = None
         self.PY2 = sys.version_info[0] == 2  #: True for Python 2
         self._argv = argv
         self._addonid = self._argv[0][9:-1]
@@ -49,6 +50,7 @@ class Args(object):
         self._subtitle_fallback = None
         # needed to pass some data around
         self._playhead = None
+        self.stream_id = None
 
         for key, value in kwargs.items():
             if value:

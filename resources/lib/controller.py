@@ -64,7 +64,8 @@ def show_queue(args, api):
             elif item["panel"]["type"] == "movie":
                 entry = MovieData(item)
             else:
-                utils.crunchy_log(args, "queue | unhandled index for metadata. %s" % (json.dumps(item, indent=4)), xbmc.LOGERROR)
+                utils.crunchy_log(args, "queue | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
+                                  xbmc.LOGERROR)
                 continue
 
             view.add_item(
@@ -161,8 +162,8 @@ def search_anime(args, api):
                 is_folder=True,
                 # for yet unknown reason, adding an item to the watchlist requires a session restart
                 callback=lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
                                              sys.argv[0], item["id"]))])
             )
 
@@ -196,8 +197,7 @@ def show_history(args, api):
         params={
             "page_size": items_per_page,
             "page": current_page,
-            "locale": args.subtitle,
-            # "preferred_audio_language": ""
+            "locale": args.subtitle
         }
     )
 
@@ -221,7 +221,8 @@ def show_history(args, api):
             elif item.get("panel").get("type") == "movie":
                 entry = MovieData(item)
             else:
-                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)), xbmc.LOGERROR)
+                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
+                                  xbmc.LOGERROR)
                 continue
 
             # add to view
@@ -338,8 +339,8 @@ def list_seasons(args, mode, api):
                 is_folder=True,
                 # for yet unknown reason, adding an item to the watchlist requires a session restart
                 callback=lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
                                              sys.argv[0], item["id"]))])
 
             )
@@ -409,7 +410,6 @@ def list_filter(args, mode, api):
     # we re-use this method which is normally used for the categories to also show some special views, that share
     # the same logic
     specials = ["popularity", "newly_added", "alphabetical"]
-    utils.log("Category: %s" % category_filter)
 
     # if no category_filter filter applied, list all available categories
     if not category_filter and category_filter not in specials:
@@ -649,7 +649,7 @@ def view_episodes(args, api):
     # but it's much more effort to get the duration of the episodes at this point, as it's not provided by the endpoint
     episode_ids = []
     for item in req["items"]:
-        episode_ids.append(item["id"])
+        episode_ids.append(item.get('id'))
 
     req_playheads = api.make_request(
         method="GET",
@@ -663,9 +663,10 @@ def view_episodes(args, api):
     # display media
     for item in req["items"]:
         try:
-            stream_id = utils.get_stream_id_from_url(item["__links__"]["streams"]["href"])
+            stream_id = utils.get_stream_id_from_url(item.get('__links__', []).get('streams', []).get('href', ''))
             if stream_id is None:
-                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item["series_title"]), xbmc.LOGERROR)
+                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item.get('series_title', 'undefined')),
+                                  xbmc.LOGERROR)
                 continue
 
             # add to view
@@ -788,7 +789,6 @@ def start_playback(args, api):
         xbmcplugin.setResolvedUrl(int(args.argv[1]), True, item)
 
         # wait for playback
-        # xbmcgui.Dialog().notification(args.addonname, args.addon.getLocalizedString(30066), xbmcgui.NOTIFICATION_INFO)
         if wait_for_playback(10):
             # if successful wait more
             xbmc.sleep(3000)

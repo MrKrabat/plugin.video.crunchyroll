@@ -80,7 +80,8 @@ class API:
         session_data = self.load_from_storage()
         if session_data and not session_restart:
             self.account_data = AccountData(session_data)
-            account_auth = {"Authorization": "{} {}".format(self.account_data.token_type, self.account_data.access_token)}
+            account_auth = {
+                "Authorization": "{} {}".format(self.account_data.token_type, self.account_data.access_token)}
             self.api_headers.update(account_auth)
 
             # check if tokes are expired
@@ -98,11 +99,6 @@ class API:
         # get login information
         username = self.args.addon.getSetting("crunchyroll_username")
         password = self.args.addon.getSetting("crunchyroll_password")
-
-        if refresh:
-            utils.log("Refreshing session")
-        else:
-            utils.log("Creating new session")
 
         headers = {"Authorization": API.AUTHORIZATION}
         data = {}

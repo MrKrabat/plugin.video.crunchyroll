@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import re
 from json import dumps
 
@@ -157,7 +158,7 @@ def log_error_with_trace(args, message, show_notification=True):
 
     for trace in trace_back:
         stack_trace.append(
-            "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
+            "File : %s , Line : %d, Func.Name : %s, Message : %s\n" % (trace[0], trace[1], trace[2], trace[3]))
 
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
 
@@ -203,7 +204,6 @@ def convert_subtitle_index_to_string(subtitle_index):
 
 
 def filter_series(args, item):
-
     # is it a dub in my main language?
     if args.subtitle == item.get('audio_locale', ""):
         return True
@@ -214,6 +214,10 @@ def filter_series(args, item):
 
     # is it japanese audio, but there are subtitles in my main language?
     if item.get("audio_locale") == "ja-JP":
+        # fix for missing subtitles in data
+        if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
+            return True
+
         if args.subtitle in item.get("subtitle_locales", []):
             return True
 

@@ -79,8 +79,7 @@ def main(argv):
         if api.start():
             # list menu
             xbmcplugin.setContent(int(args.argv[1]), "tvshows")
-            check_mode(args, api)
-            # api.close()
+            return check_mode(args, api)
         else:
             # login failed
             utils.crunchy_log(args, "Login failed", xbmc.LOGERROR)
@@ -128,7 +127,7 @@ def check_mode(args, api):
     elif mode == "popular":  # DONE
         controller.list_filter(args, "popular", api)
     # elif mode == "simulcast":  # https://www.crunchyroll.com/de/simulcasts/seasons/fall-2023 ???
-    #    controller.listSeries(args, "simulcast", api)
+    #     controller.listSeries(args, "simulcast", api)
     # elif mode == "updated":
     #    controller.listSeries(args, "updated", api)
     elif mode == "newest":

@@ -26,7 +26,6 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 
-
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",
          "tracknumber", "rating", "userrating", "watched", "playcount", "overlay", "cast", "castandrole", "director",
