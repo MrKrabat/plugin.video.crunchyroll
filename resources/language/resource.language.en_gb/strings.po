@@ -36,6 +36,10 @@ msgctxt "#30005"
 msgid "Soft Subtitles"
 msgstr ""
 
+msgctxt "#300010"
+msgid "General"
+msgstr ""
+
 msgctxt "#30020"
 msgid "Subtitle Language"
 msgstr ""
