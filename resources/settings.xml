@@ -35,30 +35,6 @@
                     </control>
                     <visible>false</visible>
                 </setting>
-                <setting id="session_id" type="string" label="30002" help="">
-                    <level>4</level>
-                    <default/>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string">
-                        <heading>30002</heading>
-                        <hidden>true</hidden>
-                    </control>
-                    <visible>false</visible>
-                </setting>
-                <setting id="auth_token" type="string" label="30002" help="">
-                    <level>4</level>
-                    <default/>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string">
-                        <heading>30002</heading>
-                        <hidden>true</hidden>
-                    </control>
-                    <visible>false</visible>
-                </setting>
             </group>
             <group id="2" label="">
                 <setting id="subtitle_language" type="integer" label="30020" help="">
