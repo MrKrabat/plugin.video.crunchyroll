@@ -125,7 +125,7 @@ def get_series_data_from_series_ids(args, ids: list, api) -> dict:
     if not req or "error" in req:
         return {}
 
-    return {item.get("id") : item for item in req.get("data")}
+    return {item.get("id"): item for item in req.get("data")}
 
 
 def get_stream_id_from_url(url: str) -> Union[str, None]:

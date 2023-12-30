@@ -210,7 +210,10 @@ def show_history(args, api: API):
 
     num_pages = int(math.ceil(req["total"] / items_per_page))
 
-    series_ids = [item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get("episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in req.get("data")]
+    series_ids = [
+        item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get(
+            "episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in
+        req.get("data")]
     series_data = utils.get_series_data_from_series_ids(args, series_ids, api)
 
     for item in req.get("data"):
@@ -229,7 +232,6 @@ def show_history(args, api: API):
                                   xbmc.LOGERROR)
                 continue
 
-            series_obj = None
             poster = entry.thumb
             fanart = entry.fanart
             if entry.series_id:
@@ -293,7 +295,7 @@ def show_resume_episodes(args, api: API):
         params={
             "n": items_per_page,
             "locale": args.subtitle,
-            # "preferred_audio_language": ""
+            "start": int(getattr(args, "offset", 0)),
         }
     )
 
@@ -303,9 +305,10 @@ def show_resume_episodes(args, api: API):
         view.end_of_directory(args)
         return False
 
-    num_pages = int(math.ceil(req["total"] / items_per_page))
-
-    series_ids = [item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get("episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in req.get("data")]
+    series_ids = [
+        item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get(
+            "episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in
+        req.get("data")]
     series_data = utils.get_series_data_from_series_ids(args, series_ids, api)
 
     for item in req.get("data"):
@@ -324,7 +327,6 @@ def show_resume_episodes(args, api: API):
                                   xbmc.LOGERROR)
                 continue
 
-            series_obj = None
             poster = entry.thumb
             fanart = entry.fanart
             if entry.series_id:
@@ -366,6 +368,16 @@ def show_resume_episodes(args, api: API):
 
         except Exception:
             utils.log_error_with_trace(args, "Failed to add item to resume view: %s" % (json.dumps(item, indent=4)))
+
+    items_left = req.get("total") - (int(getattr(args, "offset", 0)) * items_per_page) - len(req.get("data"))
+
+    # show next page button
+    if items_left > 0:
+        view.add_item(args,
+                      {"title": args.addon.getLocalizedString(30044),
+                       "offset": int(getattr(args, "offset", 0)) + items_per_page,
+                       "mode": args.mode},
+                      is_folder=True)
 
     view.end_of_directory(args, "episodes")
 
@@ -788,7 +800,8 @@ def view_episodes(args, api: API):
             view.add_item(
                 args,
                 {
-                    "title": utils.format_short_episode_title(item["season_number"], item["episode_number"], item["title"]),
+                    "title": utils.format_short_episode_title(item["season_number"], item["episode_number"],
+                                                              item["title"]),
                     "tvshowtitle": item["series_title"],
                     "duration": int(item["duration_ms"] / 1000),
                     "playcount": utils.get_watched_status_from_playheads_data(req_playheads, item["id"]),
