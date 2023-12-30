@@ -85,6 +85,9 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
 
     # handle text/plain response (e.g. fetch subtitle)
     if response_type == "text/plain":
+        # if encoding is not provided in the response, Requests will make an educated guess and very likely fail
+        # messing encoding up - which did cost me hours. We will always receive utf-8 from crunchy, so enforce that
+        r.encoding = "utf-8"
         d = dict()
         d.update({
             'data': r.text
