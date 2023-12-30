@@ -195,7 +195,8 @@ class EpisodeData(Object):
 
         meta = data.get("panel").get("episode_metadata")
 
-        self.title: str = utils.format_long_episode_title(meta.get("season_title"), meta.get("episode_number"), data.get("panel").get("title"))
+        self.title: str = utils.format_long_episode_title(meta.get("season_title"), meta.get("episode_number"),
+                                                          data.get("panel").get("title"))
         self.tvshowtitle: str = meta.get("series_title", "")
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)
