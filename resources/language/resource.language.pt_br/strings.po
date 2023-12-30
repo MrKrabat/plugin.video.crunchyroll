@@ -9,12 +9,28 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr_FR\n"
+"Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Last-Translator: \n"
 "X-Generator: Poedit 2.0.6\n"
 
 # Crunchyroll Settings
+msgctxt "#30200"
+msgid "Login"
+msgstr ""
+
+msgctxt "#30210"
+msgid "Languages"
+msgstr ""
+
+msgctxt "#30220"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#30230"
+msgid "Other"
+msgstr ""
+
 msgctxt "#30001"
 msgid "Username"
 msgstr "E-mail"
@@ -35,7 +51,7 @@ msgctxt "#30005"
 msgid "Soft Subtitles"
 msgstr ""
 
-msgctxt "#300010"
+msgctxt "#30010"
 msgid "General"
 msgstr ""
 

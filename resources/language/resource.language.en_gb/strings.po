@@ -15,6 +15,21 @@ msgstr ""
 
 
 # Crunchyroll Settings
+msgctxt "#30200"
+msgid "Login"
+msgstr ""
+
+msgctxt "#30210"
+msgid "Languages"
+msgstr ""
+
+msgctxt "#30220"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#30230"
+msgid "Other"
+msgstr ""
 
 msgctxt "#30001"
 msgid "Email"
@@ -36,7 +51,7 @@ msgctxt "#30005"
 msgid "Soft Subtitles"
 msgstr ""
 
-msgctxt "#300010"
+msgctxt "#30010"
 msgid "General"
 msgstr ""
 
