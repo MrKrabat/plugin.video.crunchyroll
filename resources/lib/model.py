@@ -49,7 +49,7 @@ class Args(object):
         self._subtitle = None
         self._subtitle_fallback = None
         # needed to pass some data around
-        self._playhead = None
+        self.playhead = None
         self.stream_id = None
 
         for key, value in kwargs.items():

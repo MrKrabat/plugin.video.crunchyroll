@@ -25,33 +25,30 @@ import xbmc
 import codecs
 
 from resources.lib.model import Object, CrunchyrollError
-from resources.lib.utils import log, log_error_with_trace, convert_language_iso_to_string, crunchy_log
-
-""" 
-DTO for playback that contains all relevant stream data
-"""
+from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log
 
 
 class VideoPlayerStreamData(Object):
+    """ DTO to hold all relevant data for playback """
+
     def __init__(self):
         Object.__init__(self)
         self.stream_url = None
         self.subtitle_urls = None
 
 
-"""
-Build a VideoPlayerStream DTO using args.steam_id
-
-Will download stream details from cr api and store the appropriate stream url
-
-It will then check if soft subs are enabled in settings and if so, manage downloading the required subtitles, which
-are then renamed to make kodi label them in a readable way - this is because kodi uses the filename of the subtitles
-to identify the language and the cr files have cryptic filenames, which will render gibberish to the user on kodi 
-instead of a proper label 
-"""
-
-
 class VideoStream(Object):
+    """
+    Build a VideoPlayerStream DTO using args.steam_id
+
+    Will download stream details from cr api and store the appropriate stream url
+
+    It will then check if soft subs are enabled in settings and if so, manage downloading the required subtitles, which
+    are then renamed to make kodi label them in a readable way - this is because kodi uses the filename of the subtitles
+    to identify the language and the cr files have cryptic filenames, which will render gibberish to the user on kodi
+    instead of a proper label
+    """
+
     def __init__(self, args, api):
         Object.__init__(self)
         self.api = api
@@ -61,6 +58,8 @@ class VideoStream(Object):
         self._clean_cache_subtitles()
 
     def get_player_stream_data(self):
+        """ retrieve a VideoPlayerStreamData containing stream url + subtitle urls for playback """
+
         if not hasattr(self.args, 'stream_id') or not self.args.stream_id:
             return None
 
@@ -75,9 +74,9 @@ class VideoStream(Object):
 
         return video_player_stream_data
 
-    """ get json stream data from cr api for given args.stream_id """
-
     def _get_stream_data_from_api(self):
+        """ get json stream data from cr api for given args.stream_id """
+
         # api request streams
         req = self.api.make_request(
             method="GET",
@@ -96,9 +95,9 @@ class VideoStream(Object):
 
         return req
 
-    """ retrieve appropriate stream url from api data """
-
     def _get_stream_url_from_api_data(self, api_data):
+        """ retrieve appropriate stream url from api data """
+
         try:
             if self.args.addon.getSetting("soft_subtitles") == "false":
                 url = api_data["streams"]["adaptive_hls"]
@@ -120,9 +119,9 @@ class VideoStream(Object):
 
         return url
 
-    """ retrieve appropriate subtitle urls from api data, using local caching and renaming """
-
     def _get_subtitles_from_api_data(self, api_stream_data):
+        """ retrieve appropriate subtitle urls from api data, using local caching and renaming """
+
         # we only need those urls if soft-subs are enabled in addon settings
         if self.args.addon.getSetting("soft_subtitles") == "false":
             return None
@@ -152,9 +151,9 @@ class VideoStream(Object):
 
         return subtitles_url_cached if subtitles_url_cached is not None else None
 
-    """ cache a subtitle from the given url and rename it for kodi to label it correctly """
-
     def _cache_subtitle(self, subtitle_url, subtitle_language, subtitle_format):
+        """ cache a subtitle from the given url and rename it for kodi to label it correctly """
+
         try:
             # api request streams
             subtitles_req = self.api.make_request(
@@ -191,8 +190,10 @@ class VideoStream(Object):
     """ try to get a subtitle using it's url, language info and format. may call _cache_subtitle if it doesn't exist """
 
     def _get_subtitle_from_cache(self, subtitle_url, subtitle_language, subtitle_format):
+        """ try to get a subtitle using its url, language info and format either from cache or api """
+
         if not subtitle_url or not subtitle_language or not subtitle_format:
-            log("get_subtitle_from_cache: missing argument")
+            crunchy_log(self.args, "get_subtitle_from_cache: missing argument", xbmc.LOGERROR)
             return None
 
         # prepare the filename for the subtitles
@@ -215,11 +216,10 @@ class VideoStream(Object):
 
         return cache_file_url
 
-    """ clean up all cached subtitles """
-
     def _clean_cache_subtitles(self):
-        expires = datetime.datetime.now() - datetime.timedelta(seconds=self.cache_expiration_time)
+        """ clean up all cached subtitles """
 
+        expires = datetime.datetime.now() - datetime.timedelta(seconds=self.cache_expiration_time)
         cache_base_dir = self.get_cache_path()
 
         if not xbmcvfs.exists(cache_base_dir):
@@ -238,12 +238,14 @@ class VideoStream(Object):
 
         return True
 
-    """ return base path for subtitles caching """
-
     def get_cache_path(self):
+        """ return base path for subtitles caching """
+
         return xbmc.translatePath(self.args.addon.getAddonInfo("profile") + 'cache_subtitles/')
 
     def get_cache_file_name(self, subtitle_language, subtitle_format):
+        """ build a file name for the subtitles file that kodi can display with a readable label """
+
         # kodi ignores the first part of e.g. de-DE - split and use only first part in uppercase
         iso_parts = subtitle_language.split('-')
 

@@ -157,7 +157,6 @@ def search_anime(args, api):
                     "thumb": utils.get_image_from_struct(item, "poster_tall", 2),
                     "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
                     "rating": 0,
-                    # that's on the live api only  int(item["rating"]["average"] * 2),  # it's now a 5-star rating, and we use score of 10?
                     "mode": "series"
                 },
                 is_folder=True,
