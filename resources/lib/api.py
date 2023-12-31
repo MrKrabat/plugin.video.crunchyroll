@@ -24,7 +24,7 @@ import xbmc
 import xbmcvfs
 
 from . import utils
-from .model import AccountData, Args
+from .model import AccountData, Args, LoginError
 
 
 class API:
@@ -187,7 +187,8 @@ class API:
             headers=None,
             params=None,
             data=None,
-            json=None
+            json=None,
+            is_retry=False
     ) -> Optional[Dict]:
         if params is None:
             params = dict()
@@ -213,6 +214,16 @@ class API:
             data=data,
             json=json
         )
+
+        # something went wrong with authentication, possibly an expired token that wasn't caught above due to host
+        # clock issues. set expiration date to 0 and re-call, triggering a full session refresh.
+        if r.status_code == 401:
+            if is_retry:
+                raise LoginError('Request to API failed twice due to authentication issues.')
+
+            utils.crunchy_log(self.args, "make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
+            self.account_data.expires = 0
+            return self.make_request(method, url, headers, params, data, json, True)
 
         return utils.get_json_from_response(r)
 
