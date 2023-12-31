@@ -60,6 +60,10 @@ msgid "Skip intro"
 msgstr ""
 
 msgctxt "#30012"
+msgid "Skip credits"
+msgstr ""
+
+msgctxt "#30015"
 msgid "Skip"
 msgstr ""
 
