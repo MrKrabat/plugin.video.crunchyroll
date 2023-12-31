@@ -19,6 +19,7 @@ import time
 from typing import Optional
 
 import inputstreamhelper
+import requests
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -26,7 +27,7 @@ import xbmcplugin
 from resources.lib import utils
 from resources.lib.api import API
 from resources.lib.gui import SkipModalDialog, _show_modal_dialog
-from resources.lib.model import Object, Args
+from resources.lib.model import Object, Args, CrunchyrollError
 from resources.lib.videostream import VideoPlayerStreamData, VideoStream
 
 
@@ -87,7 +88,7 @@ class VideoPlayer(Object):
                 xbmcgui.Dialog().ok(self._args.addonname, self._args.addon.getLocalizedString(30064))
                 return False
 
-        except Exception:
+        except (CrunchyrollError, requests.exceptions.RequestException):
             utils.log_error_with_trace(self._args, "Failed to prepare stream info data")
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), False, item)
             xbmcgui.Dialog().ok(self._args.addonname,
@@ -179,15 +180,11 @@ class VideoPlayer(Object):
         threading.Thread(target=self.thread_update_playhead).start()
 
     def _handle_skipping(self):
-        """ Handles skipping of intro (and later maybe credits / recaps) """
+        """ Handles skipping of video parts (intro, credits, ...) """
 
         # check whether we have the required data to enable this
-        if not self._check_skip_data():
-            utils.crunchy_log(self._args, "We do not have the required data to enable skipping", xbmc.LOGINFO)
-            return
-
-        # check if it is enabled in the settings
-        if self._args.addon.getSetting("enable_skip_intro") != "true":
+        if not self._check_and_filter_skip_data():
+            utils.crunchy_log(self._args, "_handle_skipping: Nothing to skip", xbmc.LOGINFO)
             return
 
         # run thread in background to check when whe reach a section where we can skip
@@ -219,9 +216,10 @@ class VideoPlayer(Object):
                 # wait 10 seconds
                 xbmc.sleep(10000)
 
-                if (last_updated_playtime < self._player.getTime() and
-                        self._player.isPlaying() and
-                        self._stream_data.stream_url == self._player.getPlayingFile()
+                if (
+                    last_updated_playtime < self._player.getTime() and
+                    self._player.isPlaying() and
+                    self._stream_data.stream_url == self._player.getPlayingFile()
                 ):
                     last_updated_playtime = self._player.getTime()
                     # api request
@@ -237,7 +235,7 @@ class VideoPlayer(Object):
                                 'Content-Type': 'application/json'
                             }
                         )
-                    except ConnectionError:
+                    except requests.exceptions.RequestException:
                         # catch timeout exception
                         utils.crunchy_log(self._args, "Failed to update playhead to crunchyroll")
                         pass
@@ -247,54 +245,46 @@ class VideoPlayer(Object):
         utils.crunchy_log(self._args, "thread_update_playhead() has finished", xbmc.LOGINFO)
 
     def thread_check_skipping(self):
-        """ background thread to check and handle skipping intro """
+        """ background thread to check and handle skipping intro/credits/... """
 
         utils.crunchy_log(self._args, "thread_check_skipping() started", xbmc.LOGINFO)
 
         while self._player.isPlaying() and self._stream_data.stream_url == self._player.getPlayingFile():
             # do we still have skip data left?
-            if not self._stream_data.skip_events_data.get('intro'):
+            if len(self._stream_data.skip_events_data) == 0:
                 break
 
-            # are we within the skip event timeframe?
-            current_time = int(self._player.getTime())
-            skip_time_start = self._stream_data.skip_events_data.get('intro').get('start')
-            skip_time_end = self._stream_data.skip_events_data.get('intro').get('end')
+            for skip_type in list(self._stream_data.skip_events_data):
+                # are we within the skip event timeframe?
+                current_time = int(self._player.getTime())
+                skip_time_start = self._stream_data.skip_events_data.get(skip_type).get('start')
+                skip_time_end = self._stream_data.skip_events_data.get(skip_type).get('end')
 
-            if skip_time_start <= current_time <= skip_time_end:
-                self._ask_to_skip('intro')
-                # remove the intro key from the data, so it won't trigger again
-                self._stream_data.skip_events_data.pop('intro', None)
-                # for now, we are done and exit the thread. later we might also offer to skip e.g. credits
-                break
+                if skip_time_start <= current_time <= skip_time_end:
+                    self._ask_to_skip(skip_type)
+                    # remove the skip_type key from the data, so it won't trigger again
+                    self._stream_data.skip_events_data.pop(skip_type, None)
 
             xbmc.sleep(1000)
 
         utils.crunchy_log(self._args, "thread_check_skipping() has finished", xbmc.LOGINFO)
 
-    def _check_skip_data(self) -> bool:
+    def _check_and_filter_skip_data(self) -> bool:
         """ check if data for skipping is present and valid for usage """
 
         if not self._stream_data.skip_events_data:
             return False
 
-        # check data for skipping intro
-        if not self._stream_data.skip_events_data.get('intro'):
-            utils.crunchy_log(self._args, "_check_skip_data: no intro", xbmc.LOGINFO)
-            return False
+        # if not enabled in config, remove from our list
+        if self._args.addon.getSetting("enable_skip_intro") != "true" and self._stream_data.skip_events_data.get(
+                'intro'):
+            self._stream_data.skip_events_data.pop('intro', None)
 
-        if self._stream_data.skip_events_data.get('intro').get('start') is None:
-            utils.crunchy_log(self._args, "_check_skip_data: no intro start", xbmc.LOGINFO)
-            return False
+        if self._args.addon.getSetting("enable_skip_credits") != "true" and self._stream_data.skip_events_data.get(
+                'credits'):
+            self._stream_data.skip_events_data.pop('credits', None)
 
-        if self._stream_data.skip_events_data.get('intro').get('end') is None:
-            utils.crunchy_log(self._args, "_check_skip_data: no intro end", xbmc.LOGINFO)
-            return False
-
-        # maybe later: check data for skipping credits
-        utils.crunchy_log(self._args, "_check_skip_data: PASS", xbmc.LOGINFO)
-
-        return True
+        return len(self._stream_data.skip_events_data) > 0
 
     def _ask_to_skip(self, section):
         """ Show skip modal """
@@ -315,8 +305,8 @@ class VideoPlayer(Object):
             ],
             kwargs={
                 'seconds': dialog_duration,
-                'seek_time': self._stream_data.skip_events_data.get('intro').get('end'),
-                'label': self._args.addon.getLocalizedString(30012),
+                'seek_time': self._stream_data.skip_events_data.get(section).get('end'),
+                'label': self._args.addon.getLocalizedString(30015),
                 'addon_path': self._args.addon.getAddonInfo("path")
             }
         ).start()

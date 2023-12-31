@@ -61,6 +61,10 @@ msgid "Skip intro"
 msgstr "Intro überspringen"
 
 msgctxt "#30012"
+msgid "Skip credits"
+msgstr "Abspann überspringen"
+
+msgctxt "#30015"
 msgid "Skip"
 msgstr "Überspringen"
 

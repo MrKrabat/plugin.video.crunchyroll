@@ -84,7 +84,18 @@
                     </control>
                 </setting>
             </group>
-            <group id="3" label="30220">
+            <group id="3" label="30230">
+                <setting id="inputstream_adaptive" type="action" label="30004" help="">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://plugin.video.crunchyroll/?mode=hls)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+            </group>
+        </category>
+        <category id="playback_options" label="30220" help="">
+            <group id="1" label="30220">
                 <setting id="soft_subtitles" type="boolean" label="30005" help="">
                     <level>0</level>
                     <default>false</default>
@@ -100,14 +111,10 @@
                     <default>false</default>
                     <control type="toggle"/>
                 </setting>
-            </group>
-            <group id="4" label="30230">
-                <setting id="inputstream_adaptive" type="action" label="30004" help="">
+                <setting id="enable_skip_credits" type="boolean" label="30012" help="">
                     <level>0</level>
-                    <data>RunPlugin(plugin://plugin.video.crunchyroll/?mode=hls)</data>
-                    <control type="button" format="action">
-                        <close>true</close>
-                    </control>
+                    <default>false</default>
+                    <control type="toggle"/>
                 </setting>
             </group>
         </category>

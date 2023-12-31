@@ -19,6 +19,7 @@ import datetime
 import os
 from typing import Union, Dict, Optional
 
+import requests
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -256,6 +257,8 @@ class VideoStream(Object):
         return filename
 
     def _get_skip_events(self, episode_id) -> Optional[Dict]:
+        """ fetch skip events data from api and return a prepared object for supported skip types if data is valid """
+
         try:
             crunchy_log(self.args, "Requesting skip data from %s" % self.api.SKIP_EVENTS_ENDPOINT.format(episode_id))
 
@@ -264,7 +267,7 @@ class VideoStream(Object):
                 method="GET",
                 url=self.api.SKIP_EVENTS_ENDPOINT.format(episode_id)
             )
-        except Exception:
+        except requests.exceptions.RequestException:
             log_error_with_trace(self.args, "_get_skip_events: error in requesting skip events data from api")
             return None
 
@@ -272,4 +275,16 @@ class VideoStream(Object):
             crunchy_log(self.args, "_get_skip_events: error in requesting skip events data from api (2)")
             return None
 
-        return req
+        # prepare the data a bit
+        supported_skips = ['intro', 'credits']
+        prepared = dict()
+        for skip_type in supported_skips:
+            if req.get(skip_type) and req.get(skip_type).get('start') is not None and req.get(skip_type).get('end') is not None:
+                prepared.update({
+                    skip_type: dict(start=req.get(skip_type).get('start'), end=req.get(skip_type).get('end'))
+                })
+                crunchy_log(self.args, "_get_skip_events: check for %s PASSED" % type, xbmc.LOGINFO)
+            else:
+                crunchy_log(self.args, "_get_skip_events: check for %s FAILED" % type, xbmc.LOGINFO)
+
+        return prepared if len(prepared) > 0 else None
