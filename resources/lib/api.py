@@ -134,7 +134,7 @@ class API:
             self.delete_storage()
             if self.retry_counter > 2:
                 utils.crunchy_log(self.args, "Max retries exceeded. Aborting!", xbmc.LOGERROR)
-                return None
+                raise LoginError("Failed to authenticate twice")
             return self.create_session()
 
         r_json = utils.get_json_from_response(r)

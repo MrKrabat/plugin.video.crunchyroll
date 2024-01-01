@@ -259,6 +259,11 @@ class VideoStream(Object):
     def _get_skip_events(self, episode_id) -> Optional[Dict]:
         """ fetch skip events data from api and return a prepared object for supported skip types if data is valid """
 
+        # if none of the skip options are enabled in setting, don't fetch that data
+        if (self.args.addon.getSetting("enable_skip_intro") != "true" and
+                self.args.addon.getSetting("enable_skip_credits") != "true"):
+            return None
+
         try:
             crunchy_log(self.args, "Requesting skip data from %s" % self.api.SKIP_EVENTS_ENDPOINT.format(episode_id))
 
@@ -283,8 +288,8 @@ class VideoStream(Object):
                 prepared.update({
                     skip_type: dict(start=req.get(skip_type).get('start'), end=req.get(skip_type).get('end'))
                 })
-                crunchy_log(self.args, "_get_skip_events: check for %s PASSED" % type, xbmc.LOGINFO)
+                crunchy_log(self.args, "_get_skip_events: check for %s PASSED" % skip_type, xbmc.LOGINFO)
             else:
-                crunchy_log(self.args, "_get_skip_events: check for %s FAILED" % type, xbmc.LOGINFO)
+                crunchy_log(self.args, "_get_skip_events: check for %s FAILED" % skip_type, xbmc.LOGINFO)
 
         return prepared if len(prepared) > 0 else None
