@@ -271,7 +271,7 @@ class VideoStream(Object):
             log_error_with_trace(self.args, "_get_skip_events: error in requesting skip events data from api")
             return None
 
-        if req and "error" in req:
+        if not req or "error" in req:
             crunchy_log(self.args, "_get_skip_events: error in requesting skip events data from api (2)")
             return None
 

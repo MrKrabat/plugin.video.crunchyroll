@@ -202,7 +202,7 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
 
     if show_notification:
         xbmcgui.Dialog().notification(
-            '%s Error' % args.addonname,
+            '%s Error' % addon_name,
             'Please check logs for details',
             xbmcgui.NOTIFICATION_ERROR,
             5
