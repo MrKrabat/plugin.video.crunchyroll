@@ -41,12 +41,6 @@ class CrunchyrollAuth(AuthBase):
         if not self.is_auth():
             self._authenticate()
 
-
-    def _response_is_error(self, response):
-        # TODO if there is errror, we need to clear data
-        return False
-        
-
     def _store_token(self, data):
         self.data['access_token'] = data['access_token']
         self.data['refresh_token'] = data['refresh_token']
@@ -69,9 +63,8 @@ class CrunchyrollAuth(AuthBase):
         }
         url = "https://beta-api.crunchyroll.com/auth/v1/token"
         resp = requests.post(url, headers = self.auth_headers, data = data)
-        if not self._response_is_error(resp):
-            self._store_token(resp.json())
-        
+        resp.raise_for_status()
+        self._store_token(resp.json())
 
     def _refresh(self):
         data = {
@@ -81,9 +74,8 @@ class CrunchyrollAuth(AuthBase):
         }
         url = "https://beta-api.crunchyroll.com/auth/v1/token"
         resp = requests.post(url, headers = self.auth_headers, data = data)
-        if not self._response_is_error(resp):
-            self._store_token(resp.json())
-
+        resp.raise_for_status()
+        self._store_token(resp.json())
 
     def is_auth(self):
         last_update = self.data.get('last_update',0)
@@ -97,7 +89,6 @@ class CrunchyrollAuth(AuthBase):
         expires_in = self.data.get('expires_in',0)
         now =  datetime.timestamp(datetime.now())
         return now > (last_update + expires_in*3/4)
-
         
     def __call__(self, request):
         if not self.is_auth():

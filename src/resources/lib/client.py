@@ -57,7 +57,7 @@ class CrunchyrollClient:
         params["Signature"] = self.cms['signature']
         params["Key-Pair-Id"] = self.cms['key_pair_id']
         response = self._get(url, params=params, headers=headers)
-        # TODO handle errors
+        response.raise_for_status()
         return response
 
     # Continue watching
@@ -71,7 +71,7 @@ class CrunchyrollClient:
         }
 
         response = self._get(url,params=params)
-        # TODO handle errors
+        response.raise_for_status()
         return response.json()
 
 
@@ -108,7 +108,7 @@ class CrunchyrollClient:
             "start": start
         }
         response = self._get(url, params=params)
-        # TODO handle errors
+        response.raise_for_status()
         data = response.json()
         result = []
         for item in data['items'][0]['items']:
@@ -131,7 +131,7 @@ class CrunchyrollClient:
             "locale": self.locale
         }
         response = self._get_cms(url, params=params)
-        # TODO handle errors
+        response.raise_for_status()
         data = response.json()
         result = []
         for item in data['items']:
@@ -147,7 +147,7 @@ class CrunchyrollClient:
             "season_id": season_id
         }
         response = self._get_cms(url, params=params)
-        # TODO handle errors
+        response.raise_for_status()
         data = response.json()
         res = []
         for item in data['items']:
@@ -174,7 +174,6 @@ class CrunchyrollClient:
         self._log(f"Resolved stream id {stream_id}")
         url = f"https://beta-api.crunchyroll.com/cms/v2{self.cms['bucket']}/videos/{stream_id}/streams"
         data = self._get_cms(url).json()
-        # TODO need fallback lang (like en-US for instance)
         if self.locale in data['streams']['adaptive_hls']:
             return data['streams']['adaptive_hls'][self.locale]["url"]
         elif 'en-US' in data['streams']['adaptive_hls']:
@@ -202,7 +201,7 @@ class CrunchyrollClient:
             "start": start
         }
         response = self._get(url, params=params)
-        # TODO handle errors
+        response.raise_for_status()
         data = response.json()
         result = []
         for item in data['items']:
@@ -219,7 +218,7 @@ class CrunchyrollClient:
             "sort_by": sort_by,
         }
         response = self._get(url, params=params)
-        # TODO handle errors
+        response.raise_for_status()
         return response.json()
 
     def alpha(self):
