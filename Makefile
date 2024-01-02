@@ -5,4 +5,7 @@ install: clean
 clean:
 	rm -rf "${KODI_INSTALL}/addons/plugin.video.crunchyroll"
 
+test:
+	.venv/bin/nosetests -v
+
 .PHONY: clean

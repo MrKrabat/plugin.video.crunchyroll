@@ -17,14 +17,17 @@
 
 class Episode:
 
-    def __init__(self,item):
+    def __init__(self,item, playhead):
         self.item = item
+        self.playhead = playhead
         self.id = item["id"]
         self.label = item['episode_metadata']["series_title"] + " #" + str(item["episode_metadata"]["episode_number"]) + " - " + item["title"]
         self.thumbnail = item['images']['thumbnail'][0][0]['source']
         self.landscape =  item['images']['thumbnail'][0][-1]['source']
         self.duration = item['episode_metadata']["duration_ms"]/1000
         self.description = item["description"]
+        self.percentplayed = int((playhead['playhead']/self.duration)*100)
+        self.playcount = 1 if self.percentplayed > 90 else 0
 
     # Format info for codequick
     def to_dict(self):
@@ -33,11 +36,17 @@ class Episode:
             "art": {
                 "thumb": self.thumbnail,
                 "landscape": self.landscape,
-                "fanart": self.landscape
+                "fanart": self.landscape,
+                "icon": self.thumbnail
             },
             "info":{
                 "duration": self.duration,
-                "plot": self.description
+                "plot": self.description,
+                "episode": self.item["episode_metadata"]["episode_number"],
+                "tvshowtitle": self.item['episode_metadata']["series_title"],
+                "season": self.item['episode_metadata']['season_number'],
+                "percentplayed": self.percentplayed,
+                "playcount": self.playcount
             },
             "params": {
                 "id": self.id
@@ -90,3 +99,25 @@ class Series:
 
         }
         return res
+
+class Gender:
+    def __init__(self, item):
+        self.item = item
+        self.id = item['id']
+        self.title = item['localization']['title']
+        self.description = item['localization']['description']
+        self.fanart = item['image']['background'][-1]
+
+    def to_dict(self):
+        res = {
+            'label': self.title,
+            'art': {
+                'landscape': self.fanart
+            },
+            "params": {
+                "id": self.id
+            }
+            
+        }
+        return res
+    

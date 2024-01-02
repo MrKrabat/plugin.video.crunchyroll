@@ -35,6 +35,7 @@ def root(plugin, content_type="video"):
     yield Listitem.from_dict(popular, label=addon.getLocalizedString(30052))
     yield Listitem.from_dict(newly_added, label=addon.getLocalizedString(30059))
     yield Listitem.from_dict(alpha, label=addon.getLocalizedString(30055))
+    yield Listitem.from_dict(gender, label=addon.getLocalizedString(30056))
 
 @Route.register
 def search(plugin, search_query, start=0):
@@ -109,6 +110,9 @@ def alpha_one(plugin, start, number):
         item = Listitem.from_dict(show_series,**infos)
         yield item
     
+@Route.register
+def gender(plugin):
+    genders = cr.get_genders()
 
 @Resolver.register
 def play_show(plugin, id):

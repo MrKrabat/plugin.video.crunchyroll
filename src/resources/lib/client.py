@@ -41,15 +41,17 @@ class CrunchyrollClient:
     def _post(self, url, params={}, headers={}, data={}, json=False):
         headers['User-Agent'] = "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1"
         if json:
-            response = requests._get(url, params=params, headers=headers, auth=self.auth, json=data)
+            response = requests.post(url, params=params, headers=headers, auth=self.auth, json=data)
         else:
-            response = requests._get(url, params=params, headers=headers, auth=self.auth, data=data)
+            response = requests.post(url, params=params, headers=headers, auth=self.auth, data=data)
+        response.raise_for_status()
         return response
 
 
     def _get(self, url, params={}, headers={}):
         headers['User-Agent'] = "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1"
         response = requests.get(url, params=params, headers=headers, auth=self.auth)
+        response.raise_for_status()
         return response
 
     def _get_cms(self, url, params={}, headers={}):
@@ -85,10 +87,12 @@ class CrunchyrollClient:
         }
         response = self._get(url, params=params)
         data = response.json()
+        playheads = self.get_playhead(map(lambda item: item['panel']['id'], data['items']))
         result = []
         for item in data['items']:
             item = item['panel']
-            result.append(Episode(item))
+            playhead = playheads[item['id']]
+            result.append(Episode(item, playhead))
 
         nextLink=None
         if "__links__" in data and "continuation" in data['__links__']:
@@ -149,10 +153,12 @@ class CrunchyrollClient:
         response = self._get_cms(url, params=params)
         response.raise_for_status()
         data = response.json()
+        playheads = self.get_playhead(map(lambda item: item['id'], data['items']))
         res = []
         for item in data['items']:
             episode = self.get_episode(item['id'])['items'][0]
-            res.append(Episode(episode))
+            playhead = playheads[item['id']]
+            res.append(Episode(episode, playhead))
         return res
 
     def get_episode(self, episode_id):
@@ -181,6 +187,13 @@ class CrunchyrollClient:
         else:
             return data['streams']['adaptive_hls'][""]["url"]
 
+    def get_playhead(self, id_list):
+        episodes = ','.join(id_list)
+        self._log(f"Getting playhead of episodes {episodes}")
+        url = f"https://beta-api.crunchyroll.com/content/v1/playheads/{self.auth.data['account_id']}/{episodes}"
+        data = self._get(url).json()
+        return data
+        
 
     def update_playhead(self, episode_id, time):
         self._log(f"Update playhead of episode {episode_id} with time {time}")
@@ -239,3 +252,6 @@ class CrunchyrollClient:
     def newly_added(self, start=0, number=10):
         self._log(f"Looking up for animes to discover from {start}")
         return self.browse("newly_added", start, number)
+
+    def get_genders(self):
+        return []
