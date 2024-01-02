@@ -13,10 +13,13 @@
         <language>en es pt fr de ar it ru</language>
         <summary lang="en_GB">Watch videos from Crunchyroll.com!</summary>
         <summary lang="de_DE">Schaue Videos von Crunchyroll.com!</summary>
+        <summary lang="es_ES">¡Visualiza vídeos a través de Crunchyroll.com!</summary>
         <description lang="en_GB">Crunchyroll is an online video service and community that offers full-length episodes and movies of the very best in Japanese anime and Asian entertainment.</description>
         <description lang="de_DE">Crunchyroll ist ein online Video-Streaming-Dienst und bietet Zugang zu vollen Episoden und Filmen der besten japanischen Anime und asiatischer Unterhaltung.</description>
+        <description lang="es_ES">Crunchyroll es un servicio de streaming online y una comunidad que ofrece episodios completos y películas del mejor anime japonés y entretenimiento asiático.</description>
         <disclaimer lang="en_GB">WARNING: You MUST be a PREMIUM member to use this Plugin</disclaimer>
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
+        <disclaimer lang="es_ES">Atención: Necesitas ser miembro PREMIUM para utilizar este Plugin</disclaimer>
         <news>
             v3.3.0.12 (2023.12.30)[CR]- add resume watching, update settings, add skip intro
             v3.3.0.11 (2023.12.28)[CR]- improve series filtering, proper labels for soft subtitles
