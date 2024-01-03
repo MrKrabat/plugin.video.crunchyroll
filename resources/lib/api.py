@@ -63,6 +63,7 @@ class API:
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
     SKIP_EVENTS_ENDPOINT = "https://static.crunchyroll.com/skip-events/production/{}.json"  # request w/o auth req.
+    INTRO_V2_ENDPOINT = "https://static.crunchyroll.com/datalab-intro-v2/{}.json"
 
     AUTHORIZATION = "Basic aHJobzlxM2F3dnNrMjJ1LXRzNWE6cHROOURteXRBU2Z6QjZvbXVsSzh6cUxzYTczVE1TY1k="
 
@@ -345,6 +346,9 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
             'data': r.text
         })
         return d
+
+    if not r.ok and r.text[0] != "{":
+        raise CrunchyrollError(f"[{code}] {r.text}")
 
     try:
         r_json: Dict = r.json()
