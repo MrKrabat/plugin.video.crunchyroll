@@ -21,7 +21,7 @@ import xbmc
 import xbmcaddon
 
 # plugin constants
-_addon = xbmcaddon.Addon(id=sys.argv[0][9:-1])
+_addon = xbmcaddon.Addon(id='plugin.video.crunchyroll')  # or re.sub(r"^plugin://([^/]+)/.*$", r"\1", sys.argv[0])
 _plugin = _addon.getAddonInfo("name")
 _version = _addon.getAddonInfo("version")
 

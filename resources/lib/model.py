@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+from typing import Any, Dict, Union
 
 try:
     from urllib import unquote_plus
@@ -38,7 +39,7 @@ class Args(object):
         """Initialize arguments object
         Hold also references to the addon which can't be kept at module level.
         """
-        self.mode = None
+        # addon specific data
         self.PY2 = sys.version_info[0] == 2  #: True for Python 2
         self._argv = argv
         self._addonid = self._argv[0][9:-1]
@@ -46,28 +47,40 @@ class Args(object):
         self._addonname = self._addon.getAddonInfo("name")
         self._cj = None
         self._device_id = None
+        self._args: dict = {}  # holds all parameters provided via URL
+
+        # data from settings
         self._subtitle = None
         self._subtitle_fallback = None
-        # needed to pass some data around
-        self.playhead = None
-        self.stream_id = None
-        self.episode_id = None
-        self.duration = None
 
+        # copy url args to self._args
         for key, value in kwargs.items():
             if value:
-                setattr(self, key, unquote_plus(value[0]))
+                self._args[key] = unquote_plus(value[0])
+
+    def get_arg(self, arg: str, default: Any = None, cast: type = None):
+        """ Get an argument provided via URL"""
+        value = self._args.get(arg, default)
+        if cast:
+            value = cast(value)
+        return value
+
+    def set_arg(self, key: str, value=Any):
+        self._args[key] = value
+
+    def set_args(self, data: Union[Dict, dict, list]):
+        self._args.update(data)
 
     @property
     def addon(self):
         return self._addon
 
     @property
-    def addonname(self):
+    def addon_name(self):
         return self._addonname
 
     @property
-    def addonid(self):
+    def addon_id(self):
         return self._addonid
 
     @property
@@ -85,6 +98,10 @@ class Args(object):
     @property
     def subtitle_fallback(self):
         return self._subtitle_fallback
+
+    @property
+    def args(self):
+        return self._args
 
 
 class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):

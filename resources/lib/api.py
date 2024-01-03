@@ -15,13 +15,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json as JSON
-from datetime import timedelta
+import json
+import time
+from datetime import timedelta, datetime
 from typing import Optional, Dict
 
 import requests
 import xbmc
 import xbmcvfs
+from requests import HTTPError, Response
 
 from . import utils
 from .model import AccountData, Args, LoginError
@@ -53,14 +55,14 @@ class API:
     WATCHLIST_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist"
     # only v2 will allow removal of watchlist entries.
     # !!!! be super careful and always provide a content_id, or it will delete the whole playlist! *sighs* !!!!
-    WATCHLIST_REMOVE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist/{}"
-    WATCHLIST_ADD_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist"
+    # WATCHLIST_REMOVE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist/{}"
+    WATCHLIST_V2_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist"  # also used for fetching "on watchlist" data
     PLAYHEADS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/playheads"
     HISTORY_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watch-history"
     RESUME_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/{}/history"
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
-    SKIP_EVENTS_ENDPOINT = "https://static.crunchyroll.com/skip-events/production/{}.json"  # requires unauthenticated request
+    SKIP_EVENTS_ENDPOINT = "https://static.crunchyroll.com/skip-events/production/{}.json"  # request w/o auth req.
 
     AUTHORIZATION = "Basic aHJobzlxM2F3dnNrMjJ1LXRzNWE6cHROOURteXRBU2Z6QjZvbXVsSzh6cUxzYTczVE1TY1k="
 
@@ -72,12 +74,12 @@ class API:
         self.http = requests.Session()
         self.locale: str = locale
         self.account_data: AccountData = AccountData(dict())
-        self.api_headers: Dict = utils.headers()
+        self.api_headers: Dict = default_request_headers()
         self.args = args
         self.retry_counter = 0
 
     def start(self) -> bool:
-        session_restart = getattr(self.args, "session_restart", False)
+        session_restart = self.args.get_arg('session_restart', False)
 
         # restore account data from file
         session_data = self.load_from_storage()
@@ -87,7 +89,7 @@ class API:
             self.api_headers.update(account_auth)
 
             # check if tokes are expired
-            if utils.get_date() > utils.str_to_date(self.account_data.expires):
+            if get_date() > str_to_date(self.account_data.expires):
                 session_restart = True
             else:
                 return True
@@ -137,7 +139,7 @@ class API:
                 raise LoginError("Failed to authenticate twice")
             return self.create_session()
 
-        r_json = utils.get_json_from_response(r)
+        r_json = get_json_from_response(r)
 
         self.api_headers.clear()
         self.account_data = AccountData({})
@@ -163,8 +165,8 @@ class API:
         )
         account_data.update(r)
 
-        account_data["expires"] = utils.date_to_str(
-            utils.get_date() + timedelta(seconds=float(account_data["expires_in"])))
+        account_data["expires"] = date_to_str(
+            get_date() + timedelta(seconds=float(account_data["expires_in"])))
         self.account_data = AccountData(account_data)
 
         self.write_to_storage(self.account_data)
@@ -187,7 +189,7 @@ class API:
             headers=None,
             params=None,
             data=None,
-            json=None,
+            json_data=None,
             is_retry=False
     ) -> Optional[Dict]:
         if params is None:
@@ -196,8 +198,8 @@ class API:
             headers = dict()
         if self.account_data:
             if expiration := self.account_data.expires:
-                current_time = utils.get_date()
-                if current_time > utils.str_to_date(expiration):
+                current_time = get_date()
+                if current_time > str_to_date(expiration):
                     self.create_session(refresh=True)
             params.update({
                 "Policy": self.account_data.cms.policy,
@@ -212,7 +214,7 @@ class API:
             headers=headers,
             params=params,
             data=data,
-            json=json
+            json=json_data
         )
 
         # something went wrong with authentication, possibly an expired token that wasn't caught above due to host
@@ -223,9 +225,9 @@ class API:
 
             utils.crunchy_log(self.args, "make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
             self.account_data.expires = 0
-            return self.make_request(method, url, headers, params, data, json, True)
+            return self.make_request(method, url, headers, params, data, json_data, True)
 
-        return utils.get_json_from_response(r)
+        return get_json_from_response(r)
 
     def make_unauthenticated_request(
             self,
@@ -234,15 +236,15 @@ class API:
             headers=None,
             params=None,
             data=None,
-            json=None,
+            json_data=None,
     ) -> Optional[Dict]:
         """ Send a raw request without any session information """
 
-        req = requests.Request(method, url, data=data, params=params, headers=headers, json=json)
+        req = requests.Request(method, url, data=data, params=params, headers=headers, json=json_data)
         prepped = req.prepare()
         r = self.http.send(prepped)
 
-        return utils.get_json_from_response(r)
+        return get_json_from_response(r)
 
     def get_storage_path(self) -> str:
         """Get cookie file path
@@ -258,7 +260,7 @@ class API:
             return None
 
         with xbmcvfs.File(storage_file) as file:
-            data = JSON.load(file)
+            data = json.load(file)
 
         d = dict()
         d.update(data)
@@ -283,3 +285,79 @@ class API:
             result = file.write(json_string)
 
         return result
+
+
+def default_request_headers() -> Dict:
+    return {
+        "User-Agent": "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+
+def get_date() -> datetime:
+    return datetime.utcnow()
+
+
+def date_to_str(date: datetime) -> str:
+    return "{}-{}-{}T{}:{}:{}Z".format(
+        date.year, date.month,
+        date.day, date.hour,
+        date.minute, date.second
+    )
+
+
+def str_to_date(string: str) -> datetime:
+    time_format = "%Y-%m-%dT%H:%M:%SZ"
+
+    try:
+        res = datetime.strptime(string, time_format)
+    except TypeError:
+        res = datetime(*(time.strptime(string, time_format)[0:6]))
+
+    return res
+
+
+def get_json_from_response(r: Response) -> Optional[Dict]:
+    from .utils import log_error_with_trace
+    from .model import CrunchyrollError
+
+    code: int = r.status_code
+    response_type: str = r.headers.get("Content-Type")
+
+    # no content - possibly POST/DELETE request?
+    if not r or not r.text:
+        try:
+            r.raise_for_status()
+            return None
+        except HTTPError as e:
+            # r.text is empty when status code cause raise
+            r = e.response
+
+    # handle text/plain response (e.g. fetch subtitle)
+    if response_type == "text/plain":
+        # if encoding is not provided in the response, Requests will make an educated guess and very likely fail
+        # messing encoding up - which did cost me hours. We will always receive utf-8 from crunchy, so enforce that
+        r.encoding = "utf-8"
+        d = dict()
+        d.update({
+            'data': r.text
+        })
+        return d
+
+    try:
+        r_json: Dict = r.json()
+    except requests.exceptions.JSONDecodeError:
+        log_error_with_trace(None, "Failed to parse response data")
+        return None
+
+    if "error" in r_json:
+        error_code = r_json.get("error")
+        if error_code == "invalid_grant":
+            raise LoginError(f"[{code}] Invalid login credentials.")
+    elif "message" in r_json and "code" in r_json:
+        message = r_json.get("message")
+        raise CrunchyrollError(f"[{code}] Error occurred: {message}")
+    if not r.ok:
+        raise CrunchyrollError(f"[{code}] {r.text}")
+
+    return r_json

@@ -18,23 +18,18 @@
 import re
 from json import dumps
 
-import requests
 import xbmc
 import xbmcgui
-from requests import Response
-from requests.exceptions import HTTPError
 
 try:
     from urlparse import parse_qs
-    from urllib import unquote_plus
 except ImportError:
-    from urllib.parse import parse_qs, unquote_plus
+    from urllib.parse import parse_qs
 
-from datetime import datetime
-import time
-from typing import Dict, Optional, Union
+from typing import Dict, Union
 
-from .model import Args, LoginError, CrunchyrollError
+from .model import Args
+from .api import API
 
 
 def parse(argv) -> Args:
@@ -44,79 +39,6 @@ def parse(argv) -> Args:
         return Args(argv, parse_qs(argv[2][1:]))
     else:
         return Args(argv, {})
-
-
-def headers() -> Dict:
-    return {
-        "User-Agent": "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-
-
-def get_date() -> datetime:
-    return datetime.utcnow()
-
-
-def date_to_str(date: datetime) -> str:
-    return "{}-{}-{}T{}:{}:{}Z".format(
-        date.year, date.month,
-        date.day, date.hour,
-        date.minute, date.second
-    )
-
-
-def str_to_date(string: str) -> datetime:
-    time_format = "%Y-%m-%dT%H:%M:%SZ"
-
-    try:
-        res = datetime.strptime(string, time_format)
-    except TypeError:
-        res = datetime(*(time.strptime(string, time_format)[0:6]))
-
-    return res
-
-
-def get_json_from_response(r: Response) -> Optional[Dict]:
-    code: int = r.status_code
-    response_type: str = r.headers.get("Content-Type")
-
-    # no content - possibly POST/DELETE request?
-    if not r or not r.text:
-        try:
-            r.raise_for_status()
-            return None
-        except HTTPError as e:
-            # r.text is empty when status code cause raise
-            r = e.response
-
-    # handle text/plain response (e.g. fetch subtitle)
-    if response_type == "text/plain":
-        # if encoding is not provided in the response, Requests will make an educated guess and very likely fail
-        # messing encoding up - which did cost me hours. We will always receive utf-8 from crunchy, so enforce that
-        r.encoding = "utf-8"
-        d = dict()
-        d.update({
-            'data': r.text
-        })
-        return d
-
-    try:
-        r_json: Dict = r.json()
-    except requests.exceptions.JSONDecodeError:
-        log_error_with_trace(None, "Failed to parse response data")
-        return None
-
-    if "error" in r_json:
-        error_code = r_json.get("error")
-        if error_code == "invalid_grant":
-            raise LoginError(f"[{code}] Invalid login credentials.")
-    elif "message" in r_json and "code" in r_json:
-        message = r_json.get("message")
-        raise CrunchyrollError(f"[{code}] Error occurred: {message}")
-    if not r.ok:
-        raise CrunchyrollError(f"[{code}] {r.text}")
-
-    return r_json
 
 
 def get_series_data_from_series_ids(args, ids: list, api) -> dict:
@@ -303,3 +225,23 @@ def two_digits(n):
     if n < 10:
         return "0" + str(n)
     return str(n)
+
+
+def get_in_queue(args: Args, ids: list, api: API) -> list:
+    req = api.make_request(
+        method="GET",
+        url=api.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
+        params={
+            "content_ids": ','.join(ids),
+            "locale": args.subtitle
+        }
+    )
+
+    if not req or req.get("error") is not None:
+        crunchy_log(args, "get_in_queue: Failed to retrieve data", xbmc.LOGERROR)
+        return []
+
+    if not req.get('data'):
+        return []
+
+    return [item.get('id') for item in req.get('data')]

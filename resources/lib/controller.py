@@ -51,11 +51,6 @@ def show_queue(args, api: API):
 
     # display media
     for item in req.get("items"):
-        # video no longer available
-        # @TODO: re-add filtering of non-available items / premium content
-        # if not ("most_likely_media" in item and "series" in item and item["most_likely_media"]["available"] and item["most_likely_media"]["premium_available"]):
-        #    continue
-
         try:
             if item.get("panel").get("type") == "episode":
                 entry = EpisodeData(item)
@@ -92,7 +87,7 @@ def show_queue(args, api: API):
                 },
                 is_folder=False
                 # potentially unsafe, it can possibly delete the whole playlist if something goes really wrong
-                # callback=lambda li:
+                # callbacks=lambda li:
                 #     li.addContextMenuItems([(args.addon.getLocalizedString(30068), 'RunPlugin(%s?mode=remove_from_queue&content_id=%s&session_restart=True)' % (sys.argv[0], entry.episode_id))])
             )
         except Exception:
@@ -106,12 +101,12 @@ def search_anime(args, api: API):
     """Search for anime
     """
     # ask for search string
-    if not hasattr(args, "search"):
+    if not args.get_arg('search'):
         d = xbmcgui.Dialog().input(args.addon.getLocalizedString(30041), type=xbmcgui.INPUT_ALPHANUM)
         if not d:
             return
     else:
-        d = args.search
+        d = args.get_arg('search')
 
     # api request
     # available types seem to be: music,series,episode,top_results,movie_listing
@@ -125,7 +120,7 @@ def search_anime(args, api: API):
             "n": 50,
             "q": d,
             "locale": args.subtitle,
-            "start": int(getattr(args, "offset", 0)),
+            "start": args.get_arg('offset', 0, int),
             "type": "series"
         }
     )
@@ -139,18 +134,24 @@ def search_anime(args, api: API):
     items_left = 0
 
     for types in req["items"]:
+        # fetch info if already in queue
+        ids = [item.get('id') for item in types.get('items')]
+        items_already_in_queue = utils.get_in_queue(args, ids, api)
+
         for item in types["items"]:
             # add to view
             view.add_item(
                 args,
                 {
-                    "title": item["title"],
+                    "title": '[COLOR lightgreen]' + item["title"] + '[/COLOR]' if item['id'] in items_already_in_queue else item['title'],
                     "tvshowtitle": item["title"],
                     "series_id": item["id"],
                     "plot": item["description"],
                     "plotoutline": item["description"],
                     "genre": "",  # requires fetch from api endpoint
-                    "year": item["series_metadata"]["series_launch_year"],
+                    "episode": item.get('series_metadata', {}).get('episode_count', 1),
+                    "year": str(item.get('series_metadata').get('series_launch_year')) + '-01-01' if item.get('series_metadata') else 0,
+                    "aired": str(item.get('series_metadata').get('series_launch_year')) + '-01-01' if item.get('series_metadata') else 0,
                     "studio": "",
                     "thumb": utils.get_image_from_struct(item, "poster_tall", 2),
                     "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
@@ -159,23 +160,25 @@ def search_anime(args, api: API):
                 },
                 is_folder=True,
                 # for yet unknown reason, adding an item to the watchlist requires a session restart
-                callback=lambda li:
-                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                             sys.argv[0], item["id"]))])
+                callbacks=[
+                    lambda li:
+                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                                 sys.argv[0], item["id"]))]) if item['id'] not in items_already_in_queue else None
+                ]
             )
 
         # for now break as we only support one type
-        items_left = types["total"] - (int(getattr(args, "offset", 0)) * 50) - len(types["items"])
+        items_left = types["total"] - (args.get_arg('offset', 0, int) * 50) - len(types["items"])
         break
 
     # show next page button
     if items_left > 0:
         view.add_item(args,
                       {"title": args.addon.getLocalizedString(30044),
-                       "offset": int(getattr(args, "offset", 0)) + 50,
+                       "offset": args.get_arg('offset', 0, int) + 50,
                        "search": d,
-                       "mode": args.mode},
+                       "mode": args.get_arg('mode')},
                       is_folder=True)
 
     view.end_of_directory(args, "tvshows")
@@ -187,7 +190,7 @@ def show_history(args, api: API):
     """ shows history of watched anime
     """
     items_per_page = 50
-    current_page = int(getattr(args, "offset", 1))
+    current_page = args.get_arg('offset', 1, int)
 
     req = api.make_request(
         method="GET",
@@ -272,8 +275,8 @@ def show_history(args, api: API):
     if current_page < num_pages:
         view.add_item(args,
                       {"title": args.addon.getLocalizedString(30044),
-                       "offset": int(getattr(args, "offset", 1)) + 1,
-                       "mode": args.mode},
+                       "offset": args.get_arg('offset', 1, int) + 1,
+                       "mode": args.get_arg('mode')},
                       is_folder=True)
 
     view.end_of_directory(args, "episodes")
@@ -292,7 +295,7 @@ def show_resume_episodes(args, api: API):
         params={
             "n": items_per_page,
             "locale": args.subtitle,
-            "start": int(getattr(args, "offset", 0)),
+            "start": args.get_arg('offset', 0, int),
         }
     )
 
@@ -366,14 +369,14 @@ def show_resume_episodes(args, api: API):
         except Exception:
             utils.log_error_with_trace(args, "Failed to add item to resume view: %s" % (json.dumps(item, indent=4)))
 
-    items_left = req.get("total") - (int(getattr(args, "offset", 0)) * items_per_page) - len(req.get("data"))
+    items_left = req.get("total") - (args.get_arg('offset', 0, int) * items_per_page) - len(req.get("data"))
 
     # show next page button
     if items_left > 0:
         view.add_item(args,
                       {"title": args.addon.getLocalizedString(30044),
-                       "offset": int(getattr(args, "offset", 0)) + items_per_page,
-                       "mode": args.mode},
+                       "offset": args.get_arg('offset', 0, int) + items_per_page,
+                       "mode": args.get_arg('mode')},
                       is_folder=True)
 
     view.end_of_directory(args, "episodes")
@@ -381,14 +384,14 @@ def show_resume_episodes(args, api: API):
     return True
 
 
-def list_seasons(args, mode, api: API):
+def list_seasons(args, api: API):
     """ view all available anime seasons and filter by selected season
     """
-    season_filter: str = getattr(args, "season_filter", "")
+    season_filter: str = args.get_arg('season_filter', "")
 
     # if no seasons filter applied, list all available seasons
     if not season_filter:
-        return list_seasons_without_filter(args, mode, api)
+        return list_seasons_without_filter(args, api)
 
     # else, if we have a season filter, show all from season
     req = api.make_request(
@@ -407,27 +410,38 @@ def list_seasons(args, mode, api: API):
         view.end_of_directory(args)
         return False
 
+    # fetch info if already in queue
+    ids = [item.get('id') for item in req.get('items')]
+    items_already_in_queue = utils.get_in_queue(args, ids, api)
+
     for item in req.get('items'):
         try:
             view.add_item(
                 args,
                 {
-                    "title": item["title"],
+                    "title": '[COLOR lightgreen]' + item["title"] + '[/COLOR]' if item[
+                                                                                      'id'] in items_already_in_queue else
+                    item['title'],
                     "tvshowtitle": item["title"],
                     "series_id": item["id"],
                     "plot": item["description"],
                     "plotoutline": item["description"],
-                    "year": item["last_public"][:4],
+                    "aired": item["last_public"][:10],
+                    "episode": item.get('series_metadata', {}).get('episode_count', 1),
+                    "season": 2,
                     "thumb": utils.get_image_from_struct(item, "poster_tall", 2),
                     "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
+                    # "watched": item['id'] in items_already_in_queue,
                     "mode": "series"
                 },
                 is_folder=True,
                 # for yet unknown reason, adding an item to the watchlist requires a session restart
-                callback=lambda li:
-                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                             sys.argv[0], item["id"]))])
+                callbacks=[
+                    lambda li:
+                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                                 sys.argv[0], item["id"]))]) if item['id'] not in items_already_in_queue else None
+                ]
 
             )
 
@@ -437,7 +451,7 @@ def list_seasons(args, mode, api: API):
     view.end_of_directory(args, "seasons")
 
 
-def list_seasons_without_filter(args, mode, api: API):
+def list_seasons_without_filter(args, api: API):
     """ view all available anime seasons and filter by selected season
     """
     req = api.make_request(
@@ -461,7 +475,7 @@ def list_seasons_without_filter(args, mode, api: API):
             {
                 "title": season_tag_item.get("localization", {}).get("title"),
                 "season_filter": season_tag_item.get("id", {}),
-                "mode": args.mode
+                "mode": args.get_arg('mode')
             },
             is_folder=True
         )
@@ -471,61 +485,61 @@ def list_seasons_without_filter(args, mode, api: API):
     return True
 
 
-def listSeries(args, mode, api: API):
+# def list_series(args, mode, api: API):
+#     """ view all anime from selected mode
+#     """
+#
+#     @TODO: update
+#
+#     # api request
+#     payload = {"media_type": args.genre,
+#                "filter": mode,
+#                "limit": 30,
+#                "offset": int(getattr(args, "offset", 0)),
+#                "fields": "series.name,series.series_id,series.description,series.year,series.publisher_name, \
+#                               series.genres,series.portrait_image,series.landscape_image"}
+#     req = api.request(args, "list_series", payload)
+#
+#     # check for error
+#     if "error" in req:
+#         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+#         view.endofdirectory(args)
+#         return False
+#
+#     # display media
+#     for item in req["data"]:
+#         # add to view
+#         view.add_item(args,
+#                       {"title": item["name"],
+#                        "tvshowtitle": item["name"],
+#                        "series_id": item["series_id"],
+#                        "plot": item["description"],
+#                        "plotoutline": item["description"],
+#                        "genre": ", ".join(item["genres"]),
+#                        "year": item["year"],
+#                        "studio": item["publisher_name"],
+#                        "thumb": item["portrait_image"]["full_url"],
+#                        "fanart": item["landscape_image"]["full_url"],
+#                        "mode": "series"},
+#                       is_folder=True)
+#
+#     # show next page button
+#     if len(req["data"]) >= 30:
+#         view.add_item(args,
+#                       {"title": args.addon.getLocalizedString(30044),
+#                        "offset": int(getattr(args, "offset", 0)) + 30,
+#                        "search": getattr(args, "search", ""),
+#                        "mode": args.get_arg('mode')},
+#                       is_folder=True)
+#
+#     view.endofdirectory(args)
+#     return True
+
+
+def list_filter(args, api: API):
     """ view all anime from selected mode
     """
-
-    # @TODO: update
-    #
-    # # api request
-    # payload = {"media_type": args.genre,
-    #            "filter": mode,
-    #            "limit": 30,
-    #            "offset": int(getattr(args, "offset", 0)),
-    #            "fields": "series.name,series.series_id,series.description,series.year,series.publisher_name, \
-    #                           series.genres,series.portrait_image,series.landscape_image"}
-    # req = api.request(args, "list_series", payload)
-    #
-    # # check for error
-    # if "error" in req:
-    #     view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-    #     view.endofdirectory(args)
-    #     return False
-    #
-    # # display media
-    # for item in req["data"]:
-    #     # add to view
-    #     view.add_item(args,
-    #                   {"title": item["name"],
-    #                    "tvshowtitle": item["name"],
-    #                    "series_id": item["series_id"],
-    #                    "plot": item["description"],
-    #                    "plotoutline": item["description"],
-    #                    "genre": ", ".join(item["genres"]),
-    #                    "year": item["year"],
-    #                    "studio": item["publisher_name"],
-    #                    "thumb": item["portrait_image"]["full_url"],
-    #                    "fanart": item["landscape_image"]["full_url"],
-    #                    "mode": "series"},
-    #                   is_folder=True)
-    #
-    # # show next page button
-    # if len(req["data"]) >= 30:
-    #     view.add_item(args,
-    #                   {"title": args.addon.getLocalizedString(30044),
-    #                    "offset": int(getattr(args, "offset", 0)) + 30,
-    #                    "search": getattr(args, "search", ""),
-    #                    "mode": args.mode},
-    #                   is_folder=True)
-    #
-    # view.endofdirectory(args)
-    return True
-
-
-def list_filter(args, mode, api: API):
-    """ view all anime from selected mode
-    """
-    category_filter: str = getattr(args, "category_filter", "")
+    category_filter: str = args.get_arg('category_filter', "")
 
     # we re-use this method which is normally used for the categories to also show some special views, that share
     # the same logic
@@ -533,19 +547,20 @@ def list_filter(args, mode, api: API):
 
     # if no category_filter filter applied, list all available categories
     if not category_filter and category_filter not in specials:
-        return list_filter_without_category(args, mode, api)
+        return list_filter_without_category(args, api)
 
     # else, if we have a category filter, show all from category
 
     items_left = 0
-    items_per_page = int(getattr(args, "items_per_page", 50))  # change this if desired
+    items_per_page = args.get_arg('items_per_page', 50, int)  # change this if desired
 
     # default query params - might get modified by special categories below
     params = {
         "locale": args.subtitle,
         "categories": category_filter,
         "n": items_per_page,
-        "start": int(getattr(args, "offset", 0)),
+        "start": args.get_arg('offset', 0, int),
+        "ratings": 'true'
     }
 
     # hack to re-use this for other views
@@ -566,30 +581,43 @@ def list_filter(args, mode, api: API):
         view.end_of_directory(args)
         return False
 
+    # fetch info if already in queue
+    ids = [item.get('id') for item in req.get('items')]
+    items_already_in_queue = utils.get_in_queue(args, ids, api)
+
     for item in req.get('items'):
         try:
             view.add_item(
                 args,
                 {
-                    "title": item["title"],
+                    "title": '[COLOR lightgreen]' + item["title"] + '[/COLOR]' if item[
+                                                                                      'id'] in items_already_in_queue else
+                    item['title'],
                     "tvshowtitle": item["title"],
                     "series_id": item["id"],
                     "plot": item["description"],
                     "plotoutline": item["description"],
-                    "year": item["last_public"][:4],
+                    "aired": item["last_public"][:10],
                     "thumb": utils.get_image_from_struct(item, "poster_tall", 2),
                     "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
+                    "episode": item.get('series_metadata', {}).get('episode_count', 1),
+                    # "season":  # does not work at all on matrix
+                    "seasons": "1",
+                    "studio": None,
+                    "rating": float(int(item.get('rating', {}).get('average', 0)) * 2.0),  # not available in beta api
                     "mode": "series"
                 },
                 is_folder=True,
                 # for yet unknown reason, adding an item to the watchlist requires a session restart
-                callback=lambda li:
-                li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                         'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                             sys.argv[0], item["id"]))])
+                callbacks=[
+                    lambda li:
+                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                                 sys.argv[0], item["id"]))]) if item['id'] not in items_already_in_queue else None
+                ]
             )
 
-            items_left = req.get('total') - int(getattr(args, "offset", 0)) - len(req.get('items'))
+            items_left = req.get('total') - args.get_arg('offset', 0, int) - len(req.get('items'))
 
         except Exception:
             utils.log_error_with_trace(
@@ -606,9 +634,9 @@ def list_filter(args, mode, api: API):
             args,
             {
                 "title": args.addon.getLocalizedString(30044),
-                "offset": int(getattr(args, "offset", 0)) + items_per_page,
+                "offset": args.get_arg('offset', 0, int) + items_per_page,
                 "category_filter": category_filter,
-                "mode": args.mode
+                "mode": args.get_arg('mode')
             },
             is_folder=True
         )
@@ -618,7 +646,7 @@ def list_filter(args, mode, api: API):
     return True
 
 
-def list_filter_without_category(args, mode, api: API):
+def list_filter_without_category(args, api: API):
     # api request for category names / tags
     req = api.make_request(
         method="GET",
@@ -646,7 +674,7 @@ def list_filter_without_category(args, mode, api: API):
                     "thumb": utils.get_image_from_struct(category_item, "low", 1),
                     "fanart": utils.get_image_from_struct(category_item, "background", 1),
                     "category_filter": category_item.get("tenant_category", {}),
-                    "mode": args.mode
+                    "mode": args.get_arg('mode')
                 },
                 is_folder=True
             )
@@ -670,7 +698,7 @@ def view_series(args, api: API):
         url=api.SEASONS_ENDPOINT.format(api.account_data.cms.bucket),
         params={
             "locale": args.subtitle,
-            "series_id": args.series_id,
+            "series_id": args.get_arg('series_id'),
             "preferred_audio_language": api.account_data.default_audio_language,
             "force_locale": ""
         }
@@ -699,15 +727,15 @@ def view_series(args, api: API):
                     "tvshowtitle": item["title"],
                     "season": item["season_number"],
                     "collection_id": item["id"],
-                    "series_id": args.series_id,
+                    "series_id": args.get_arg('series_id'),
                     "plot": item["description"],
                     "plotoutline": item["description"],
                     "genre": None,  # item["media_type"],
                     "aired": None,  # item["created"][:10],
                     "premiered": None,  # item["created"][:10],
                     "status": u"Completed" if item["is_complete"] else u"Continuing",
-                    "thumb": args.thumb,
-                    "fanart": args.fanart,
+                    "thumb": args.get_arg('thumb'),
+                    "fanart": args.get_arg('fanart'),
                     "mode": "episodes"
                 },
                 is_folder=True
@@ -729,7 +757,7 @@ def view_episodes(args, api: API):
         url=api.EPISODES_ENDPOINT.format(api.account_data.cms.bucket),
         params={
             "locale": args.subtitle,
-            "season_id": args.collection_id
+            "season_id": args.get_arg('collection_id')
         }
     )
 
@@ -776,15 +804,15 @@ def view_episodes(args, api: API):
                     "season": item["season_number"],
                     "episode": item["episode_number"],
                     "episode_id": item["id"],
-                    "collection_id": args.collection_id,
+                    "collection_id": args.get_arg('collection_id'),
                     "series_id": item["series_id"],
                     "plot": item["description"],
                     "plotoutline": item["description"],
                     "aired": item["episode_air_date"][:10],
                     "premiered": item["availability_starts"][:10],  # ???
-                    "poster": args.thumb,  # @todo: re-add
+                    "poster": args.get_arg('thumb'),  # @todo: re-add
                     "thumb": utils.get_image_from_struct(item, "thumbnail", 2),
-                    "fanart": args.fanart,
+                    "fanart": args.get_arg('fanart'),
                     "mode": "videoplay",
                     # note that for fetching streams we need a special guid, not the episode_id
                     "stream_id": stream_id,
@@ -814,14 +842,13 @@ def start_playback(args, api: API):
     utils.crunchy_log(args, "playback stopped", xbmc.LOGINFO)
 
 
-# @todo: the callback magic to add this to a list item somehow triggers an "Attempt to use invalid handle -1" warning
 def add_to_queue(args, api: API) -> bool:
     # api request
     try:
         api.make_request(
             method="POST",
-            url=API.WATCHLIST_ADD_ENDPOINT.format(api.account_data.account_id),
-            json={
+            url=API.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
+            json_data={
                 "content_id": args.content_id
             },
             params={
@@ -835,7 +862,7 @@ def add_to_queue(args, api: API) -> bool:
     except CrunchyrollError as e:
         if 'content.add_watchlist_item_v2.item_already_exists' in str(e):
             xbmcgui.Dialog().notification(
-                '%s Error' % args.addonname,
+                '%s Error' % args.addon_name,
                 'Failed to add item to watchlist',
                 xbmcgui.NOTIFICATION_ERROR,
                 3
@@ -845,7 +872,7 @@ def add_to_queue(args, api: API) -> bool:
             raise e
 
     xbmcgui.Dialog().notification(
-        args.addonname,
+        args.addon_name,
         args.addon.getLocalizedString(30071),
         xbmcgui.NOTIFICATION_INFO,
         2,
@@ -854,39 +881,35 @@ def add_to_queue(args, api: API) -> bool:
 
     return True
 
-
 # NOTE: be super careful when moving the content_id to json or params. it might delete the whole playlist! *sadpanda*
-def remove_from_queue(args, api: API):
-    # currently disabled
-    return False
-    #
-    # # we absolutely need a content_id, otherwise it will delete the whole playlist!
-    # if not args.content_id:
-    #     return False
-    #
-    # # api request
-    # req = api.make_request(
-    #     method="DELETE",
-    #     url=api.WATCHLIST_REMOVE_ENDPOINT.format(api.account_data.account_id, args.content_id, args.content_id),
-    # )
-    #
-    # # check for error - probably does not work
-    # if req and "error" in req:
-    #     view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-    #     view.end_of_directory(args)
-    #     xbmcgui.Dialog().notification(
-    #         '%s Error' % args.addonname,
-    #         'Failed to remove item from watchlist',
-    #         xbmcgui.NOTIFICATION_ERROR,
-    #         3
-    #     )
-    #     return False
-    #
-    # xbmcgui.Dialog().notification(
-    #     '%s Success' % args.addonname,
-    #     'Item removed from watchlist',
-    #     xbmcgui.NOTIFICATION_INFO,
-    #     2
-    # )
-    #
-    # return True
+# def remove_from_queue(args, api: API):
+#     # we absolutely need a content_id, otherwise it will delete the whole playlist!
+#     if not args.content_id:
+#         return False
+#
+#     # api request
+#     req = api.make_request(
+#         method="DELETE",
+#         url=api.WATCHLIST_REMOVE_ENDPOINT.format(api.account_data.account_id, args.content_id, args.content_id),
+#     )
+#
+#     # check for error - probably does not work
+#     if req and "error" in req:
+#         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+#         view.end_of_directory(args)
+#         xbmcgui.Dialog().notification(
+#             '%s Error' % args.addon_name,
+#             'Failed to remove item from watchlist',
+#             xbmcgui.NOTIFICATION_ERROR,
+#             3
+#         )
+#         return False
+#
+#     xbmcgui.Dialog().notification(
+#         '%s Success' % args.addon_name,
+#         'Item removed from watchlist',
+#         xbmcgui.NOTIFICATION_INFO,
+#         2
+#     )
+#
+#     return True

@@ -78,20 +78,20 @@ class VideoPlayer(Object):
         """ Fetch all required stream data using VideoStream object """
 
         video_stream_helper = VideoStream(self._args, self._api)
-        item = xbmcgui.ListItem(getattr(self._args, "title", "Title not provided"))
+        item = xbmcgui.ListItem(self._args.get_arg('title', 'Title not provided'))
 
         try:
             self._stream_data = video_stream_helper.get_player_stream_data()
             if not self._stream_data or not self._stream_data.stream_url:
                 utils.crunchy_log(self._args, "Failed to load stream info for playback", xbmc.LOGERROR)
                 xbmcplugin.setResolvedUrl(int(self._args.argv[1]), False, item)
-                xbmcgui.Dialog().ok(self._args.addonname, self._args.addon.getLocalizedString(30064))
+                xbmcgui.Dialog().ok(self._args.addon_name, self._args.addon.getLocalizedString(30064))
                 return False
 
         except (CrunchyrollError, requests.exceptions.RequestException):
             utils.log_error_with_trace(self._args, "Failed to prepare stream info data")
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), False, item)
-            xbmcgui.Dialog().ok(self._args.addonname,
+            xbmcgui.Dialog().ok(self._args.addon_name,
                                 self._args.addon.getLocalizedString(30064))  # @todo: this is doubled?
             return False
 
@@ -101,7 +101,7 @@ class VideoPlayer(Object):
         """ Sets up the playback"""
 
         # prepare playback
-        item = xbmcgui.ListItem(getattr(self._args, "title", "Title not provided"), path=self._stream_data.stream_url)
+        item = xbmcgui.ListItem(self._args.get_arg('title', 'Title not provided'), path=self._stream_data.stream_url)
         item.setMimeType("application/vnd.apple.mpegurl")
         item.setContentLookup(False)
 
@@ -119,14 +119,14 @@ class VideoPlayer(Object):
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), True, item)
 
             # wait for playback
-            if self._wait_for_playback(10):
+            if wait_for_playback(10):
                 # if successful wait more
                 xbmc.sleep(3000)
 
         # @TODO: fallbacks not tested
 
         # start fallback
-        if not self._wait_for_playback(2):
+        if not wait_for_playback(2):
             # start without inputstream adaptive
             utils.crunchy_log(self._args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGINFO)
             item.setProperty("inputstream", "")
@@ -140,40 +140,40 @@ class VideoPlayer(Object):
             return
 
         # fetch playhead info from api if not already available
-        if hasattr(self._args, 'playhead') is False or self._args.playhead is None:
-            self._args.playhead = 0
+        if not self._args.get_arg('playhead'):
+            self._args.set_arg('playhead', 0)
             utils.crunchy_log(self._args, "_handle_resume: fetching playheads info from api", xbmc.LOGINFO)
             req_episode_data = self._api.make_request(
                 method="GET",
                 url=self._api.PLAYHEADS_ENDPOINT.format(self._api.account_data.account_id),
                 params={
                     "locale": self._args.subtitle,
-                    "content_ids": self._args.episode_id
+                    "content_ids": self._args.get_arg('episode_id')
                 }
             )
 
             if req_episode_data and req_episode_data["data"]:
-                self._args.playhead = int(req_episode_data["data"][0]["playhead"])
-                utils.crunchy_log(self._args, "_handle_resume: playheads is %d" % self._args.playhead, xbmc.LOGINFO)
+                self._args.set_arg('playhead', int(req_episode_data["data"][0]["playhead"]))
+                utils.crunchy_log(self._args, "_handle_resume: playheads is %d" % self._args.get_arg('playhead'))
 
         # wait for video to begin
-        if not self._wait_for_playback(30):
+        if not wait_for_playback(30):
             utils.crunchy_log(self._args, "Timeout reached, video did not start in 30 seconds", xbmc.LOGERROR)
             return
 
         # ask if user want to continue playback
-        if self._args.playhead and self._args.duration:
-            resume = int(int(self._args.playhead) / float(self._args.duration) * 100)
+        if self._args.get_arg('playhead') and self._args.get_arg('duration'):
+            resume = int(int(self._args.get_arg('playhead')) / float(self._args.get_arg('duration')) * 100)
             if 5 <= resume <= 90:
                 self._player.pause()
                 xbmc.sleep(1000)
-                if xbmcgui.Dialog().yesno(self._args.addonname,
+                if xbmcgui.Dialog().yesno(self._args.addon_name,
                                           self._args.addon.getLocalizedString(30065) % int(resume)):
-                    self._player.seekTime(float(self._args.playhead) - 5)
+                    self._player.seekTime(float(self._args.get_arg('playhead')) - 5)
                     xbmc.sleep(1000)
                 self._player.pause()
         else:
-            utils.crunchy_log(self._args, "Missing data for resume - playhead: %d" % self._args.playhead, xbmc.LOGINFO)
+            utils.crunchy_log(self._args, "Missing data for resume - playhead: %d" % self._args.get_arg('playhead'))
 
             # update playtime at crunchyroll in a background thread
         utils.crunchy_log(self._args, "_handle_resume: starting sync thread", xbmc.LOGINFO)
@@ -190,18 +190,6 @@ class VideoPlayer(Object):
         # run thread in background to check when whe reach a section where we can skip
         utils.crunchy_log(self._args, "_handle_skipping: starting thread", xbmc.LOGINFO)
         threading.Thread(target=self.thread_check_skipping).start()
-
-    def _wait_for_playback(self, timeout: int = 30):
-        """ function that waits for playback """
-
-        timer = time.time() + timeout
-        while not xbmc.getCondVisibility("Player.HasMedia"):
-            xbmc.sleep(50)
-            # timeout to prevent infinite loop
-            if time.time() > timer:
-                return False
-
-        return True
 
     def thread_update_playhead(self):
         """ background thread to update playback with crunchyroll in intervals """
@@ -227,17 +215,22 @@ class VideoPlayer(Object):
                         self._api.make_request(
                             method="POST",
                             url=self._api.PLAYHEADS_ENDPOINT.format(self._api.account_data.account_id),
-                            json={
+                            json_data={
                                 "playhead": int(self._player.getTime()),
-                                "content_id": self._args.episode_id
+                                "content_id": self._args.get_arg('episode_id')
                             },
                             headers={
                                 'Content-Type': 'application/json'
                             }
                         )
-                    except requests.exceptions.RequestException:
-                        # catch timeout exception
-                        utils.crunchy_log(self._args, "Failed to update playhead to crunchyroll")
+                    except (CrunchyrollError, requests.exceptions.RequestException) as e:
+                        # catch timeout or any other possible exception
+                        utils.crunchy_log(
+                            self._args,
+                            "Failed to update playhead to crunchyroll: %s for %s" % (
+                                str(e), self._args.get_arg('episode_id')
+                            )
+                        )
                         pass
         except RuntimeError:
             utils.crunchy_log(self._args, "Playback aborted", xbmc.LOGINFO)
@@ -310,3 +303,16 @@ class VideoPlayer(Object):
                 'addon_path': self._args.addon.getAddonInfo("path")
             }
         ).start()
+
+
+def wait_for_playback(timeout: int = 30):
+    """ function that waits for playback """
+
+    timer = time.time() + timeout
+    while not xbmc.getCondVisibility("Player.HasMedia"):
+        xbmc.sleep(50)
+        # timeout to prevent infinite loop
+        if time.time() > timer:
+            return False
+
+    return True

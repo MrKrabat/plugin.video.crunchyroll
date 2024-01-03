@@ -35,7 +35,7 @@ def main(argv):
     args = utils.parse(argv)
 
     # inputstream adaptive settings
-    if hasattr(args, "mode") and args.mode == "hls":
+    if args.get_arg('mode') == "hls":
         is_helper = inputstreamhelper.Helper("hls")
         if is_helper.check_inputstream():
             xbmcaddon.Addon(id="inputstream.adaptive").openSettings()
@@ -85,23 +85,23 @@ def main(argv):
             utils.crunchy_log(args, "Login failed", xbmc.LOGERROR)
             view.add_item(args, {"title": args.addon.getLocalizedString(30060)})
             view.end_of_directory(args)
-            xbmcgui.Dialog().ok(args.addonname, args.addon.getLocalizedString(30060))
+            xbmcgui.Dialog().ok(args.addon_name, args.addon.getLocalizedString(30060))
             return False
 
 
 def check_mode(args, api: API):
     """Run mode-specific functions
     """
-    if hasattr(args, "mode"):
-        mode = args.mode
-    elif hasattr(args, "id"):
+    if args.get_arg('mode'):
+        mode = args.get_arg('mode')
+    elif args.get_arg('id'):
         # call from other plugin
         mode = "videoplay"
-        args.url = "/media-" + args.id
-    elif hasattr(args, "url"):
+        args.set_arg('url', "/media-" + args.get_arg('id'))
+    elif args.get_arg('url'):
         # call from other plugin
         mode = "videoplay"
-        args.url = args.url[26:]
+        args.set_arg('url', args.get_arg('url')[26:])  # @todo: does this actually work? truncated?
     else:
         mode = None
 
@@ -124,22 +124,22 @@ def check_mode(args, api: API):
     elif mode == "drama":
         show_main_category(args, "drama")
 
-    elif mode == "featured":  # https://www.crunchyroll.com/content/v2/discover/account_id/home_feed -> hero_carousel ?
-        controller.listSeries(args, "featured", api)
+    # elif mode == "featured":  # https://www.crunchyroll.com/content/v2/discover/account_id/home_feed -> hero_carousel ?
+    #     controller.list_series(args, "featured", api)
     elif mode == "popular":  # DONE
-        controller.list_filter(args, "popular", api)
+        controller.list_filter(args, api)
     # elif mode == "simulcast":  # https://www.crunchyroll.com/de/simulcasts/seasons/fall-2023 ???
     #     controller.listSeries(args, "simulcast", api)
     # elif mode == "updated":
     #    controller.listSeries(args, "updated", api)
     elif mode == "newest":
-        controller.list_filter(args, "newest", api)
+        controller.list_filter(args, api)
     elif mode == "alpha":
-        controller.list_filter(args, "alpha", api)
+        controller.list_filter(args, api)
     elif mode == "season":  # DONE
-        controller.list_seasons(args, "season", api)
+        controller.list_seasons(args, api)
     elif mode == "genre":  # DONE
-        controller.list_filter(args, "genre", api)
+        controller.list_filter(args, api)
 
     elif mode == "series":
         controller.view_series(args, api)
@@ -149,12 +149,12 @@ def check_mode(args, api: API):
         controller.start_playback(args, api)
     elif mode == "add_to_queue":
         controller.add_to_queue(args, api)
-    elif mode == "remove_from_queue":
-        controller.remove_from_queue(args, api)
+    # elif mode == "remove_from_queue":
+    #     controller.remove_from_queue(args, api)
     else:
         # unknown mode
         utils.crunchy_log(args, "Failed in check_mode '%s'" % str(mode), xbmc.LOGERROR)
-        xbmcgui.Dialog().notification(args.addonname, args.addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification(args.addon_name, args.addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
         show_main_menu(args)
 
 
