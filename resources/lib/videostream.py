@@ -41,7 +41,7 @@ class VideoPlayerStreamData(Object):
 
 class VideoStream(Object):
     """
-    Build a VideoPlayerStream DTO using args.steam_id
+    Build a VideoPlayerStream DTO using args.stream_id
 
     Will download stream details from cr api and store the appropriate stream url
 
@@ -61,7 +61,7 @@ class VideoStream(Object):
     def get_player_stream_data(self) -> Optional[VideoPlayerStreamData]:
         """ retrieve a VideoPlayerStreamData containing stream url + subtitle urls for playback """
 
-        if not hasattr(self.args, 'stream_id') or not self.args.stream_id:
+        if not self.args.get_arg('stream_id'):
             return None
 
         video_player_stream_data = VideoPlayerStreamData()
@@ -72,7 +72,7 @@ class VideoStream(Object):
 
         video_player_stream_data.stream_url = self._get_stream_url_from_api_data(api_stream_data)
         video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(api_stream_data)
-        video_player_stream_data.skip_events_data = self._get_skip_events(self.args.episode_id)
+        video_player_stream_data.skip_events_data = self._get_skip_events(self.args.get_arg('episode_id'))
 
         return video_player_stream_data
 
@@ -82,7 +82,7 @@ class VideoStream(Object):
         # api request streams
         req = self.api.make_request(
             method="GET",
-            url=self.api.STREAMS_ENDPOINT.format(self.api.account_data.cms.bucket, self.args.stream_id),
+            url=self.api.STREAMS_ENDPOINT.format(self.api.account_data.cms.bucket, self.args.get_arg('stream_id')),
             params={
                 "locale": self.args.subtitle
             }
@@ -90,9 +90,9 @@ class VideoStream(Object):
 
         # check for error
         if "error" in req or req is None:
-            item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
+            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
             xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
-            xbmcgui.Dialog().ok(self.args.addonname, self.args.addon.getLocalizedString(30064))
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
             return False
 
         return req
@@ -114,9 +114,9 @@ class VideoStream(Object):
                 url = api_data["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
 
         except IndexError:
-            item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
+            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
             xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
-            xbmcgui.Dialog().ok(self.args.addonname, self.args.addon.getLocalizedString(30064))
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
             return None
 
         return url
@@ -172,7 +172,7 @@ class VideoStream(Object):
             # error
             raise CrunchyrollError("Returned data is not text")
 
-        cache_target = xbmcvfs.translatePath(self.get_cache_path() + self.args.stream_id + '/')
+        cache_target = xbmcvfs.translatePath(self.get_cache_path() + self.args.get_arg('stream_id') + '/')
         xbmcvfs.mkdirs(cache_target)
 
         cache_file = self.get_cache_file_name(subtitle_language, subtitle_format)
@@ -198,7 +198,7 @@ class VideoStream(Object):
         cache_file = self.get_cache_file_name(subtitle_language, subtitle_format)
 
         # build full path to cached file
-        cache_target = xbmcvfs.translatePath(self.get_cache_path() + self.args.stream_id + '/') + cache_file
+        cache_target = xbmcvfs.translatePath(self.get_cache_path() + self.args.get_arg('stream_id') + '/') + cache_file
 
         # check if cached file exists
         if not xbmcvfs.exists(cache_target):
@@ -209,7 +209,7 @@ class VideoStream(Object):
                 return None
 
         cache_file_url = ('special://userdata/addon_data/plugin.video.crunchyroll/cache_subtitles/' +
-                          self.args.stream_id +
+                          self.args.get_arg('stream_id') +
                           '/' + cache_file)
 
         return cache_file_url

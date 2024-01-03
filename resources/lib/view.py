@@ -26,7 +26,7 @@ import xbmcvfs
 import xbmcgui
 import xbmcplugin
 
-from typing import Callable
+from typing import Callable, Optional, List
 
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",
@@ -55,7 +55,7 @@ def add_item(
         is_folder=True,
         total_items=0,
         mediatype="video",
-        callback: Callable[[xbmcgui.ListItem], None] = None
+        callbacks: Optional[List[Callable[[xbmcgui.ListItem], None]]] = None
 ):
     """Add item to directory listing.
     """
@@ -87,6 +87,7 @@ def add_item(
         if u"collection_id" in u:
             cm.append((args.addon.getLocalizedString(30046),
                        "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
+
         if len(cm) > 0:
             li.addContextMenuItems(cm)
 
@@ -97,8 +98,9 @@ def add_item(
                "fanart": info.get("fanart", xbmcvfs.translatePath(args.addon.getAddonInfo("fanart"))),
                "icon": info.get("thumb", "DefaultFolder.png")})
 
-    if callback:
-        callback(li)
+    if callbacks:
+        for cb in callbacks:
+            cb(li)
 
     # add item to list
     xbmcplugin.addDirectoryItem(handle=int(args.argv[1]),
@@ -126,7 +128,7 @@ def build_url(args, info):
             s = s + "&" + key + "=" + quote_value(value)
 
     # step 2 copy old information from args, but don't append twice
-    for key, value in list(args.__dict__.items()):
+    for key, value in list(args.args.items()):
         if value and key in types and not "&" + str(key) + "=" in s:
             s = s + "&" + key + "=" + quote_value(value)
 
@@ -143,7 +145,7 @@ def make_info_label(args, info):
             info_labels[key] = value
 
     # step 2 copy old information from args, but don't overwrite
-    for key, value in list(args.__dict__.items()):
+    for key, value in list(args.args.items()):
         if value and key in types and key not in info_labels:
             info_labels[key] = value
 
