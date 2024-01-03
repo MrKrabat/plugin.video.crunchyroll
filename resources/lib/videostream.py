@@ -17,6 +17,7 @@
 
 import datetime
 import os
+import sys
 from typing import Union, Dict, Optional
 
 import requests
@@ -254,7 +255,8 @@ class VideoStream(Object):
         if filename.endswith('/'):
             filename = filename[:-1]
 
-        return filename
+        # have to use filesystemencoding since filename contains non ascii characters in some language (such as french) and kodi file system encoding can be set to ASCII
+        return filename.encode(sys.getfilesystemencoding(), "ignore").decode(sys.getfilesystemencoding())
 
     def _get_skip_events(self, episode_id) -> Optional[Dict]:
         """ fetch skip events data from api and return a prepared object for supported skip types if data is valid """
