@@ -274,9 +274,20 @@ class VideoStream(Object):
                 method="GET",
                 url=self.api.SKIP_EVENTS_ENDPOINT.format(episode_id)
             )
-        except requests.exceptions.RequestException:
-            log_error_with_trace(self.args, "_get_skip_events: error in requesting skip events data from api")
-            return None
+        except (requests.exceptions.RequestException, CrunchyrollError):
+            try:
+                # Some streams raise a 403 on SKIP_EVENTS endpoint but skip data are available in INTRO_V2 endpoint
+                intro_req = self.api.make_unauthenticated_request(
+                    method="GET",
+                    url=self.api.INTRO_V2_ENDPOINT.format(episode_id)
+                )
+                req = { "intro": {
+                    "start": intro_req.get("startTime"),
+                    "end": intro_req.get("endTime"),
+                }}
+            except (requests.exceptions.RequestException, CrunchyrollError):
+                log_error_with_trace(self.args, "_get_skip_events: error in requesting skip events data from api")
+                return None
 
         if not req or "error" in req:
             crunchy_log(self.args, "_get_skip_events: error in requesting skip events data from api (2)")
