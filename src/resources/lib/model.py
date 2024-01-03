@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import codequick
+
 class Episode:
 
     def __init__(self,item, playhead):
         self.item = item
         self.playhead = playhead
         self.id = item["id"]
-        self.label = item['episode_metadata']["series_title"] + " #" + str(item["episode_metadata"]["episode_number"]) + " - " + item["title"]
-        self.thumbnail = item['images']['thumbnail'][0][0]['source']
-        self.landscape =  item['images']['thumbnail'][0][-1]['source']
-        self.duration = item['episode_metadata']["duration_ms"]/1000
+        self.label = item["episode_metadata"]["series_title"] + " #" + str(item["episode_metadata"]["episode_number"]) + " - " + item["title"]
+        self.thumbnail = item["images"]["thumbnail"][0][0]["source"]
+        self.landscape =  item["images"]["thumbnail"][0][-1]["source"]
+        self.duration = item["episode_metadata"]["duration_ms"]/1000
         self.description = item["description"]
-        self.percentplayed = int((playhead['playhead']/self.duration)*100)
-        self.playcount = 1 if self.percentplayed > 90 else 0
 
     # Format info for codequick
     def to_dict(self):
@@ -43,16 +43,29 @@ class Episode:
                 "duration": self.duration,
                 "plot": self.description,
                 "episode": self.item["episode_metadata"]["episode_number"],
-                "tvshowtitle": self.item['episode_metadata']["series_title"],
-                "season": self.item['episode_metadata']['season_number'],
-                "percentplayed": self.percentplayed,
-                "playcount": self.playcount
+                "tvshowtitle": self.item["episode_metadata"]["series_title"],
+                "season": self.item["episode_metadata"]["season_number"],
+                "originaltitle": self.id
+            },
+            "properties": {
+                "totaltime": self.duration
             },
             "params": {
                 "id": self.id
             }
             
         }
+
+        if "maturity_ratings" in self.item["episode_metadata"]:
+            res["info"]["mpaa"] = self.item["episode_metadata"]["maturity_ratings"][0]
+
+        if self.playhead["fully_watched"]:
+            res["info"]["playcount"] = 1
+        else:
+            if int((self.playhead["playhead"] / self.duration) * 100) < 10:
+                res["info"]["playcount"] = 0
+            else:
+                res["properties"]["resumetime"] = self.playhead["playhead"]
         return res
         
 
@@ -60,7 +73,7 @@ class Season:
 
     def __init__(self,item):
         self.item = item
-        self.id = item['id']
+        self.id = item["id"]
         self.label = item["title"]
 
     # Format info for codequick
@@ -79,10 +92,10 @@ class Series:
 
     def __init__(self, item):
         self.item = item
-        self.id = item['id']
+        self.id = item["id"]
         self.label = item["title"]
-        self.thumbnail = item["images"]["poster_tall"][0][3]['source']
-        self.landscape = item["images"]["poster_wide"][0][-1]['source']
+        self.thumbnail = item["images"]["poster_tall"][0][3]["source"]
+        self.landscape = item["images"]["poster_wide"][0][-1]["source"]
 
 
     # Format info for codequick
@@ -100,24 +113,32 @@ class Series:
         }
         return res
 
-class Gender:
-    def __init__(self, item):
+class Category:
+    def __init__(self, item, parent_id=None):
         self.item = item
-        self.id = item['id']
-        self.title = item['localization']['title']
-        self.description = item['localization']['description']
-        self.fanart = item['image']['background'][-1]
+        self.id = item["id"]
+        self.title = item["localization"]["title"]
+        self.description = item["localization"]["description"]
+        if "image" in item:
+            self.fanart = item["images"]["background"][0]
+        else:
+            self.fanart = codequick.listing.Art().global_thumb("videos.png")
+        self.parent_id = parent_id
 
     def to_dict(self):
         res = {
-            'label': self.title,
-            'art': {
-                'landscape': self.fanart
+            "label": self.title,
+            "art": {
+                "thumbnail": self.fanart
             },
-            "params": {
-                "id": self.id
-            }
-            
         }
+        if self.parent_id:
+            res["params"] = {
+                "categories": [self.parent_id, self.id]
+            }
+        else:
+            res["params"] = {
+                "category_id": self.id
+            }
         return res
     

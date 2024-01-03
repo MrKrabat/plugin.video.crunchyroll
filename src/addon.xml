@@ -6,9 +6,10 @@
         <import addon="script.module.requests" version="2.31.0" />
         <import addon="script.module.codequick" version="1.0.3" />
     </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
+    <extension point="xbmc.python.pluginsource" library="main.py">
         <provides>video</provides>
     </extension>
+    <extension point="xbmc.service" library="monitor.py"/>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <language>en es pt fr de ar it ru</language>

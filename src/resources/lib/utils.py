@@ -17,94 +17,6 @@
 
 ADDON_ID="plugin.video.crunchyroll"
 
-def lookup_for_audio_stream_id(args, data):
-    # TODO manage prefered audio lang
-    stream_id = None
-    # Search for prefered audio stream
-    for version in data['versions']:
-        if version['audio_locale'] == "ja-JP":
-            stream_id  = version['media_guid']
-    # Fallback on VO
-    if not stream_id:
-        for version in data['versions']:
-            if version['audio_locale'] == data["audio_locale"]:
-                stream_id  = version['media_guid']
-    return stream_id
-
-
-# Info from panel class
-def info_from_episode_panel_item(args, item):
-    panel = item.get("panel",{})
-    metadata = panel.get('episode_metadata',{})
-    images = panel.get('images',[])
-    infos = {
-        "title":         metadata["series_title"] + " #" + str(metadata["episode_number"]) + " - " + panel["title"],
-        "tvshowtitle":   metadata["series_title"],
-        "duration":      int(metadata["duration_ms"]/1000),
-        "playhead":      item['playhead'],
-        "playcount":     0 if item["fully_watched"] else 1,
-        "episode":       metadata["episode_number"],
-        "stream_id":     lookup_for_audio_stream_id(args, metadata),
-        "episode_id":    panel["id"],
-        "collection_id": metadata["season_id"],
-        "series_id":     metadata["series_id"],
-        "plot":          panel["description"],
-        "plotoutline":   panel["description"],
-        "year":          metadata["episode_air_date"][:4],
-        "aired":         metadata["episode_air_date"],
-        "premiered":     metadata["availability_starts"],
-        "thumb":         images["thumbnail"][0][0]["source"],
-        "fanart":        images["thumbnail"][0][-1]["source"],
-        "mode":          "videoplay"
-    }
-    return infos
-
-
-# Info from episode class
-def info_from_episode_item(args, item):
-    images = item.get('images',[])
-    infos = {
-        "title":         item["series_title"] + " #" + str(item["episode_number"]) + " - " + item["title"],
-        "tvshowtitle":   item["series_title"],
-        "duration":      int(item["duration_ms"]/1000),
-        "playcount":     0,
-        "episode":       item["episode_number"],
-        "stream_id":     lookup_for_audio_stream_id(args, item),
-        "episode_id":    item["id"],
-        "collection_id": item["season_id"],
-        "series_id":     item["series_id"],
-        "plot":          item["description"],
-        "plotoutline":   item["description"],
-        "year":          item["episode_air_date"][:4],
-        "aired":         item["episode_air_date"],
-        "premiered":     item["availability_starts"],
-        "thumb":         images["thumbnail"][0][0]["source"],
-        "fanart":        images["thumbnail"][0][-1]["source"],
-        "mode":          "videoplay"
-    }
-    return infos
-
-
-# Info from series class
-def info_from_series_item(args, item):
-    info = {
-        "title":       item["title"],
-        "tvshowtitle": item["title"],
-        "series_id":   item["id"],
-        "plot":        item["description"],
-        "plotoutline": item["description"],
-        "year":        item["series_metadata"]["series_launch_year"],
-        "thumb":       item["images"]["poster_wide"][0][0]["source"],
-        "fanart":      item["images"]["poster_wide"][0][-1]["source"],
-        "mode":        "series"
-    }
-    return info
-
-
-def info_from_season_item(args, item):
-    pass
-
-
 def local_from_id(id):
     subtitle = "en-US"
     if id == "0":
@@ -131,3 +43,15 @@ def local_from_id(id):
         subtitle = "ru-RU"
 
     return subtitle
+
+def lookup_playhead(playheads, content_id):
+    for playhead in playheads:
+        if playhead['content_id'] == content_id:
+            return playhead
+
+    return { "playhead": 0, "content_id": content_id, "fully_watched": False }
+
+def lookup_episode(episodes, id):
+    for episode in episodes:
+        if episode['id'] == id:
+            return episode

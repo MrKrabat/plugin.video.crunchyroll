@@ -19,7 +19,6 @@ from codequick import run, Route, Resolver, Listitem
 from .client import CrunchyrollClient
 import xbmcaddon
 import xbmc
-import string
 from . import utils
 
 addon = xbmcaddon.Addon(id=utils.ADDON_ID)
@@ -35,7 +34,8 @@ def root(plugin, content_type="video"):
     yield Listitem.from_dict(popular, label=addon.getLocalizedString(30052))
     yield Listitem.from_dict(newly_added, label=addon.getLocalizedString(30059))
     yield Listitem.from_dict(alpha, label=addon.getLocalizedString(30055))
-    yield Listitem.from_dict(gender, label=addon.getLocalizedString(30056))
+    yield Listitem.from_dict(category, label=addon.getLocalizedString(30056))
+    yield Listitem.from_dict(simulcast, label=addon.getLocalizedString(30053))
 
 @Route.register
 def search(plugin, search_query, start=0):
@@ -58,24 +58,24 @@ def watchlist(plugin, start=0):
         yield Listitem.next_page(start=nextLink['start'])
 
 @Route.register
-def popular(plugin, start=0):
-    series, nextLink = cr.popular(start)
+def popular(plugin, start=0, categories=[]):
+    series, nextLink = cr.popular(start=start, categories=categories)
     for serie in series:
         infos = serie.to_dict()
         item = Listitem.from_dict(show_series,**infos)
         yield item
     if nextLink:
-        yield Listitem.next_page(start=nextLink['start'])
+        yield Listitem.next_page(start=nextLink['start'], categories=categories)
 
 @Route.register
-def newly_added(plugin, start=0):
-    series, nextLink = cr.newly_added(start)
+def newly_added(plugin, start=0, categories=[]):
+    series, nextLink = cr.newly_added(start=start, categories=categories)
     for serie in series:
         infos = serie.to_dict()
         item = Listitem.from_dict(show_series,**infos)
         yield item
     if nextLink:
-        yield Listitem.next_page(start=nextLink['start'])
+        yield Listitem.next_page(start=nextLink['start'], categories=categories)
 
 
 @Route.register
@@ -111,9 +111,47 @@ def alpha_one(plugin, start, number):
         yield item
     
 @Route.register
-def gender(plugin):
-    genders = cr.get_genders()
+def category(plugin):
+    categories = cr.get_categories()
+    for category in categories:
+        infos = category.to_dict()
+        item = Listitem.from_dict(sub_category,**infos)
+        yield item
+        
+@Route.register
+def sub_category(plugin, category_id):
+    yield Listitem.from_dict(popular, params = {"categories": [category_id]}, label=addon.getLocalizedString(30052))
+    yield Listitem.from_dict(newly_added, params = {"categories": [category_id]}, label=addon.getLocalizedString(30059))
+    sub_categories = cr.get_sub_categories(category_id)
+    for category in sub_categories:
+        infos = category.to_dict()
+        item = Listitem.from_dict(browse_sub_category, **infos)
+        yield item
 
+@Route.register
+def browse_sub_category(plugin, categories, start=0):
+    series, nextLink = cr.browse(start=start, categories=categories)
+    for serie in series:
+        infos = serie.to_dict()
+        item = Listitem.from_dict(show_series,**infos)
+        yield item
+    if nextLink:
+        yield Listitem.next_page(start=nextLink['start'], categories=categories)
+
+@Route.register
+def simulcast(plugin, start=0, season=None):
+    if not season:
+        seasonal_tags = cr.get_seasonal_tags()
+        season = seasonal_tags[0]['id']
+    series,nextLink = cr.browse(seasonal_tag=season,start=start)
+    for serie in series:
+        infos = serie.to_dict()
+        item = Listitem.from_dict(show_series,**infos)
+        yield item
+    if nextLink:
+        yield Listitem.next_page(start=nextLink['start'], season=season)
+
+    
 @Resolver.register
 def play_show(plugin, id):
     return cr.get_stream_url(id)
