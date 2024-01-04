@@ -4,18 +4,17 @@ msgstr ""
 "Project-Id-Version: Kodi Addons\n"
 "Report-Msgid-Bugs-To: alanwww1@kodi.org\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2024-01-04 13:13+0100\n"
+"Last-Translator: \n"
 "Language-Team: LANGUAGE\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
+"X-Generator: Poedit 3.4.1\n"
 
 # Crunchyroll Settings
-
 msgctxt "#30001"
 msgid "Username"
 msgstr "Benutzername"
@@ -80,9 +79,7 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russisch"
 
-
 # Crunchyroll Menue
-
 msgctxt "#30040"
 msgid "Queue"
 msgstr "Playlist"
@@ -151,9 +148,7 @@ msgctxt "#30059"
 msgid "Newest"
 msgstr "Neuste"
 
-
 # Crunchyroll Messages
-
 msgctxt "#30060"
 msgid "Login failed"
 msgstr "Login fehlgeschlagen"
@@ -184,4 +179,20 @@ msgstr "Wenn das Video nicht abspielt, warte bitte 30 Sekunden, damit der Fallba
 
 msgctxt "#30067"
 msgid "Watchlist"
-msgstr ""
+msgstr "Watchlist"
+
+msgctxt "#30068"
+msgid "Crunchylist"
+msgstr "Crunchylist"
+
+msgctxt "#30069"
+msgid "My lists"
+msgstr "Meine listen"
+
+msgctxt "#30070"
+msgid "Paging size"
+msgstr "Paging-Größe"
+
+msgctxt "#30071"
+msgid "Resolution"
+msgstr "Auflösung"

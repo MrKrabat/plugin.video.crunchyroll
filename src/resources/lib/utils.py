@@ -24,7 +24,7 @@ def local_from_id(id):
     elif id == "1":
         subtitle = "en-GB"
     elif id == "2":
-        subtitle = "es-LA"
+        subtitle = "es-419"
     elif id == "3":
         subtitle = "es-ES"
     elif id == "4":
@@ -55,3 +55,17 @@ def lookup_episode(episodes, id):
     for episode in episodes:
         if episode['id'] == id:
             return episode
+
+def lookup_playlist_url(stream_list, locale):
+    if locale in stream_list:
+        return stream_list[locale]["url"]
+    elif 'en-US' in stream_list:
+        return stream_list["en-US"]["url"]
+    else:
+        return stream_list[""]["url"]
+
+def lookup_stream_url(playlist, resolution):
+    for item in playlist:
+        if item.stream_info.resolution[1] == int(resolution):
+            return item.uri
+    return playlist[0].uri

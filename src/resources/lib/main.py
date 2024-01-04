@@ -25,7 +25,10 @@ addon = xbmcaddon.Addon(id=utils.ADDON_ID)
 email = addon.getSetting("crunchyroll_username")
 password = addon.getSetting("crunchyroll_password")
 locale = utils.local_from_id(addon.getSetting("subtitle_language"))
-cr = CrunchyrollClient(email, password, locale) 
+page_size = addon.getSettingInt("page_size")
+resolution = addon.getSetting("resolution")
+print(f"*****{resolution}*****")
+cr = CrunchyrollClient(email, password, locale, page_size, resolution) 
 
 @Route.register
 def root(plugin, content_type="video"):
@@ -36,6 +39,7 @@ def root(plugin, content_type="video"):
     yield Listitem.from_dict(alpha, label=addon.getLocalizedString(30055))
     yield Listitem.from_dict(category, label=addon.getLocalizedString(30056))
     yield Listitem.from_dict(simulcast, label=addon.getLocalizedString(30053))
+    yield Listitem.from_dict(my_lists, label=addon.getLocalizedString(30069))
 
 @Route.register
 def search(plugin, search_query, start=0):
@@ -49,7 +53,7 @@ def search(plugin, search_query, start=0):
 
 @Route.register
 def watchlist(plugin, start=0):
-    episodes, nextLink = cr.watchlist(start)
+    episodes, nextLink = cr.get_watchlist(start)
     for episode in episodes:
         infos = episode.to_dict()
         item = Listitem.from_dict(play_show,**infos)
@@ -59,7 +63,7 @@ def watchlist(plugin, start=0):
 
 @Route.register
 def popular(plugin, start=0, categories=[]):
-    series, nextLink = cr.popular(start=start, categories=categories)
+    series, nextLink = cr.get_popular(start=start, categories=categories)
     for serie in series:
         infos = serie.to_dict()
         item = Listitem.from_dict(show_series,**infos)
@@ -69,7 +73,7 @@ def popular(plugin, start=0, categories=[]):
 
 @Route.register
 def newly_added(plugin, start=0, categories=[]):
-    series, nextLink = cr.newly_added(start=start, categories=categories)
+    series, nextLink = cr.get_newly_added(start=start, categories=categories)
     for serie in series:
         infos = serie.to_dict()
         item = Listitem.from_dict(show_series,**infos)
@@ -97,7 +101,7 @@ def show_season(plugin, id):
 
 @Route.register
 def alpha(plugin):
-    index = cr.alpha()
+    index = cr.get_alpha()
     for item in index:
         yield Listitem.from_dict(alpha_one, params = {'start': item['start'], 'number': item['number']}, label = item['prefix'])
 
@@ -150,6 +154,36 @@ def simulcast(plugin, start=0, season=None):
         yield item
     if nextLink:
         yield Listitem.next_page(start=nextLink['start'], season=season)
+
+@Route.register
+def my_lists(plugin):
+    yield Listitem.from_dict(watchlist, label=addon.getLocalizedString(30067))
+    yield Listitem.from_dict(crunchylists, label=addon.getLocalizedString(30068))
+    yield Listitem.from_dict(history, label=addon.getLocalizedString(30042))
+
+@Route.register
+def crunchylists(plugin):
+    lists = cr.get_crunchylists()
+    for item in lists:
+        yield Listitem.from_dict(crunchylist, params = { 'list_id': item['list_id'] }, label=item['title'])
+
+@Route.register
+def crunchylist(plugin, list_id):
+    series = cr.get_crunchylist(list_id)
+    for serie in series:
+        infos = serie.to_dict()
+        item = Listitem.from_dict(show_series,**infos)
+        yield item
+
+@Route.register
+def history(plugin, page=1):
+    episodes, nextLink = cr.get_history(page)
+    for episode in episodes:
+        infos = episode.to_dict()
+        item = Listitem.from_dict(play_show,**infos)
+        yield item
+    if nextLink:
+        yield Listitem.next_page(page=nextLink['page'])
 
     
 @Resolver.register

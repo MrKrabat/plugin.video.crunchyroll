@@ -7,6 +7,7 @@ Crunchyroll a KODI (XBMC) plugin for Crunchyroll.com.
 Original creator: MrKrabat  
 Contributors:
 - Xtero
+- Smirgo
 
 Git repo: https://github.com/xtero/plugin.video.crunchyroll
 
@@ -19,16 +20,13 @@ What this plugin currently can do:
 - [x] Supports all Crunchyroll regions
 - [x] Login with your account
 - [x] Search for animes
-- [ ] Browse all featured anime
 - [x] Browse all popular anime
 - [x] Browse all simulcasts
-- [ ] Browse all updated anime
 - [x] Browse all new anime
 - [x] Browse all anime alphabetically
 - [x] Browse all genres
 - [x] Browse all seasons
-- [ ] Browse Crunchylists
-- [ ] View queue/playlist
+- [x] Browse Crunchylists
 - [x] View history
 - [x] View all seasons/arcs of an anime
 - [x] View all episodes of an season/arc

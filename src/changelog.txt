@@ -1,3 +1,21 @@
+v4.0.3 (2024.01.04)
+Features:
+- Adding the possiblity to browse Crunchylists
+- Adding the possiblity to browse history
+Settings:
+- Adding a setting for pagination size
+- Adding a setting for prefered stream resolution
+Others:
+- Almost complete migration to v2 api (only a little remaining on stream selection)
+- Fix value es-LA to es-419
+Dependencies:
+- add script.module.m3u8
+
+v4.0.2 (2024.01.03)
+Re-add Categories and Simulcast browsing
+Migrating to v2 api in progress
+Synchronisation of playhead using a service
+
 v4.0.1 (2023.12.29)
 -Fix the way a stream is selected
 Now, in first case, it tries to use prefered lang for subtitles
@@ -8,6 +26,8 @@ In ultimate case, it will use no subtitle at all
 v4.0.0 (2023.12.28)
 - New implementation with Beta-Api
 - A lot of regression in term of features
+Dependencies:
+- add script.module.requests and script.module.codequick
 
 v3.3.0 (2023.03.08)
 - Update for Kodi 20 Nexus

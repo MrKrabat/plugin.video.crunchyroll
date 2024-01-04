@@ -6,18 +6,21 @@ from .client import CrunchyrollClient
 import urllib.parse as urlparse
 from urllib.parse import parse_qs
 
-addon = xbmcaddon.Addon(id=utils.ADDON_ID)
-email = addon.getSetting("crunchyroll_username")
-password = addon.getSetting("crunchyroll_password")
-locale = utils.local_from_id(addon.getSetting("subtitle_language"))
-cr=None
 
 def log(msg):
     xbmc.log(f"[Crunchyroll-Monitor] {msg}")
 
 def run():
     monitor = xbmc.Monitor()
-    global cr
+
+    addon = xbmcaddon.Addon(id=utils.ADDON_ID)
+    email = addon.getSetting("crunchyroll_username")
+    password = addon.getSetting("crunchyroll_password")
+    locale = utils.local_from_id(addon.getSetting("subtitle_language"))
+    sync_playtime = addon.getSetting("sync_playtime")
+    page_size = addon.getSettingInt("page_size")
+    resolution = addon.getSetting("resolution")
+    cr=None
 
     while not monitor.abortRequested():
 
@@ -25,18 +28,18 @@ def run():
         if player.isPlayingVideo():
             item = player.getPlayingItem()
             url = player.getPlayingFile()
-            log(f"{url}")
             if re.search("crunchyroll.com", url):
+                log("A crunchyroll video is being played")
                 # Initialize client only on first video play
                 if not cr:
-                    cr = CrunchyrollClient(email, password, locale) 
-                infoTag = item.getVideoInfoTag()
-                episode_id = infoTag.getOriginalTitle()
-                playhead = player.getTime()
-                log(f"Updating episode {episode_id}  playhead with {playhead}")
-                cr.update_playhead(episode_id, int(playhead))
+                    cr = CrunchyrollClient(email, password, locale, page_size, resolution) 
+                if sync_playtime:
+                    infoTag = item.getVideoInfoTag()
+                    episode_id = infoTag.getOriginalTitle()
+                    playhead = player.getTime()
+                    cr.update_playhead(episode_id, int(playhead))
         else:
-            log("Nothing is being played")
+            log("Nothing is being played. Nothing to do")
 
         if monitor.waitForAbort(10):
             break

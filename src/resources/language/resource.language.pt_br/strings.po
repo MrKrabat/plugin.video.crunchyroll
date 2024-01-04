@@ -1,18 +1,17 @@
-﻿# Arquivo de linguagem do Kodi Media Center
 msgid ""
 msgstr ""
 "Project-Id-Version: Kodi Addons\n"
 "Report-Msgid-Bugs-To: alanwww1@kodi.org\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2019-04-08 20:50-0300\n"
+"PO-Revision-Date: 2024-01-04 13:12+0100\n"
+"Last-Translator: \n"
 "Language-Team: vlfr1997\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr_FR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Last-Translator: \n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 3.4.1\n"
 
 # Crunchyroll Settings
 msgctxt "#30001"
@@ -179,4 +178,20 @@ msgstr "Se o vídeo não iniciar, aguarde 30 segundos e tente novamente."
 
 msgctxt "#30067"
 msgid "Watchlist"
-msgstr ""
+msgstr "Watchlist"
+
+msgctxt "#30068"
+msgid "Crunchylist"
+msgstr "Crunchylist"
+
+msgctxt "#30069"
+msgid "My lists"
+msgstr "Minhas listas"
+
+msgctxt "#30070"
+msgid "Paging size"
+msgstr "Tamanho da paginação"
+
+msgctxt "#30071"
+msgid "Resolution"
+msgstr "Resolução"
