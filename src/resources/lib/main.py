@@ -27,7 +27,6 @@ password = addon.getSetting("crunchyroll_password")
 locale = utils.local_from_id(addon.getSetting("subtitle_language"))
 page_size = addon.getSettingInt("page_size")
 resolution = addon.getSetting("resolution")
-print(f"*****{resolution}*****")
 cr = CrunchyrollClient(email, password, locale, page_size, resolution) 
 
 @Route.register
