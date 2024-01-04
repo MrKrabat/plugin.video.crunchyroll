@@ -40,6 +40,7 @@ class VideoPlayer(Object):
     def __init__(self, args: Args, api: API):
         self._args = args
         self._api = api
+
         self._stream_data: VideoPlayerStreamData | None = None
         self._player: Optional[xbmc.Player] = xbmc.Player()  # @todo: what about garbage collection?
 
@@ -89,10 +90,10 @@ class VideoPlayer(Object):
                 return False
 
         except (CrunchyrollError, requests.exceptions.RequestException):
-            utils.log_error_with_trace(self._args, "Failed to prepare stream info data")
+            utils.log_error_with_trace(self._args, "Failed to prepare stream info data", False)
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), False, item)
             xbmcgui.Dialog().ok(self._args.addon_name,
-                                self._args.addon.getLocalizedString(30064))  # @todo: this is doubled?
+                                self._args.addon.getLocalizedString(30064))
             return False
 
         return True
@@ -123,8 +124,6 @@ class VideoPlayer(Object):
                 # if successful wait more
                 xbmc.sleep(3000)
 
-        # @TODO: fallbacks not tested
-
         # start fallback
         if not wait_for_playback(2):
             # start without inputstream adaptive
@@ -135,30 +134,23 @@ class VideoPlayer(Object):
     def _handle_resume(self):
         """ Handles resuming and updating playhead info back to crunchyroll """
 
-        if self._args.addon.getSetting("sync_playtime") != "true":
-            utils.crunchy_log(self._args, "_handle_resume: Sync playtime not enabled", xbmc.LOGINFO)
+        if self._args.addon.getSetting('sync_playtime') != 'true':
+            utils.crunchy_log(self._args, '_handle_resume: Sync playtime not enabled', xbmc.LOGINFO)
             return
 
         # fetch playhead info from api if not already available
         if not self._args.get_arg('playhead'):
             self._args.set_arg('playhead', 0)
-            utils.crunchy_log(self._args, "_handle_resume: fetching playheads info from api", xbmc.LOGINFO)
-            req_episode_data = self._api.make_request(
-                method="GET",
-                url=self._api.PLAYHEADS_ENDPOINT.format(self._api.account_data.account_id),
-                params={
-                    "locale": self._args.subtitle,
-                    "content_ids": self._args.get_arg('episode_id')
-                }
-            )
+            utils.crunchy_log(self._args, '_handle_resume: fetching playhead info from api', xbmc.LOGINFO)
+            playheads = utils.get_playheads_from_api(self._args, self._api, self._args.get_arg('episode_id'))
 
-            if req_episode_data and req_episode_data["data"]:
-                self._args.set_arg('playhead', int(req_episode_data["data"][0]["playhead"]))
-                utils.crunchy_log(self._args, "_handle_resume: playheads is %d" % self._args.get_arg('playhead'))
+            if playheads and playheads.get('data'):
+                self._args.set_arg('playhead', int(playheads.get(self._args.get_arg('episode_id')).get('playhead')))
+                utils.crunchy_log(self._args, "_handle_resume: playhead is %d" % self._args.get_arg('playhead'))
 
         # wait for video to begin
         if not wait_for_playback(30):
-            utils.crunchy_log(self._args, "Timeout reached, video did not start in 30 seconds", xbmc.LOGERROR)
+            utils.crunchy_log(self._args, 'Timeout reached, video did not start in 30 seconds', xbmc.LOGERROR)
             return
 
         # ask if user want to continue playback
@@ -166,7 +158,7 @@ class VideoPlayer(Object):
             resume = int(int(self._args.get_arg('playhead')) / float(self._args.get_arg('duration')) * 100)
             if 5 <= resume <= 90:
                 self._player.pause()
-                xbmc.sleep(1000)
+                xbmc.sleep(500)
                 if xbmcgui.Dialog().yesno(self._args.addon_name,
                                           self._args.addon.getLocalizedString(30065) % int(resume)):
                     self._player.seekTime(float(self._args.get_arg('playhead')) - 5)
@@ -205,9 +197,9 @@ class VideoPlayer(Object):
                 xbmc.sleep(10000)
 
                 if (
-                    last_updated_playtime < self._player.getTime() and
-                    self._player.isPlaying() and
-                    self._stream_data.stream_url == self._player.getPlayingFile()
+                        last_updated_playtime < self._player.getTime() and
+                        self._player.isPlaying() and
+                        self._stream_data.stream_url == self._player.getPlayingFile()
                 ):
                     last_updated_playtime = self._player.getTime()
                     # api request
@@ -216,8 +208,8 @@ class VideoPlayer(Object):
                             method="POST",
                             url=self._api.PLAYHEADS_ENDPOINT.format(self._api.account_data.account_id),
                             json_data={
-                                "playhead": int(self._player.getTime()),
-                                "content_id": self._args.get_arg('episode_id')
+                                'playhead': int(self._player.getTime()),
+                                'content_id': self._args.get_arg('episode_id')
                             },
                             headers={
                                 'Content-Type': 'application/json'
@@ -233,14 +225,14 @@ class VideoPlayer(Object):
                         )
                         pass
         except RuntimeError:
-            utils.crunchy_log(self._args, "Playback aborted", xbmc.LOGINFO)
+            utils.crunchy_log(self._args, 'Playback aborted', xbmc.LOGINFO)
 
-        utils.crunchy_log(self._args, "thread_update_playhead() has finished", xbmc.LOGINFO)
+        utils.crunchy_log(self._args, 'thread_update_playhead() has finished', xbmc.LOGINFO)
 
     def thread_check_skipping(self):
         """ background thread to check and handle skipping intro/credits/... """
 
-        utils.crunchy_log(self._args, "thread_check_skipping() started", xbmc.LOGINFO)
+        utils.crunchy_log(self._args, 'thread_check_skipping() started', xbmc.LOGINFO)
 
         while self._player.isPlaying() and self._stream_data.stream_url == self._player.getPlayingFile():
             # do we still have skip data left?
@@ -260,7 +252,7 @@ class VideoPlayer(Object):
 
             xbmc.sleep(1000)
 
-        utils.crunchy_log(self._args, "thread_check_skipping() has finished", xbmc.LOGINFO)
+        utils.crunchy_log(self._args, 'thread_check_skipping() has finished', xbmc.LOGINFO)
 
     def _check_and_filter_skip_data(self) -> bool:
         """ check if data for skipping is present and valid for usage """

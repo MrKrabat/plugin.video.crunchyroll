@@ -44,19 +44,19 @@ class API:
     TOKEN_ENDPOINT = "https://beta-api.crunchyroll.com/auth/v1/token"
     SEARCH_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/search"
     STREAMS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/videos/{}/streams"
-    SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
+    # SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
     SEASONS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/seasons"
     EPISODES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/episodes"
     OBJECTS_BY_ID_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/cms/objects/{}"
-    SIMILAR_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/similar_to"
-    NEWSFEED_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/news_feed"
+    # SIMILAR_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/similar_to"
+    # NEWSFEED_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/news_feed"
     BROWSE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/browse"
     # there is also a v2, but that will only deliver content_ids and no details about the entries
     WATCHLIST_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/watchlist"
     # only v2 will allow removal of watchlist entries.
     # !!!! be super careful and always provide a content_id, or it will delete the whole playlist! *sighs* !!!!
     # WATCHLIST_REMOVE_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist/{}"
-    WATCHLIST_V2_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist"  # also used for fetching "on watchlist" data
+    WATCHLIST_V2_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watchlist"
     PLAYHEADS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/playheads"
     HISTORY_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/watch-history"
     RESUME_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/{}/history"
@@ -64,6 +64,9 @@ class API:
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
     SKIP_EVENTS_ENDPOINT = "https://static.crunchyroll.com/skip-events/production/{}.json"  # request w/o auth req.
     INTRO_V2_ENDPOINT = "https://static.crunchyroll.com/datalab-intro-v2/{}.json"
+
+    CRUNCHYLISTS_LISTS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists"
+    CRUNCHYLISTS_VIEW_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists/{}"
 
     AUTHORIZATION = "Basic aHJobzlxM2F3dnNrMjJ1LXRzNWE6cHROOURteXRBU2Z6QjZvbXVsSzh6cUxzYTczVE1TY1k="
 

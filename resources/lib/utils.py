@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import json
 import re
 from json import dumps
 
@@ -26,9 +26,9 @@ try:
 except ImportError:
     from urllib.parse import parse_qs
 
-from typing import Dict, Union
+from typing import Dict, Union, List
 
-from .model import Args
+from .model import Args, CrunchyrollError, ListableItem, EpisodeData, MovieData, SeriesData, SeasonData
 from .api import API
 
 
@@ -41,7 +41,50 @@ def parse(argv) -> Args:
         return Args(argv, {})
 
 
-def get_series_data_from_series_ids(args, ids: list, api) -> dict:
+# @todo we could change the return type and along with the listables return additional data that we preload
+#       like info what is on watchlist, artwork, playhead, ...
+#       for that we should use async requests (asyncio)
+def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
+    """ takes an API response object, determines type of its contents and creates DTOs for further processing """
+
+    listable_items = []
+
+    for item in data:
+        # fetch type, which is always somewhere else, depending on api endpoint *sighs*
+        item_type = item.get('panel', {}).get('type') or item.get('type') or item.get('__class__')
+        if not item_type:
+            crunchy_log(
+                None,
+                "get_listables_from_response | failed to determine type for response item %s" % (json.dumps(item, indent=4)),
+                xbmc.LOGERROR
+            )
+            continue
+
+        if item_type == 'series':
+            listable_items.append(SeriesData(item))
+        elif item_type == 'season':
+            # filter series items based on language settings
+            if not filter_seasons(args, item):
+                continue
+            listable_items.append(SeasonData(item))
+        elif item_type == 'episode':
+            listable_items.append(EpisodeData(item))
+        elif item_type == 'movie':
+            listable_items.append(MovieData(item))
+        else:
+            crunchy_log(
+                None,
+                "get_listables_from_response | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
+                xbmc.LOGERROR
+            )
+            continue
+
+    return listable_items
+
+
+def get_series_data_from_series_ids(args: Args, api: API, ids: list) -> dict:
+    """ fetch info from api object endpoint for given ids. Useful to complement missing data """
+
     req = api.make_request(
         method="GET",
         url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids)),
@@ -56,24 +99,55 @@ def get_series_data_from_series_ids(args, ids: list, api) -> dict:
     return {item.get("id"): item for item in req.get("data")}
 
 
-def get_stream_id_from_url(url: str) -> Union[str, None]:
-    stream_id = re.search('/videos/([^/]+)/streams', url)
-    if stream_id is None:
-        return None
+def get_stream_id_from_item(item: Dict) -> Union[str, None]:
+    """ takes a URL string and extracts the stream ID from it """
+
+    pattern = '/videos/([^/]+)/streams'
+    stream_id = re.search(pattern, item.get('__links__', {}).get('streams', {}).get('href', ''))
+    # history data has the stream_id at a different location
+    if not stream_id:
+        stream_id = re.search(pattern, item.get('streams_link', ''))
+
+    if not stream_id:
+        raise CrunchyrollError('Failed to get stream id')
 
     return stream_id[1]
 
 
-def get_watched_status_from_playheads_data(playheads_data, episode_id) -> int:
-    if playheads_data and playheads_data["data"]:
-        for info in playheads_data["data"]:
-            if info["content_id"] == episode_id:
-                return 1 if (info["fully_watched"] is True) else 0
+def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) -> Dict:
+    """ Retrieve playhead data from API for given episode / movie ids """
 
-    return 0
+    if isinstance(episode_ids, str):
+        episode_ids = [episode_ids]
+
+    response = api.make_request(
+        method='GET',
+        url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
+        params={
+            'locale': args.subtitle,
+            'content_ids': ','.join(episode_ids)
+        }
+    )
+
+    out = {}
+
+    if not response:
+        return out
+
+    # prepare by id
+    for item in response.get('data'):
+        out[item.get('content_id')] = {
+            'playhead': item.get('playhead'),
+            'fully_watched': item.get('fully_watched')
+        }
+
+    return out
 
 
 def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
+    """ dive into API info structure and extract requested image from its struct """
+
+    # @todo: add option to specify quality / max size
     if item.get("images") and item.get("images").get(image_type):
         src = item.get("images").get(image_type)
         for i in range(0, depth):
@@ -187,7 +261,9 @@ def convert_language_iso_to_string(args: Args, language_iso: str) -> str:
         return language_iso
 
 
-def filter_series(args: Args, item: Dict) -> bool:
+def filter_seasons(args: Args, item: Dict) -> bool:
+    """ takes an API info struct and returns if it matches user language settings """
+
     # is it a dub in my main language?
     if args.subtitle == item.get('audio_locale', ""):
         return True
@@ -227,7 +303,9 @@ def two_digits(n):
     return str(n)
 
 
-def get_in_queue(args: Args, ids: list, api: API) -> list:
+def get_in_queue(args: Args, api: API, ids: list) -> list:
+    """ retrieve watchlist status for given media ids """
+
     req = api.make_request(
         method="GET",
         url=api.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
@@ -245,3 +323,11 @@ def get_in_queue(args: Args, ids: list, api: API) -> list:
         return []
 
     return [item.get('id') for item in req.get('data')]
+
+
+def highlight_list_item_title(list_item: xbmcgui.ListItem):
+    """ Highlight title
+
+        Used to highlight that item is already on watchlist
+    """
+    list_item.setInfo('video', {'title': '[COLOR orange]' + list_item.getLabel() + '[/COLOR]'})

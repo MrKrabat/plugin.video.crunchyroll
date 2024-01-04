@@ -22,11 +22,13 @@ import time
 
 import xbmc
 import xbmcgui
+import xbmcvfs
 
 from . import utils
 from . import view
 from .api import API
-from .model import EpisodeData, MovieData, CrunchyrollError
+from .model import CrunchyrollError
+from .utils import get_listables_from_response
 from .videoplayer import VideoPlayer
 
 
@@ -49,49 +51,12 @@ def show_queue(args, api: API):
         view.end_of_directory(args)
         return False
 
-    # display media
-    for item in req.get("items"):
-        try:
-            if item.get("panel").get("type") == "episode":
-                entry = EpisodeData(item)
-            elif item["panel"]["type"] == "movie":
-                entry = MovieData(item)
-            else:
-                utils.crunchy_log(args, "queue | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
-                                  xbmc.LOGERROR)
-                continue
-
-            view.add_item(
-                args,
-                {
-                    "title": entry.title,
-                    "tvshowtitle": entry.tvshowtitle,
-                    "duration": entry.duration,
-                    "playcount": entry.playcount,
-                    "season": entry.season,
-                    "episode": entry.episode,
-                    "episode_id": entry.episode_id,
-                    "collection_id": entry.collection_id,
-                    "series_id": entry.series_id,
-                    "plot": entry.plot,
-                    "plotoutline": entry.plotoutline,
-                    "genre": "",  # no longer available
-                    "year": entry.year,
-                    "aired": entry.aired,
-                    "premiered": entry.premiered,
-                    "thumb": entry.thumb,
-                    "fanart": entry.fanart,
-                    "stream_id": entry.stream_id,
-                    "playhead": entry.playhead,
-                    "mode": "videoplay"
-                },
-                is_folder=False
-                # potentially unsafe, it can possibly delete the whole playlist if something goes really wrong
-                # callbacks=lambda li:
-                #     li.addContextMenuItems([(args.addon.getLocalizedString(30068), 'RunPlugin(%s?mode=remove_from_queue&content_id=%s&session_restart=True)' % (sys.argv[0], entry.episode_id))])
-            )
-        except Exception:
-            utils.log_error_with_trace(args, "Failed to add item to queue view: %s" % (json.dumps(item, indent=4)))
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('items')),
+        is_folder=False
+    )
 
     view.end_of_directory(args, "episodes")
     return True
@@ -100,6 +65,7 @@ def show_queue(args, api: API):
 def search_anime(args, api: API):
     """Search for anime
     """
+
     # ask for search string
     if not args.get_arg('search'):
         d = xbmcgui.Dialog().input(args.addon.getLocalizedString(30041), type=xbmcgui.INPUT_ALPHANUM)
@@ -130,49 +96,31 @@ def search_anime(args, api: API):
         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
         view.end_of_directory(args)
         return False
+    utils.dump(req)
+    type_data = req.get('items')[0]  # @todo: for now we support only the first type, which should be series
 
-    items_left = 0
+    # fetch info if already in queue
+    ids = [item.get('id') for item in type_data.get('items')]
+    items_already_in_queue = utils.get_in_queue(args, api, ids)
 
-    for types in req["items"]:
-        # fetch info if already in queue
-        ids = [item.get('id') for item in types.get('items')]
-        items_already_in_queue = utils.get_in_queue(args, ids, api)
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, type_data.get('items')),
+        is_folder=True,
+        callbacks=[
+            lambda li, listable:
+            li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                     'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                         sys.argv[0],
+                                         listable.id))]) if listable.id not in items_already_in_queue else None,
+            lambda li, listable:
+            utils.highlight_list_item_title(li) if listable.id in items_already_in_queue else None
+        ]
+    )
 
-        for item in types["items"]:
-            # add to view
-            view.add_item(
-                args,
-                {
-                    "title": '[COLOR lightgreen]' + item["title"] + '[/COLOR]' if item['id'] in items_already_in_queue else item['title'],
-                    "tvshowtitle": item["title"],
-                    "series_id": item["id"],
-                    "plot": item["description"],
-                    "plotoutline": item["description"],
-                    "genre": "",  # requires fetch from api endpoint
-                    "episode": item.get('series_metadata', {}).get('episode_count', 1),
-                    "year": str(item.get('series_metadata').get('series_launch_year')) + '-01-01' if item.get('series_metadata') else 0,
-                    "aired": str(item.get('series_metadata').get('series_launch_year')) + '-01-01' if item.get('series_metadata') else 0,
-                    "studio": "",
-                    "thumb": utils.get_image_from_struct(item, "poster_tall", 2),
-                    "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
-                    "rating": 0,
-                    "mode": "series"
-                },
-                is_folder=True,
-                # for yet unknown reason, adding an item to the watchlist requires a session restart
-                callbacks=[
-                    lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                                 sys.argv[0], item["id"]))]) if item['id'] not in items_already_in_queue else None
-                ]
-            )
-
-        # for now break as we only support one type
-        items_left = types["total"] - (args.get_arg('offset', 0, int) * 50) - len(types["items"])
-        break
-
-    # show next page button
+    # pagination
+    items_left = type_data.get('total') - (args.get_arg('offset', 0, int) * 50) - len(type_data.get('items'))
     if items_left > 0:
         view.add_item(args,
                       {"title": args.addon.getLocalizedString(30044),
@@ -182,7 +130,6 @@ def search_anime(args, api: API):
                       is_folder=True)
 
     view.end_of_directory(args, "tvshows")
-
     return True
 
 
@@ -208,70 +155,16 @@ def show_history(args, api: API):
         view.end_of_directory(args)
         return False
 
+    # episodes / episodes  (crunchy / xbmc)
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('data')),
+        is_folder=False
+    )
+
+    # pagination
     num_pages = int(math.ceil(req["total"] / items_per_page))
-
-    series_ids = [
-        item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get(
-            "episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in
-        req.get("data")]
-    series_data = utils.get_series_data_from_series_ids(args, series_ids, api)
-
-    for item in req.get("data"):
-        try:
-            # skip episodes completely that don't have at least the type information
-            # @see https://github.com/smirgol/plugin.video.crunchyroll/issues/8
-            if not item.get('panel') or not item.get('panel').get('type'):
-                continue
-
-            if item.get("panel").get("type") == "episode":
-                entry = EpisodeData(item)
-            elif item.get("panel").get("type") == "movie":
-                entry = MovieData(item)
-            else:
-                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
-                                  xbmc.LOGERROR)
-                continue
-
-            poster = entry.thumb
-            fanart = entry.fanart
-            if entry.series_id:
-                series_obj = series_data.get(entry.series_id)
-                if series_obj:
-                    poster = utils.get_image_from_struct(series_obj, "poster_tall", 2)
-                    fanart = utils.get_image_from_struct(series_obj, "poster_wide", 2)
-
-            # add to view
-            view.add_item(
-                args,
-                {
-                    "title": entry.title,
-                    "tvshowtitle": entry.tvshowtitle,
-                    "duration": entry.duration,
-                    "playcount": entry.playcount,
-                    "season": entry.season,
-                    "episode": entry.episode,
-                    "episode_id": entry.episode_id,
-                    "collection_id": entry.collection_id,
-                    "series_id": entry.series_id,
-                    "plot": entry.plot,
-                    "plotoutline": entry.plotoutline,
-                    "genre": "",  # no longer available
-                    "year": entry.year,
-                    "aired": entry.aired,
-                    "premiered": entry.premiered,
-                    "thumb": entry.thumb,
-                    "poster": poster,
-                    "fanart": fanart,
-                    "stream_id": entry.stream_id,
-                    "playhead": entry.playhead,
-                    "mode": "videoplay"
-                },
-                is_folder=False
-            )
-
-        except Exception:
-            utils.log_error_with_trace(args, "Failed to add item to history view: %s" % (json.dumps(item, indent=4)))
-
     if current_page < num_pages:
         view.add_item(args,
                       {"title": args.addon.getLocalizedString(30044),
@@ -280,7 +173,6 @@ def show_history(args, api: API):
                       is_folder=True)
 
     view.end_of_directory(args, "episodes")
-
     return True
 
 
@@ -305,73 +197,16 @@ def show_resume_episodes(args, api: API):
         view.end_of_directory(args)
         return False
 
-    series_ids = [
-        item.get("panel").get("episode_metadata").get("series_id") if item.get("panel") and item.get("panel").get(
-            "episode_metadata") and item.get("panel").get("episode_metadata").get("series_id") else "0" for item in
-        req.get("data")]
-    series_data = utils.get_series_data_from_series_ids(args, series_ids, api)
+    # episodes / episodes  (crunchy / xbmc)
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('data')),
+        is_folder=False
+    )
 
-    for item in req.get("data"):
-        try:
-            # skip episodes completely that don't have at least the type information
-            # @see https://github.com/smirgol/plugin.video.crunchyroll/issues/8
-            if not item.get('panel') or not item.get('panel').get('type'):
-                continue
-
-            if item.get("panel").get("type") == "episode":
-                entry = EpisodeData(item)
-            elif item.get("panel").get("type") == "movie":
-                entry = MovieData(item)
-            else:
-                utils.crunchy_log(args, "history | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
-                                  xbmc.LOGERROR)
-                continue
-
-            poster = entry.thumb
-            fanart = entry.fanart
-            if entry.series_id:
-                series_obj = series_data.get(entry.series_id)
-                if series_obj:
-                    poster = utils.get_image_from_struct(series_obj, "poster_tall", 2)
-                    fanart = utils.get_image_from_struct(series_obj, "poster_wide", 2)
-                else:
-                    utils.log("Cannot retrieve series %s" % entry.series_id)
-
-            # add to view
-            view.add_item(
-                args,
-                {
-                    "title": entry.title,
-                    "tvshowtitle": entry.tvshowtitle,
-                    "duration": entry.duration,
-                    "playcount": entry.playcount,
-                    "season": entry.season,
-                    "episode": entry.episode,
-                    "episode_id": entry.episode_id,
-                    "collection_id": entry.collection_id,
-                    "series_id": entry.series_id,
-                    "plot": entry.plot,
-                    "plotoutline": entry.plotoutline,
-                    "genre": "",  # no longer available
-                    "year": entry.year,
-                    "aired": entry.aired,
-                    "premiered": entry.premiered,
-                    "thumb": entry.thumb,
-                    "poster": poster,
-                    "fanart": fanart,
-                    "stream_id": entry.stream_id,
-                    "playhead": entry.playhead,
-                    "mode": "videoplay"
-                },
-                is_folder=False
-            )
-
-        except Exception:
-            utils.log_error_with_trace(args, "Failed to add item to resume view: %s" % (json.dumps(item, indent=4)))
-
+    # pagination
     items_left = req.get("total") - (args.get_arg('offset', 0, int) * items_per_page) - len(req.get("data"))
-
-    # show next page button
     if items_left > 0:
         view.add_item(args,
                       {"title": args.addon.getLocalizedString(30044),
@@ -384,14 +219,14 @@ def show_resume_episodes(args, api: API):
     return True
 
 
-def list_seasons(args, api: API):
+def list_anime_seasons(args, api: API):
     """ view all available anime seasons and filter by selected season
     """
     season_filter: str = args.get_arg('season_filter', "")
 
     # if no seasons filter applied, list all available seasons
     if not season_filter:
-        return list_seasons_without_filter(args, api)
+        return list_anime_seasons_without_filter(args, api)
 
     # else, if we have a season filter, show all from season
     req = api.make_request(
@@ -412,46 +247,30 @@ def list_seasons(args, api: API):
 
     # fetch info if already in queue
     ids = [item.get('id') for item in req.get('items')]
-    items_already_in_queue = utils.get_in_queue(args, ids, api)
+    items_already_in_queue = utils.get_in_queue(args, api, ids)
 
-    for item in req.get('items'):
-        try:
-            view.add_item(
-                args,
-                {
-                    "title": '[COLOR lightgreen]' + item["title"] + '[/COLOR]' if item[
-                                                                                      'id'] in items_already_in_queue else
-                    item['title'],
-                    "tvshowtitle": item["title"],
-                    "series_id": item["id"],
-                    "plot": item["description"],
-                    "plotoutline": item["description"],
-                    "aired": item["last_public"][:10],
-                    "episode": item.get('series_metadata', {}).get('episode_count', 1),
-                    "season": 2,
-                    "thumb": utils.get_image_from_struct(item, "poster_tall", 2),
-                    "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
-                    # "watched": item['id'] in items_already_in_queue,
-                    "mode": "series"
-                },
-                is_folder=True,
-                # for yet unknown reason, adding an item to the watchlist requires a session restart
-                callbacks=[
-                    lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                                 sys.argv[0], item["id"]))]) if item['id'] not in items_already_in_queue else None
-                ]
+    # season / season  (crunchy / xbmc)
 
-            )
-
-        except Exception:
-            utils.log_error_with_trace(args, "Failed to add item to seasons view: %s" % (json.dumps(item, indent=4)))
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('items')),
+        is_folder=True,
+        callbacks=[
+            lambda li, listable:
+            li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                     'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                         sys.argv[0],
+                                         listable.id))]) if listable.id not in items_already_in_queue else None,
+            lambda li, listable:
+            utils.highlight_list_item_title(li) if listable.id in items_already_in_queue else None
+        ]
+    )
 
     view.end_of_directory(args, "seasons")
 
 
-def list_seasons_without_filter(args, api: API):
+def list_anime_seasons_without_filter(args, api: API):
     """ view all available anime seasons and filter by selected season
     """
     req = api.make_request(
@@ -485,57 +304,6 @@ def list_seasons_without_filter(args, api: API):
     return True
 
 
-# def list_series(args, mode, api: API):
-#     """ view all anime from selected mode
-#     """
-#
-#     @TODO: update
-#
-#     # api request
-#     payload = {"media_type": args.genre,
-#                "filter": mode,
-#                "limit": 30,
-#                "offset": int(getattr(args, "offset", 0)),
-#                "fields": "series.name,series.series_id,series.description,series.year,series.publisher_name, \
-#                               series.genres,series.portrait_image,series.landscape_image"}
-#     req = api.request(args, "list_series", payload)
-#
-#     # check for error
-#     if "error" in req:
-#         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
-#         view.endofdirectory(args)
-#         return False
-#
-#     # display media
-#     for item in req["data"]:
-#         # add to view
-#         view.add_item(args,
-#                       {"title": item["name"],
-#                        "tvshowtitle": item["name"],
-#                        "series_id": item["series_id"],
-#                        "plot": item["description"],
-#                        "plotoutline": item["description"],
-#                        "genre": ", ".join(item["genres"]),
-#                        "year": item["year"],
-#                        "studio": item["publisher_name"],
-#                        "thumb": item["portrait_image"]["full_url"],
-#                        "fanart": item["landscape_image"]["full_url"],
-#                        "mode": "series"},
-#                       is_folder=True)
-#
-#     # show next page button
-#     if len(req["data"]) >= 30:
-#         view.add_item(args,
-#                       {"title": args.addon.getLocalizedString(30044),
-#                        "offset": int(getattr(args, "offset", 0)) + 30,
-#                        "search": getattr(args, "search", ""),
-#                        "mode": args.get_arg('mode')},
-#                       is_folder=True)
-#
-#     view.endofdirectory(args)
-#     return True
-
-
 def list_filter(args, api: API):
     """ view all anime from selected mode
     """
@@ -551,7 +319,6 @@ def list_filter(args, api: API):
 
     # else, if we have a category filter, show all from category
 
-    items_left = 0
     items_per_page = args.get_arg('items_per_page', 50, int)  # change this if desired
 
     # default query params - might get modified by special categories below
@@ -583,50 +350,26 @@ def list_filter(args, api: API):
 
     # fetch info if already in queue
     ids = [item.get('id') for item in req.get('items')]
-    items_already_in_queue = utils.get_in_queue(args, ids, api)
+    items_already_in_queue = utils.get_in_queue(args, api, ids)
 
-    for item in req.get('items'):
-        try:
-            view.add_item(
-                args,
-                {
-                    "title": '[COLOR lightgreen]' + item["title"] + '[/COLOR]' if item[
-                                                                                      'id'] in items_already_in_queue else
-                    item['title'],
-                    "tvshowtitle": item["title"],
-                    "series_id": item["id"],
-                    "plot": item["description"],
-                    "plotoutline": item["description"],
-                    "aired": item["last_public"][:10],
-                    "thumb": utils.get_image_from_struct(item, "poster_tall", 2),
-                    "fanart": utils.get_image_from_struct(item, "poster_wide", 2),
-                    "episode": item.get('series_metadata', {}).get('episode_count', 1),
-                    # "season":  # does not work at all on matrix
-                    "seasons": "1",
-                    "studio": None,
-                    "rating": float(int(item.get('rating', {}).get('average', 0)) * 2.0),  # not available in beta api
-                    "mode": "series"
-                },
-                is_folder=True,
-                # for yet unknown reason, adding an item to the watchlist requires a session restart
-                callbacks=[
-                    lambda li:
-                    li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                             'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                                 sys.argv[0], item["id"]))]) if item['id'] not in items_already_in_queue else None
-                ]
-            )
+    # series / collection  (crunchy / xbmc)
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('items')),
+        is_folder=True,
+        callbacks=[
+            lambda li, listable:
+            li.addContextMenuItems([(args.addon.getLocalizedString(30067),
+                                     'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
+                                         sys.argv[0],
+                                         listable.id))]) if listable.id not in items_already_in_queue else None,
+            lambda li, listable:
+            utils.highlight_list_item_title(li) if listable.id in items_already_in_queue else None
+        ]
+    )
 
-            items_left = req.get('total') - args.get_arg('offset', 0, int) - len(req.get('items'))
-
-        except Exception:
-            utils.log_error_with_trace(
-                args,
-                "Failed to add item to list_filter view: %s %s" % (
-                    json.dumps(params, indent=4),
-                    json.dumps(item, indent=4)
-                )
-            )
+    items_left = req.get('total') - args.get_arg('offset', 0, int) - len(req.get('items'))
 
     # show next page button
     if items_left > 0:
@@ -689,7 +432,7 @@ def list_filter_without_category(args, api: API):
     return True
 
 
-def view_series(args, api: API):
+def view_season(args, api: API):
     """ view all seasons/arcs of an anime
     """
     # api request
@@ -710,39 +453,13 @@ def view_series(args, api: API):
         view.end_of_directory(args)
         return False
 
-    # display media
-    for item in req["items"]:
-        try:
-            # filter items where either audio or subtitles match my configured language
-            # otherwise it will break things when selecting the correct stream later.
-            # @see: issues.txt
-            if not utils.filter_series(args, item):
-                continue
-
-            # add to view
-            view.add_item(
-                args,
-                {
-                    "title": item["title"],
-                    "tvshowtitle": item["title"],
-                    "season": item["season_number"],
-                    "collection_id": item["id"],
-                    "series_id": args.get_arg('series_id'),
-                    "plot": item["description"],
-                    "plotoutline": item["description"],
-                    "genre": None,  # item["media_type"],
-                    "aired": None,  # item["created"][:10],
-                    "premiered": None,  # item["created"][:10],
-                    "status": u"Completed" if item["is_complete"] else u"Continuing",
-                    "thumb": args.get_arg('thumb'),
-                    "fanart": args.get_arg('fanart'),
-                    "mode": "episodes"
-                },
-                is_folder=True
-            )
-        except Exception:
-            utils.log_error_with_trace(args,
-                                       "Failed to add item to view_series view: %s" % (json.dumps(item, indent=4)))
+    # season / season  (crunchy / xbmc)
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('items')),
+        is_folder=True
+    )
 
     view.end_of_directory(args, "seasons")
     return True
@@ -757,7 +474,7 @@ def view_episodes(args, api: API):
         url=api.EPISODES_ENDPOINT.format(api.account_data.cms.bucket),
         params={
             "locale": args.subtitle,
-            "season_id": args.get_arg('collection_id')
+            "season_id": args.get_arg('season_id')
         }
     )
 
@@ -767,62 +484,13 @@ def view_episodes(args, api: API):
         view.end_of_directory(args)
         return False
 
-    # for the watched status, we need an extra call to api, providing it with all episode ids.
-    # this relies fully on the watched status from crunchyroll, the old approach with percentage was better,
-    # but it's much more effort to get the duration of the episodes at this point, as it's not provided by the endpoint
-    episode_ids = []
-    for item in req["items"]:
-        episode_ids.append(item.get('id'))
-
-    req_playheads = api.make_request(
-        method="GET",
-        url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
-        params={
-            "locale": args.subtitle,
-            "content_ids": ','.join(episode_ids)
-        }
+    # episodes / episodes  (crunchy / xbmc)
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('items')),
+        is_folder=False
     )
-
-    # display media
-    for item in req["items"]:
-        try:
-            stream_id = utils.get_stream_id_from_url(item.get('__links__', []).get('streams', []).get('href', ''))
-            if stream_id is None:
-                utils.crunchy_log(args, "failed to fetch stream_id for %s" % (item.get('series_title', 'undefined')),
-                                  xbmc.LOGERROR)
-                continue
-
-            # add to view
-            view.add_item(
-                args,
-                {
-                    "title": utils.format_short_episode_title(item["season_number"], item["episode_number"],
-                                                              item["title"]),
-                    "tvshowtitle": item["series_title"],
-                    "duration": int(item["duration_ms"] / 1000),
-                    "playcount": utils.get_watched_status_from_playheads_data(req_playheads, item["id"]),
-                    "season": item["season_number"],
-                    "episode": item["episode_number"],
-                    "episode_id": item["id"],
-                    "collection_id": args.get_arg('collection_id'),
-                    "series_id": item["series_id"],
-                    "plot": item["description"],
-                    "plotoutline": item["description"],
-                    "aired": item["episode_air_date"][:10],
-                    "premiered": item["availability_starts"][:10],  # ???
-                    "poster": args.get_arg('thumb'),  # @todo: re-add
-                    "thumb": utils.get_image_from_struct(item, "thumbnail", 2),
-                    "fanart": args.get_arg('fanart'),
-                    "mode": "videoplay",
-                    # note that for fetching streams we need a special guid, not the episode_id
-                    "stream_id": stream_id,
-                    "playhead": None
-                },
-                is_folder=False
-            )
-        except Exception:
-            utils.log_error_with_trace(args,
-                                       "Failed to add item to view_episodes view: %s" % (json.dumps(item, indent=4)))
 
     view.end_of_directory(args, "episodes")
     return True
@@ -849,7 +517,7 @@ def add_to_queue(args, api: API) -> bool:
             method="POST",
             url=API.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
             json_data={
-                "content_id": args.content_id
+                "content_id": args.get_arg('content_id')
             },
             params={
                 "locale": args.subtitle,
@@ -913,3 +581,78 @@ def add_to_queue(args, api: API) -> bool:
 #     )
 #
 #     return True
+
+
+def crunchylists_lists(args, api):
+    """ Retrieve all crunchylists """
+
+    # api request
+    req = api.make_request(
+        method='GET',
+        url=api.CRUNCHYLISTS_LISTS_ENDPOINT.format(api.account_data.account_id),
+        params={
+            'locale': args.subtitle
+        }
+    )
+
+    # check for error
+    if not req or 'error' in req:
+        view.add_item(args, {'title': args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    for crunchy_list in req.get('data'):
+        try:
+            # add to view
+            view.add_item(
+                args,
+                {
+                    'title': crunchy_list.get('title'),
+                   # 'thumb': utils.get_image_from_struct(category_item, 'low', 1),
+                    'fanart': xbmcvfs.translatePath(args.addon.getAddonInfo('fanart')),
+                    'mode': 'crunchylists_item',
+                    'crunchylists_item_id': crunchy_list.get('list_id')
+                },
+                is_folder=True
+            )
+        except Exception:
+            utils.log_error_with_trace(
+                args,
+                "Failed to add item to crunchylists view: %s" % (json.dumps(crunchy_list, indent=4))
+            )
+
+    view.end_of_directory(args, "tvshows")
+
+    return None
+
+
+def crunchylists_item(args, api):
+    """ Retrieve all items for a crunchylist """
+
+    utils.crunchy_log(args, "Fetching crunchylist: %s" % args.get_arg('crunchylists_item_id'))
+
+    # api request
+    req = api.make_request(
+        method='GET',
+        url=api.CRUNCHYLISTS_VIEW_ENDPOINT.format(api.account_data.account_id, args.get_arg('crunchylists_item_id')),
+        params={
+            'locale': args.subtitle
+        }
+    )
+
+    # check for error
+    if not req or 'error' in req:
+        view.add_item(args, {'title': args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    view.add_listables(
+        args=args,
+        api=api,
+        listables=get_listables_from_response(args, req.get('data')),
+        is_folder=True
+    )
+
+    view.end_of_directory(args, "tvshows")
+
+    return None

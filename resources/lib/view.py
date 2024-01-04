@@ -17,6 +17,9 @@
 
 import re
 
+from resources.lib.api import API
+from resources.lib.model import ListableItem, EpisodeData, MovieData, Args, SeasonData
+
 try:
     from urllib import quote_plus
 except ImportError:
@@ -57,7 +60,9 @@ def add_item(
         mediatype="video",
         callbacks: Optional[List[Callable[[xbmcgui.ListItem], None]]] = None
 ):
-    """Add item to directory listing.
+    """ Add item to directory listing.
+
+        This is the old, more verbose approach. Try to use view.add_listables() for adding list items, if possible
     """
 
     # create list item
@@ -79,12 +84,13 @@ def add_item(
         li.setInfo(mediatype, info_labels)
         li.setProperty("IsPlayable", "true")
 
-        # add context menu
+        # add context menu to jump to seasons xor episodes
+        # @todo: this only makes sense in some very specific places, we need a way to handle these better.
         cm = []
         if u"series_id" in u:
             cm.append((args.addon.getLocalizedString(30045),
-                       "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "series", u)))
-        if u"collection_id" in u:
+                       "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "seasons", u)))
+        if u"season_id" in u:
             cm.append((args.addon.getLocalizedString(30046),
                        "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
 
@@ -110,6 +116,56 @@ def add_item(
                                 totalItems=total_items)
 
 
+def add_listables(
+        args: Args,
+        api: API,
+        listables: List[ListableItem],
+        is_folder=True,
+        callbacks: Optional[List[Callable[[xbmcgui.ListItem, ListableItem], None]]] = None
+):
+    # for all playable items fetch playhead data from api, as sometimes we already have them, sometimes not
+    from .utils import get_playheads_from_api, get_series_data_from_series_ids, get_image_from_struct
+    ids = [listable.id for listable in listables if
+           isinstance(listable, (EpisodeData, MovieData)) and listable.playhead == 0]
+    playheads = get_playheads_from_api(args, api, ids) if ids else {}
+
+    # seasons contain no images at all, fetch at least the series main image and add it to them
+    ids = [listable.series_id for listable in listables if isinstance(listable, SeasonData)]
+    # ids now contains the same id multiple times, we just need it once, hence [ids[0]]
+    series_images = get_series_data_from_series_ids(args, api, [ids[0]]) if ids else {}
+
+    # add listable items to kodi
+    for listable in listables:
+        # update playcount data, which might be missing
+        if listable.id in playheads:
+            listable.update_playcount_from_playhead(playheads.get(listable.id))
+
+        # update images for SeasonData, as they come with none by default
+        if isinstance(listable, SeasonData) and listable.series_id in series_images:
+            setattr(listable, 'thumb', get_image_from_struct(series_images.get(listable.series_id), "poster_tall", 2))
+            setattr(listable, 'fanart', get_image_from_struct(series_images.get(listable.series_id), "poster_wide", 2))
+            setattr(listable, 'poster', get_image_from_struct(series_images.get(listable.series_id), "poster_tall", 2))
+
+        # get url
+        u = build_url(args, listable.get_info(args))
+
+        # get xbmc list item
+        list_item = listable.to_item(args)
+
+        # call any callbacks
+        if callbacks:
+            for cb in callbacks:
+                cb(list_item, listable)
+
+        # add item to list
+        xbmcplugin.addDirectoryItem(
+            handle=int(args.argv[1]),
+            url=u,
+            listitem=list_item,
+            isFolder=is_folder
+        )
+
+
 def quote_value(value):
     """Quote value depending on python
     """
@@ -121,6 +177,9 @@ def quote_value(value):
 def build_url(args, info):
     """Create url
     """
+
+    # @todo: we really should filter that, as most params added to the url are no longer required
+
     s = ""
     # step 1 copy new information from info
     for key, value in list(info.items()):

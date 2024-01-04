@@ -41,8 +41,7 @@ class VideoPlayerStreamData(Object):
 
 
 class VideoStream(Object):
-    """
-    Build a VideoPlayerStream DTO using args.stream_id
+    """ Build a VideoPlayerStreamData DTO using args.stream_id
 
     Will download stream details from cr api and store the appropriate stream url
 
@@ -50,6 +49,8 @@ class VideoStream(Object):
     are then renamed to make kodi label them in a readable way - this is because kodi uses the filename of the subtitles
     to identify the language and the cr files have cryptic filenames, which will render gibberish to the user on kodi
     instead of a proper label
+
+    Finally, it will download any existing skip info, which can be used to skip intros / credits / summaries
     """
 
     def __init__(self, args: Args, api: API):
@@ -255,7 +256,8 @@ class VideoStream(Object):
         if filename.endswith('/'):
             filename = filename[:-1]
 
-        # have to use filesystemencoding since filename contains non ascii characters in some language (such as french) and kodi file system encoding can be set to ASCII
+        # have to use filesystemencoding since filename contains non ascii characters in some language (such as french)
+        # and kodi file system encoding can be set to ASCII
         return filename.encode(sys.getfilesystemencoding(), "ignore").decode(sys.getfilesystemencoding())
 
     def _get_skip_events(self, episode_id) -> Optional[Dict]:
@@ -281,12 +283,17 @@ class VideoStream(Object):
                     method="GET",
                     url=self.api.INTRO_V2_ENDPOINT.format(episode_id)
                 )
-                req = { "intro": {
+                req = {"intro": {
                     "start": intro_req.get("startTime"),
                     "end": intro_req.get("endTime"),
                 }}
             except (requests.exceptions.RequestException, CrunchyrollError):
-                log_error_with_trace(self.args, "_get_skip_events: error in requesting skip events data from api")
+                # can be okay for e.g. movies, thus only log error with trace, but don't show notification
+                log_error_with_trace(
+                    self.args,
+                    "_get_skip_events: error in requesting skip events data from api",
+                    False
+                )
                 return None
 
         if not req or "error" in req:
