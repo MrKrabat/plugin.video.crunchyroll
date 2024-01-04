@@ -137,12 +137,12 @@ def check_mode(args, api: API):
     elif mode == "alpha":
         controller.list_filter(args, api)
     elif mode == "season":  # DONE
-        controller.list_seasons(args, api)
+        controller.list_anime_seasons(args, api)
     elif mode == "genre":  # DONE
         controller.list_filter(args, api)
 
-    elif mode == "series":
-        controller.view_series(args, api)
+    elif mode == "seasons":
+        controller.view_season(args, api)
     elif mode == "episodes":
         controller.view_episodes(args, api)
     elif mode == "videoplay":
@@ -151,6 +151,10 @@ def check_mode(args, api: API):
         controller.add_to_queue(args, api)
     # elif mode == "remove_from_queue":
     #     controller.remove_from_queue(args, api)
+    elif mode == "crunchylists_lists":
+        controller.crunchylists_lists(args, api)
+    elif mode == 'crunchylists_item':
+        controller.crunchylists_item(args, api)
     else:
         # unknown mode
         utils.crunchy_log(args, "Failed in check_mode '%s'" % str(mode), xbmc.LOGERROR)
@@ -179,6 +183,9 @@ def show_main_menu(args):
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30050),
                    "mode": "anime"})
+    view.add_item(args,
+                  {"title": args.addon.getLocalizedString(30049),
+                   "mode": "crunchylists_lists"})
     # @TODO: i think there are no longer dramas. should we add music videos and movies?
     # view.add_item(args,
     #              {"title": args.addon.getLocalizedString(30051),

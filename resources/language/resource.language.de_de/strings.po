@@ -151,6 +151,10 @@ msgctxt "#30047"
 msgid "Resume"
 msgstr "Fortsetzen"
 
+msgctxt "#30049"
+msgid "Crunchylists"
+msgstr "Crunchylists"
+
 msgctxt "#30050"
 msgid "Anime"
 msgstr "Anime"

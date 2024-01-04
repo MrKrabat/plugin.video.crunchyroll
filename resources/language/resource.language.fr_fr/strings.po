@@ -148,6 +148,12 @@ msgctxt "#30047"
 msgid "Resume"
 msgstr "Reprendre"
 
+# 30048 free
+
+msgctxt "#30049"
+msgid "Crunchylists"
+msgstr ""
+
 msgctxt "#30050"
 msgid "Anime"
 msgstr "Animes"

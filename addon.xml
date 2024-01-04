@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="3.3.0.12" provider-name="MrKrabat">
+<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="3.3.0.13" provider-name="MrKrabat">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
         <import addon="script.module.inputstreamhelper" version="0.3.3"/>
@@ -21,6 +21,7 @@
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <disclaimer lang="es_ES">Atención: Necesitas ser miembro PREMIUM para utilizar este Plugin</disclaimer>
         <news>
+            v3.3.0.13 (2023.01.05)[CR]- improve listing, add crunchylists
             v3.3.0.12 (2023.12.30)[CR]- add resume watching, update settings, add skip intro
             v3.3.0.11 (2023.12.28)[CR]- improve series filtering, proper labels for soft subtitles
             v3.3.0.10 (2023.12.24)[CR]- add setting for soft subtitles

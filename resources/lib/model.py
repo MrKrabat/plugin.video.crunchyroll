@@ -14,9 +14,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import re
 import sys
+from abc import abstractmethod
 from typing import Any, Dict, Union
+
+import xbmcgui
+import xbmcvfs
 
 try:
     from urllib import unquote_plus
@@ -157,103 +161,346 @@ class AccountData(Object):
         self.username: str = data.get("username")
 
 
-class MovieData(Object):
+class ListableItem(Object):
+    """ Base object for all DataObjects below that can be displayed in a Kodi List View """
+
+    def __init__(self):
+        super().__init__()
+        # just a very few that all child classes have in common, so I can spare myself of using hasattr() and getattr()
+        self.id: str | None = None
+        self.title: str | None = None
+        self.thumb: str | None = None
+        self.fanart: str | None = None
+        self.poster: str | None = None
+        self.banner: str | None = None
+
+    @abstractmethod
+    def get_info(self, args: Args) -> Dict:
+        """ return a dict with info to set on the kodi ListItem (filtered) and access some data """
+
+        pass
+
+    def to_item(self, args: Args) -> xbmcgui.ListItem:
+        """ Convert ourselves to a Kodi ListItem"""
+
+        from resources.lib.view import build_url, types
+
+        info = self.get_info(args)
+        # filter out items not known to kodi
+        list_info = {key: info[key] for key in types if key in info}
+
+        li = xbmcgui.ListItem()
+        li.setLabel(self.title)
+
+        # if is a playable item, set some things
+        if hasattr(self, 'duration'):
+            li.setProperty("IsPlayable", "true")
+            li.setProperty('TotalTime', str(float(getattr(self, 'duration'))))
+            # set resume if not fully watched and playhead > x
+            if hasattr(self, 'playcount') and getattr(self, 'playcount') == 0:
+                if hasattr(self, 'playhead') and getattr(self, 'playhead') > 0:
+                    li.setProperty('ResumeTime', str(float(getattr(self, 'playhead'))))
+
+        li.setInfo('video', list_info)
+        li.setArt({
+            "thumb": self.thumb or 'DefaultFolder.png',
+            'poster': self.poster or self.thumb or 'DefaultFolder.png',
+            'banner': self.thumb or 'DefaultFolder.png',
+            'fanart': self.fanart or xbmcvfs.translatePath(args.addon.getAddonInfo('fanart')),
+            'icon': self.thumb or 'DefaultFolder.png'
+        })
+
+        # add context menu
+        # @todo: this only makes sense in some very specific places, we need a way to handle these better.
+        u = build_url(args, info)
+        cm = []
+        if hasattr(self, 'series_id') and getattr(self, 'series_id') is not None:
+            if hasattr(self, 'season_id') and getattr(self, 'season_id') != getattr(self, 'id'):
+                cm.append((args.addon.getLocalizedString(30045),
+                           "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "seasons", u)))
+        if hasattr(self, 'season_id') and getattr(self, 'season_id') is not None:  # and getattr(self, 'season_id') != getattr(self, 'id'):
+            cm.append((args.addon.getLocalizedString(30046),
+                       "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
+
+        if len(cm) > 0:
+            li.addContextMenuItems(cm)
+
+        return li
+
+    def update_playcount_from_playhead(self, playhead_data: Dict):
+        if not isinstance(self, (EpisodeData, MovieData)):
+            return
+
+        setattr(self, 'playhead', playhead_data.get('playhead'))
+        if playhead_data.get('fully_watched'):
+            setattr(self, 'playcount', 1)
+        else:
+            self.recalc_playcount()
+
+
+"""Naming convention for reference:
+    Crunchyroll           XBMC
+    series                collection
+    season                season
+    episode               episode   
+"""
+
+
+class SeriesData(ListableItem):
+    """ A Series containing Seasons containing Episodes """
+
     def __init__(self, data: dict):
+        super().__init__()
         from . import utils
 
-        meta = data.get("panel").get("movie_metadata")
+        panel = data.get('panel') or data
+        meta = panel.get("series_metadata") or panel
 
+        self.id = panel.get("id")
+        self.title: str = panel.get("title")
+        self.tvshowtitle: str = panel.get("title")
+        self.series_id: str | None = panel.get("id")
+        self.season_id: str | None = None
+        self.plot: str = panel.get("description", "")
+        self.plotoutline: str = panel.get("description", "")
+        self.year: str = str(meta.get("series_launch_year")) + '-01-01'
+        self.aired: str = str(meta.get("series_launch_year")) + '-01-01'
+        self.premiered: str = str(meta.get("series_launch_year"))
+        self.episode: int = meta.get('episode_count')
+        self.season: int = meta.get('season_count')
+
+        self.thumb: str | None = utils.get_image_from_struct(panel, "poster_tall", 2)
+        self.fanart: str | None = utils.get_image_from_struct(panel, "poster_wide", 2)
+        self.poster: str | None = utils.get_image_from_struct(panel, "poster_tall", 2)
+        self.banner: str | None = None
+        self.playcount: int = 0
+
+    def recalc_playcount(self):
+        # @todo: not sure how to get that without checking all child seasons and their episodes
+        pass
+
+    def get_info(self, args: Args) -> Dict:
+        # in theory, we could also omit this method and just iterate over the objects properties and use them
+        # to set data on the Kodi ListItem, but this way we are decoupled from their naming convention
+        return {
+            'title': self.title,
+            'tvshowtitle': self.tvshowtitle,
+            'season': self.season,
+            'episode': self.episode,
+            'plot': self.plot,
+            'plotoutline': self.plotoutline,
+
+            'playcount': self.playcount,
+            'series_id': self.series_id,
+
+            'year': self.year,
+            'aired': self.aired,
+            'premiered': self.premiered,
+
+            'mediatype': 'season',
+
+            # internally used for routing
+            "mode": "seasons"
+        }
+
+
+class SeasonData(ListableItem):
+    """ A Season/Arc of a Series containing Episodes """
+
+    def __init__(self, data: dict):
+        super().__init__()
+
+        self.id = data.get("id")
+        self.title: str = data.get("title")
+        self.tvshowtitle: str = data.get("title")
+        self.series_id: str | None = data.get("series_id")
+        self.season_id: str | None = data.get("id")
+        self.plot: str = ""  # does not have description. maybe object endpoint?
+        self.plotoutline: str = ""
+        self.year: str = ""
+        self.aired: str = ""
+        self.premiered: str = ""
+        self.episode: int = 0  # @todo we want to display that, but it's not in the data
+        self.season: int = data.get('season_number')
+        self.thumb: str | None = None
+        self.fanart: str | None = None
+        self.poster: str | None = None
+        self.banner: str | None = None
+        self.playcount: int = 1 if data.get('is_complete') == 'true' else 0
+
+        self.recalc_playcount()
+
+    def recalc_playcount(self):
+        # @todo: not sure how to get that without checking all child episodes
+        pass
+
+    def get_info(self, args: Args) -> Dict:
+        return {
+            'title': self.title,
+            'tvshowtitle': self.tvshowtitle,
+            'season': self.season,
+            'episode': self.episode,
+            # 'plot': self.plot,
+            # 'plotoutline': self.plotoutline,
+
+            'playcount': self.playcount,
+            'series_id': self.series_id,
+            'season_id': self.season_id,
+
+            # 'year': self.year,
+            # 'aired': self.aired,
+            # 'premiered': self.premiered,
+
+            'mediatype': 'season',
+
+            # internally used for routing
+            "mode": "episodes"
+        }
+
+
+# dto
+class EpisodeData(ListableItem):
+    """ A single Episode of a Season of a Series """
+
+    def __init__(self, data: dict):
+        super().__init__()
+        from . import utils
+
+        panel = data.get('panel') or data
+        meta = panel.get("episode_metadata") or panel
+
+        self.id = panel.get("id")
+        self.title: str = utils.format_long_episode_title(meta.get("season_title"), meta.get("episode_number"),
+                                                          panel.get("title"))
+        self.tvshowtitle: str = meta.get("series_title", "")
+        self.duration: int = int(meta.get("duration_ms", 0) / 1000)
+        self.playhead: int = data.get("playhead", 0)
+        self.season: int = meta.get("season_number", 1)
+        self.episode: int = meta.get("episode", 1)
+        self.episode_id: str | None = panel.get("id")
+        self.season_id: str | None = meta.get("season_id")
+        self.series_id: str | None = meta.get("series_id")
+        self.plot: str = panel.get("description", "")
+        self.plotoutline: str = panel.get("description", "")
+        self.year: str = meta.get("episode_air_date")[:4] if meta.get("episode_air_date") is not None else ""
+        self.aired: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
+        self.premiered: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
+        self.thumb: str | None = utils.get_image_from_struct(panel, "thumbnail", 2)
+        self.fanart: str | None = utils.get_image_from_struct(panel, "thumbnail", 2)
+        self.poster: str | None = None
+        self.banner: str | None = None
+        self.playcount: int = 0
+        self.stream_id: str | None = utils.get_stream_id_from_item(panel)
+
+        self.recalc_playcount()
+
+    def recalc_playcount(self):
+        if self.playhead is not None and self.duration is not None:
+            self.playcount = 1 if (int(self.playhead / self.duration * 100)) > 90 else 0
+
+    def get_info(self, args: Args) -> Dict:
+        # update from args
+        self.playhead = self.playhead  # args.get_arg('playhead') if args.get_arg('playhead') is not None else self.playhead
+        self.recalc_playcount()
+
+        return {
+            'title': self.title,
+            'tvshowtitle': self.tvshowtitle,
+            'season': self.season,
+            'episode': self.episode,
+            'plot': self.plot,
+            'plotoutline': self.plotoutline,
+
+            'playhead': self.playhead,
+            'duration': self.duration,
+            'playcount': self.playcount,
+
+            'season_id': self.season_id,
+            'series_id': self.series_id,
+            'episode_id': self.episode_id,
+            'stream_id': self.stream_id,
+
+            'year': self.year,
+            'aired': self.aired,
+            'premiered': self.premiered,
+
+            'mediatype': 'episode',
+
+            # internally used for routing
+            "mode": "videoplay"
+        }
+
+
+class MovieData(ListableItem):
+    def __init__(self, data: dict):
+        super().__init__()
+        from . import utils
+
+        panel = data.get('panel') or data
+        meta = panel.get("movie_metadata") or panel
+
+        self.id = panel.get("id")
         self.title: str = meta.get("movie_listing_title", "")
         self.tvshowtitle: str = meta.get("movie_listing_title", "")
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)
-        self.season: str = ""
-        self.episode: str = "1"
-        self.episode_id: str | None = data.get("panel", {}).get("id")
-        self.collection_id: str | None = None
+        self.season: int = 1
+        self.episode: int = 1
+        self.episode_id: str | None = panel.get("id")
+        self.season_id: str | None = None
         self.series_id: str | None = None
-        self.plot: str = data.get("panel", {}).get("description", "")
-        self.plotoutline: str = data.get("panel", {}).get("description", "")
+        self.plot: str = panel.get("description", "")
+        self.plotoutline: str = panel.get("description", "")
         self.year: str = meta.get("premium_available_date")[:10] if meta.get(
             "premium_available_date") is not None else ""
         self.aired: str = meta.get("premium_available_date")[:10] if meta.get(
             "premium_available_date") is not None else ""
         self.premiered: str = meta.get("premium_available_date")[:10] if meta.get(
             "premium_available_date") is not None else ""
-        self.thumb: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
-        self.fanart: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
+        self.thumb: str | None = utils.get_image_from_struct(panel, "thumbnail", 2)
+        self.fanart: str | None = utils.get_image_from_struct(panel, "thumbnail", 2)
+        self.poster: str | None = None
+        self.banner: str | None = None
         self.playcount: int = 0
-        self.stream_id: str | None = None
+        self.stream_id: str | None = utils.get_stream_id_from_item(panel)
 
-        try:
-            # note that for fetching streams we need a special guid, not the episode_id
-            self.stream_id = utils.get_stream_id_from_url(
-                data.get("panel", {}).get("__links__", {}).get("streams", {}).get("href", "")
-            )
+        self.recalc_playcount()
 
-            # history data has the stream_id at a different location
-            if self.stream_id is None:
-                self.stream_id = utils.get_stream_id_from_url(
-                    data.get("panel", {}).get("streams_link")
-                )
-
-            if self.stream_id is None:
-                raise Exception("")
-
-        except Exception:
-            raise CrunchyrollError("Failed to get stream id for %s" % self.title)
-
+    def recalc_playcount(self):
         if self.playhead is not None and self.duration is not None:
             self.playcount = 1 if (int(self.playhead / self.duration * 100)) > 90 else 0
 
+    def get_info(self, args: Args) -> Dict:
+        # update from args
+        self.playhead = args.get_arg('playhead') if args.get_arg('playhead') is not None else self.playhead
+        self.recalc_playcount()
 
-# dto
-class EpisodeData(Object):
-    def __init__(self, data: dict):
-        from . import utils
+        return {
+            'title': self.title,
+            'tvshowtitle': self.tvshowtitle,
+            'season': self.season,
+            'episode': self.episode,
+            'plot': self.plot,
+            'plotoutline': self.plotoutline,
 
-        meta = data.get("panel").get("episode_metadata")
+            'playhead': self.playhead,
+            'duration': self.duration,
+            'playcount': self.playcount,
 
-        self.title: str = utils.format_long_episode_title(meta.get("season_title"), meta.get("episode_number"),
-                                                          data.get("panel").get("title"))
-        self.tvshowtitle: str = meta.get("series_title", "")
-        self.duration: int = int(meta.get("duration_ms", 0) / 1000)
-        self.playhead: int = data.get("playhead", 0)
-        self.season: int = meta.get("season_number", "")
-        self.episode: str = meta.get("episode", "")
-        self.episode_id: str | None = data.get("panel", {}).get("id")
-        self.collection_id: str | None = meta.get("season_id")
-        self.series_id: str | None = meta.get("series_id")
-        self.plot: str = data.get("panel", {}).get("description", "")
-        self.plotoutline: str = data.get("panel", {}).get("description", "")
-        self.year: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
-        self.aired: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
-        self.premiered: str = meta.get("episode_air_date")[:10] if meta.get("episode_air_date") is not None else ""
-        self.thumb: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
-        self.fanart: str | None = utils.get_image_from_struct(data.get("panel"), "thumbnail", 2)
-        self.playcount: int = 0
-        self.stream_id: str | None = None
+            'series_id': self.series_id,
+            'season_id': self.season_id,
+            'episode_id': self.episode_id,
+            'stream_id': self.stream_id,
 
-        try:
-            # note that for fetching streams we need a special guid, not the episode_id
-            self.stream_id = utils.get_stream_id_from_url(
-                data.get("panel", {}).get("__links__", {}).get("streams", {}).get("href", "")
-            )
+            'year': self.year,
+            'aired': self.aired,
+            'premiered': self.premiered,
 
-            # history data has the stream_id at a different location
-            if self.stream_id is None:
-                self.stream_id = utils.get_stream_id_from_url(
-                    data.get("panel", {}).get("streams_link")
-                )
+            'mediatype': 'movie',
 
-            if self.stream_id is None:
-                raise Exception("")
-
-        except Exception:
-            raise CrunchyrollError("Failed to get stream id for %s" % self.title)
-
-        if self.playhead is not None and self.duration is not None:
-            self.playcount = 1 if (int(self.playhead / self.duration * 100)) > 90 else 0
+            # internally used for routing
+            "mode": "videoplay"
+        }
 
 
 class CrunchyrollError(Exception):
