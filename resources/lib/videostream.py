@@ -17,6 +17,7 @@
 
 import datetime
 import os
+import sys
 from typing import Union, Dict, Optional
 
 import xbmc
@@ -250,4 +251,6 @@ class VideoStream(Object):
         if filename.endswith('/'):
             filename = filename[:-1]
 
-        return filename
+        # have to use filesystemencoding since filename contains non ascii characters in some language (such as french)
+        # and kodi file system encoding can be set to ASCII
+        return filename.encode(sys.getfilesystemencoding(), "ignore").decode(sys.getfilesystemencoding())

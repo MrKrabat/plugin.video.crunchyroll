@@ -200,7 +200,10 @@ class API:
                 "Signature": self.account_data.cms.signature,
                 "Key-Pair-Id": self.account_data.cms.key_pair_id
             })
-        headers.update(self.api_headers)
+
+        request_headers = {}
+        request_headers.update(self.api_headers)
+        request_headers.update(headers)
 
         r = self.http.request(
             method,
