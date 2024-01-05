@@ -199,7 +199,9 @@ class ListableItem(Object):
             # set resume if not fully watched and playhead > x
             if hasattr(self, 'playcount') and getattr(self, 'playcount') == 0:
                 if hasattr(self, 'playhead') and getattr(self, 'playhead') > 0:
-                    li.setProperty('ResumeTime', str(float(getattr(self, 'playhead'))))
+                    resume = int(getattr(self, 'playhead') / getattr(self, 'duration') * 100)
+                    if 5 <= resume <= 90:
+                        li.setProperty('ResumeTime', str(float(getattr(self, 'playhead'))))
 
         li.setInfo('video', list_info)
         li.setArt({
