@@ -208,7 +208,7 @@ class API:
         r = self.http.request(
             method,
             url,
-            headers=headers,
+            headers=request_headers,
             params=params,
             data=data,
             json=json
