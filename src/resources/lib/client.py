@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import json
 import requests
-from . import auth, utils
-from .model import Series, Season, Episode, Category
 import xbmc
 import m3u8
+from . import auth, utils
+from .model import Series, Season, Episode, Category
+
 
 class CrunchyrollClient:
-
 
     def _log(self, msg):
         xbmc.log(f"[Crunchyroll-Client] {msg}")
 
+    # pylint: disable=R0913
     def __init__(self, email, password, locale, page_size, resolution):
         self.auth = auth.CrunchyrollAuth(email, password)
         self.locale = locale
@@ -35,30 +35,30 @@ class CrunchyrollClient:
         self.cms = self._get_cms_info()
         self.resolution = resolution
 
-
     def _get_cms_info(self):
-        url="https://beta-api.crunchyroll.com/index/v2"
+        url = "https://beta-api.crunchyroll.com/index/v2"
         response = self._get(url)
         return response.json()['cms']
 
-
+    # pylint: disable=W0102
     def _post(self, url, params={}, headers={}, data={}, json=False):
         headers['User-Agent'] = "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1"
         if json:
-            response = requests.post(url, params=params, headers=headers, auth=self.auth, json=data)
+            response = requests.post(url, params=params, headers=headers, auth=self.auth, json=data, timeout=30)
         else:
-            response = requests.post(url, params=params, headers=headers, auth=self.auth, data=data)
+            response = requests.post(url, params=params, headers=headers, auth=self.auth, data=data, timeout=30)
         response.raise_for_status()
         return response
 
-
+    # pylint: disable=W0102
     def _get(self, url, params={}, headers={}):
         headers['User-Agent'] = "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1"
         params['locale'] = self.locale
-        response = requests.get(url, params=params, headers=headers, auth=self.auth)
+        response = requests.get(url, params=params, headers=headers, auth=self.auth, timeout=30)
         response.raise_for_status()
         return response
 
+    # pylint: disable=W0102
     def _get_cms(self, url, params={}, headers={}):
         params["Policy"] = self.cms['policy']
         params["Signature"] = self.cms['signature']
@@ -67,7 +67,7 @@ class CrunchyrollClient:
         return response
 
     def get_watchlist(self, start=0):
-        self._log(f"Showing watchlist")
+        self._log("Showing watchlist")
         url = f"https://beta-api.crunchyroll.com/content/v1/{self.auth.data['account_id']}/watchlist"
         params = {
             "n": self.page_size,
@@ -81,14 +81,12 @@ class CrunchyrollClient:
             playhead = utils.lookup_playhead(playheads['data'], item['id'])
             res.append(Episode(item, playhead))
 
-        nextLink = None
+        next_link = None
         if start + self.page_size < data['total']:
-            nextLink = {"start":start + self.page_size}
-        return res, nextLink
-
+            next_link = {"start": start + self.page_size}
+        return res, next_link
 
     def search_anime(self, query, start=0):
-        # TODO add a preference for pagination length
         self._log(f"Looking up for animes with query {query}, from {start}")
         url = "https://beta-api.crunchyroll.com/content/v2/discover/search"
         params = {
@@ -101,10 +99,10 @@ class CrunchyrollClient:
         res = []
         for item in data['data'][0]['items']:
             res.append(Series(item))
-        nextLink = None
+        next_link = None
         if start + self.page_size < data['data'][0]['count']:
-            nextLink = {"start": start + self.page_size}
-        return res, nextLink
+            next_link = {"start": start + self.page_size}
+        return res, next_link
 
     def get_history(self, page=1):
         url = f"https://beta-api.crunchyroll.com/content/v2/{self.auth.data['account_id']}/watch-history"
@@ -118,10 +116,10 @@ class CrunchyrollClient:
         for item in data['data']:
             playhead = utils.lookup_playhead(playheads['data'], item['id'])
             res.append(Episode(item['panel'], playhead))
-        nextLink = None
+        next_link = None
         if page * self.page_size < data['total']:
-            nextLink = {"page": page + 1}
-        return res, nextLink
+            next_link = {"page": page + 1}
+        return res, next_link
 
     def get_crunchylists(self):
         url = f"https://beta-api.crunchyroll.com/content/v2/{self.auth.data['account_id']}/custom-lists"
@@ -133,7 +131,7 @@ class CrunchyrollClient:
         data = self._get(url).json()
         res = []
         for item in data['data']:
-            res.append(Series(item['panel']))      
+            res.append(Series(item['panel']))
         return res
 
     def get_series_seasons(self, series_id):
@@ -166,11 +164,11 @@ class CrunchyrollClient:
         response = self._get(url)
         return response.json()
 
-    def get_stream_url(self, id):
-        self._log(f"Get streams for episode id {id}")
-        episode = self.get_objects([id])["data"][0]
+    def get_stream_url(self, episode_id):
+        self._log(f"Get streams for episode id {episode_id}")
+        episode = self.get_objects([episode_id])["data"][0]
         audio_local = episode['episode_metadata']['audio_locale']
-        for version in episode['episode_metadata']['versions']: 
+        for version in episode['episode_metadata']['versions']:
             if version['audio_locale'] == audio_local:
                 stream_id = version['media_guid']
         self._log(f"Resolved stream id {stream_id}")
@@ -188,7 +186,6 @@ class CrunchyrollClient:
         url = f"https://beta-api.crunchyroll.com/content/v2/{self.auth.data['account_id']}/playheads"
         data = self._get(url, params=params).json()
         return data
-        
 
     def update_playhead(self, episode_id, time):
         self._log(f"Update playhead of episode {episode_id} with time {time}")
@@ -198,7 +195,6 @@ class CrunchyrollClient:
             "playhead": time
         }
         self._post(url, data=data, json=True)
-
 
     def browse(self, sort_by=None, start=0, number=10, categories=[], seasonal_tag=None):
         url = "https://beta-api.crunchyroll.com/content/v2/discover/browse"
@@ -217,10 +213,10 @@ class CrunchyrollClient:
         res = []
         for item in data['data']:
             res.append(Series(item))
-        nextLink = None
+        next_link = None
         if start + number < data['total']:
-            nextLink = {"start": start + number}
-        return res, nextLink
+            next_link = {"start": start + number}
+        return res, next_link
 
     def browse_index(self, sort_by):
         url = "https://beta-api.crunchyroll.com/content/v2/discover/browse/index"
@@ -232,7 +228,7 @@ class CrunchyrollClient:
 
     def get_alpha(self):
         data = self.browse_index('alphabetical')
-        res=[]
+        res = []
         for item in data['data']:
             res.append({
                 'prefix': item['prefix'],
@@ -266,7 +262,6 @@ class CrunchyrollClient:
         return res
 
     def get_seasonal_tags(self):
-        url="https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
+        url = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
         data = self._get(url).json()
-        data = response.json()
         return data['data']

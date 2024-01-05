@@ -1,10 +1,11 @@
 from unittest.mock import Mock
 
-class mockPersistentDict():
-    def __init__(self, storePath):
+
+class MockPersistentDict():
+    def __init__(self, store_path):
         self._data = {}
         self.flush = Mock()
-        self.storePath = storePath
+        self.store_path = store_path
 
     def __getitem__(self, k):
         return self._data[k]
@@ -16,7 +17,7 @@ class mockPersistentDict():
         return self
 
     def __iter__(self):
-        return self._data
+        return iter(self._data)
 
     def __exit__(self, *_):
         pass
@@ -24,9 +25,7 @@ class mockPersistentDict():
     def __str__(self):
         return str(self._data)
 
-    def get(self,k, default):
+    def get(self, k, default):
         if k in self._data:
             return self._data[k]
-        else:
-            return default
-
+        return default

@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
+from datetime import datetime
 import requests
 from requests.auth import AuthBase
-from datetime import datetime
+# pylint: disable=E0401
 from codequick.storage import PersistentDict
 
-class CrunchyrollAuth(AuthBase):
 
+class CrunchyrollAuth(AuthBase):
 
     def __init__(self, email, password):
         self.email = email
@@ -49,7 +49,7 @@ class CrunchyrollAuth(AuthBase):
         self.data['country'] = data['country']
         self.data['account_id'] = data['account_id']
         self.data['profile_id'] = data['profile_id']
-        now =  datetime.timestamp(datetime.now())
+        now = datetime.timestamp(datetime.now())
         self.data['last_update'] = now
         # Store data for reuse
         self.data.flush()
@@ -62,7 +62,7 @@ class CrunchyrollAuth(AuthBase):
             "scope": "offline_access"
         }
         url = "https://beta-api.crunchyroll.com/auth/v1/token"
-        resp = requests.post(url, headers = self.auth_headers, data = data)
+        resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
         resp.raise_for_status()
         self._store_token(resp.json())
 
@@ -73,26 +73,26 @@ class CrunchyrollAuth(AuthBase):
             "scope": "offline_access"
         }
         url = "https://beta-api.crunchyroll.com/auth/v1/token"
-        resp = requests.post(url, headers = self.auth_headers, data = data)
+        resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
         resp.raise_for_status()
         self._store_token(resp.json())
 
     def is_auth(self):
-        last_update = self.data.get('last_update',0)
-        expires_in = self.data.get('expires_in',0)
-        now =  datetime.timestamp(datetime.now())
+        last_update = self.data.get('last_update', 0)
+        expires_in = self.data.get('expires_in', 0)
+        now = datetime.timestamp(datetime.now())
         # If time is under last_update + expires_in, we assume we are still authenticated
         return now < (last_update + expires_in)
 
     def need_refresh(self):
-        last_update = self.data.get('last_update',0)
-        expires_in = self.data.get('expires_in',0)
-        now =  datetime.timestamp(datetime.now())
+        last_update = self.data.get('last_update', 0)
+        expires_in = self.data.get('expires_in', 0)
+        now = datetime.timestamp(datetime.now())
         return now > (last_update + expires_in*3/4)
-        
+
     def __call__(self, request):
         if not self.is_auth():
-            self._authenticate()        
+            self._authenticate()
         elif self.need_refresh():
             self._refresh()
 

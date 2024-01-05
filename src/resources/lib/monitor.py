@@ -1,14 +1,13 @@
-import xbmc
 import re
+import xbmc
 import xbmcaddon
 from . import utils
 from .client import CrunchyrollClient
-import urllib.parse as urlparse
-from urllib.parse import parse_qs
 
 
 def log(msg):
     xbmc.log(f"[Crunchyroll-Monitor] {msg}")
+
 
 def run():
     monitor = xbmc.Monitor()
@@ -20,22 +19,23 @@ def run():
     sync_playtime = addon.getSetting("sync_playtime")
     page_size = addon.getSettingInt("page_size")
     resolution = addon.getSetting("resolution")
-    cr=None
+    cr = None
 
     while not monitor.abortRequested():
 
         player = xbmc.Player()
         if player.isPlayingVideo():
+            # pylint: disable=E1101
             item = player.getPlayingItem()
             url = player.getPlayingFile()
             if re.search("crunchyroll.com", url):
                 log("A crunchyroll video is being played")
                 # Initialize client only on first video play
                 if not cr:
-                    cr = CrunchyrollClient(email, password, locale, page_size, resolution) 
+                    cr = CrunchyrollClient(email, password, locale, page_size, resolution)
                 if sync_playtime:
-                    infoTag = item.getVideoInfoTag()
-                    episode_id = infoTag.getOriginalTitle()
+                    info_tag = item.getVideoInfoTag()
+                    episode_id = info_tag.getOriginalTitle()
                     playhead = player.getTime()
                     cr.update_playhead(episode_id, int(playhead))
         else:

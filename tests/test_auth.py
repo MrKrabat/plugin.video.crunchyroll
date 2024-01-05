@@ -1,30 +1,32 @@
 import unittest
-from unittest.mock import MagicMock
-from .mocks import mockPersistentDict
 import sys
 import time
 import os
+from unittest.mock import MagicMock
 from requests.exceptions import HTTPError
+from .mocks import MockPersistentDict
 
 codequick_mock = MagicMock()
 codequick_storage_mock = MagicMock()
-codequick_storage_mock.PersistentDict = mockPersistentDict
+codequick_storage_mock.PersistentDict = MockPersistentDict
 
 sys.modules['codequick'] = codequick_mock
 sys.modules['codequick.storage'] = codequick_storage_mock
 
 # Need to be imported after modules modifications
-from resources.lib.auth import CrunchyrollAuth
+# pylint: disable=E0401,C0413,C0411
+from resources.lib.auth import CrunchyrollAuth # noqa = E402,
 
 if 'CRUNCHYROLL_EMAIL' not in os.environ:
     print("You need to defined CRUNCHYROLL_EMAIL to run tests", file=sys.stderr)
-    exit(1)
-EMAIL=os.environ['CRUNCHYROLL_EMAIL']
+    sys.exit(1)
+EMAIL = os.environ['CRUNCHYROLL_EMAIL']
 
 if 'CRUNCHYROLL_PASSWORD' not in os.environ:
     print("You need to defined CRUNCHYROLL_PASSWORD to run tests", file=sys.stderr)
-    exit(1)
-PASSWORD=os.environ['CRUNCHYROLL_PASSWORD']
+    sys.exit(1)
+PASSWORD = os.environ['CRUNCHYROLL_PASSWORD']
+
 
 class AuthTest(unittest.TestCase):
 
@@ -34,7 +36,7 @@ class AuthTest(unittest.TestCase):
 
     def test_auth_failure(self):
         with self.assertRaises(HTTPError):
-            auth = CrunchyrollAuth("dummy", "wrong_password")
+            CrunchyrollAuth("dummy", "wrong_password")
 
     def test_is_auth_false(self):
         auth = CrunchyrollAuth(EMAIL, PASSWORD)
@@ -61,12 +63,13 @@ class AuthTest(unittest.TestCase):
     def test_refresh(self):
         auth = CrunchyrollAuth(EMAIL, PASSWORD)
         first_access_token = auth.data['access_token']
-        print(f"Sleep for 5s")
+        print("Sleep for 5s")
         time.sleep(5)
+        # pylint: disable=W0212
         auth._refresh()
         second_access_token = auth.data['access_token']
         self.assertIsNot(first_access_token, second_access_token)
-        
+
 
 if __name__ == "__main__":
     unittest.main()
