@@ -82,21 +82,22 @@ def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
     return listable_items
 
 
-def get_series_data_from_series_ids(args: Args, api: API, ids: list) -> dict:
+async def get_objects_from_api(args: Args, api: API, ids: list) -> dict:
     """ fetch info from api object endpoint for given ids. Useful to complement missing data """
 
     req = api.make_request(
-        method="GET",
+        method='GET',
         url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids)),
         params={
-            "locale": args.subtitle,
+            'locale': args.subtitle,
+            'ratings': 'true'
             # "preferred_audio_language": ""
         }
     )
-    if not req or "error" in req:
+    if not req or 'error' in req:
         return {}
 
-    return {item.get("id"): item for item in req.get("data")}
+    return {item.get('id'): item for item in req.get('data')}
 
 
 def get_stream_id_from_item(item: Dict) -> Union[str, None]:
@@ -114,7 +115,7 @@ def get_stream_id_from_item(item: Dict) -> Union[str, None]:
     return stream_id[1]
 
 
-def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) -> Dict:
+async def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) -> Dict:
     """ Retrieve playhead data from API for given episode / movie ids """
 
     if isinstance(episode_ids, str):
@@ -144,7 +145,29 @@ def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) 
     return out
 
 
-def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
+async def get_watchlist_status_from_api(args: Args, api: API, ids: list) -> list:
+    """ retrieve watchlist status for given media ids """
+
+    req = api.make_request(
+        method="GET",
+        url=api.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
+        params={
+            "content_ids": ','.join(ids),
+            "locale": args.subtitle
+        }
+    )
+
+    if not req or req.get("error") is not None:
+        crunchy_log(args, "get_in_queue: Failed to retrieve data", xbmc.LOGERROR)
+        return []
+
+    if not req.get('data'):
+        return []
+
+    return [item.get('id') for item in req.get('data')]
+
+
+def get_img_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
     """ dive into API info structure and extract requested image from its struct """
 
     # @todo: add option to specify quality / max size
@@ -301,28 +324,6 @@ def two_digits(n):
     if n < 10:
         return "0" + str(n)
     return str(n)
-
-
-def get_in_queue(args: Args, api: API, ids: list) -> list:
-    """ retrieve watchlist status for given media ids """
-
-    req = api.make_request(
-        method="GET",
-        url=api.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
-        params={
-            "content_ids": ','.join(ids),
-            "locale": args.subtitle
-        }
-    )
-
-    if not req or req.get("error") is not None:
-        crunchy_log(args, "get_in_queue: Failed to retrieve data", xbmc.LOGERROR)
-        return []
-
-    if not req.get('data'):
-        return []
-
-    return [item.get('id') for item in req.get('data')]
 
 
 def highlight_list_item_title(list_item: xbmcgui.ListItem):
