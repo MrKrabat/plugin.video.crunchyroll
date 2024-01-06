@@ -153,19 +153,22 @@ class VideoPlayer(Object):
             utils.crunchy_log(self._args, 'Timeout reached, video did not start in 30 seconds', xbmc.LOGERROR)
             return
 
+        # we now set the ResumeTime to kodi, so kodi itself asks the user if he wants to resume. we should no longer
+        # need this.
+
         # ask if user want to continue playback
-        if self._args.get_arg('playhead') and self._args.get_arg('duration'):
-            resume = int(int(self._args.get_arg('playhead')) / float(self._args.get_arg('duration')) * 100)
-            if 5 <= resume <= 90:
-                self._player.pause()
-                xbmc.sleep(500)
-                if xbmcgui.Dialog().yesno(self._args.addon_name,
-                                          self._args.addon.getLocalizedString(30065) % int(resume)):
-                    self._player.seekTime(float(self._args.get_arg('playhead')) - 5)
-                    xbmc.sleep(1000)
-                self._player.pause()
-        else:
-            utils.crunchy_log(self._args, "Missing data for resume - playhead: %d" % self._args.get_arg('playhead'))
+        # if self._args.get_arg('playhead') and self._args.get_arg('duration'):
+        #     resume = int(int(self._args.get_arg('playhead')) / float(self._args.get_arg('duration')) * 100)
+        #     if 5 <= resume <= 90:
+        #         self._player.pause()
+        #         xbmc.sleep(500)
+        #         if xbmcgui.Dialog().yesno(self._args.addon_name,
+        #                                   self._args.addon.getLocalizedString(30065) % int(resume)):
+        #             self._player.seekTime(float(self._args.get_arg('playhead')) - 5)
+        #             xbmc.sleep(1000)
+        #         self._player.pause()
+        # else:
+        #     utils.crunchy_log(self._args, "Missing data for resume - playhead: %d" % self._args.get_arg('playhead'))
 
             # update playtime at crunchyroll in a background thread
         utils.crunchy_log(self._args, "_handle_resume: starting sync thread", xbmc.LOGINFO)

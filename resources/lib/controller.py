@@ -96,7 +96,7 @@ def search_anime(args, api: API):
         view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
         view.end_of_directory(args)
         return False
-    utils.dump(req)
+
     type_data = req.get('items')[0]  # @todo: for now we support only the first type, which should be series
 
     # fetch info if already in queue
@@ -602,24 +602,17 @@ def crunchylists_lists(args, api):
         return False
 
     for crunchy_list in req.get('data'):
-        try:
-            # add to view
-            view.add_item(
-                args,
-                {
-                    'title': crunchy_list.get('title'),
-                   # 'thumb': utils.get_image_from_struct(category_item, 'low', 1),
-                    'fanart': xbmcvfs.translatePath(args.addon.getAddonInfo('fanart')),
-                    'mode': 'crunchylists_item',
-                    'crunchylists_item_id': crunchy_list.get('list_id')
-                },
-                is_folder=True
-            )
-        except Exception:
-            utils.log_error_with_trace(
-                args,
-                "Failed to add item to crunchylists view: %s" % (json.dumps(crunchy_list, indent=4))
-            )
+        # add to view
+        view.add_item(
+            args,
+            {
+                'title': crunchy_list.get('title'),
+                'fanart': xbmcvfs.translatePath(args.addon.getAddonInfo('fanart')),
+                'mode': 'crunchylists_item',
+                'crunchylists_item_id': crunchy_list.get('list_id')
+            },
+            is_folder=True
+        )
 
     view.end_of_directory(args, "tvshows")
 
