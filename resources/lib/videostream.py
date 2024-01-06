@@ -14,11 +14,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import asyncio
 import datetime
 import os
 import sys
-from typing import Union, Dict, Optional
+from typing import Union, Dict, Optional, Any
 
 import requests
 import xbmc
@@ -28,7 +28,7 @@ import xbmcvfs
 
 from resources.lib.api import API
 from resources.lib.model import Object, Args, CrunchyrollError
-from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log
+from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log, get_playheads_from_api
 
 
 class VideoPlayerStreamData(Object):
@@ -38,6 +38,7 @@ class VideoPlayerStreamData(Object):
         self.stream_url: str | None = None
         self.subtitle_urls: list[str] | None = None
         self.skip_events_data: Dict = {}
+        self.playheads_data: Dict = {}
 
 
 class VideoStream(Object):
@@ -68,17 +69,41 @@ class VideoStream(Object):
 
         video_player_stream_data = VideoPlayerStreamData()
 
-        api_stream_data = self._get_stream_data_from_api()
-        if api_stream_data is False:
+        crunchy_log(self.args, "VideoStream: Starting to retrieve data async")
+        async_data = asyncio.run(self._gather_async_data())
+        crunchy_log(self.args, "VideoStream: Finished to retrieve data async")
+
+        api_stream_data = async_data.get('stream_data')
+        if not api_stream_data:
             raise CrunchyrollError("Failed to fetch stream data from api")
 
-        video_player_stream_data.stream_url = self._get_stream_url_from_api_data(api_stream_data)
-        video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(api_stream_data)
-        video_player_stream_data.skip_events_data = self._get_skip_events(self.args.get_arg('episode_id'))
+        video_player_stream_data.stream_url = self._get_stream_url_from_api_data(async_data.get('stream_data'))
+        video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(async_data.get('stream_data'))
+        video_player_stream_data.skip_events_data = async_data.get('skip_events_data')
+        video_player_stream_data.playheads_data = async_data.get('playheads_data')
 
         return video_player_stream_data
 
-    def _get_stream_data_from_api(self) -> Union[Dict, bool]:
+    async def _gather_async_data(self) -> Dict[str, Any]:
+        """ gather data asynchronously and return them as a dictionary """
+
+        # create threads
+        # actually not sure if this works, as the requests lib is not async
+        # also not sure if this is thread safe in any way, what if session is timed-out when starting this?
+        t_stream_data = asyncio.create_task(self._get_stream_data_from_api())
+        t_skip_events_data = asyncio.create_task(self._get_skip_events(self.args.get_arg('episode_id')))
+        t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))
+
+        # start async requests and fetch results
+        results = await asyncio.gather(t_stream_data, t_skip_events_data, t_playheads)
+
+        return {
+            'stream_data': results[0] or {},
+            'skip_events_data': results[1] or {},
+            'playheads_data': results[2] or {}
+        }
+
+    async def _get_stream_data_from_api(self) -> Union[Dict, bool]:
         """ get json stream data from cr api for given args.stream_id """
 
         # api request streams
@@ -260,7 +285,7 @@ class VideoStream(Object):
         # and kodi file system encoding can be set to ASCII
         return filename.encode(sys.getfilesystemencoding(), "ignore").decode(sys.getfilesystemencoding())
 
-    def _get_skip_events(self, episode_id) -> Optional[Dict]:
+    async def _get_skip_events(self, episode_id) -> Optional[Dict]:
         """ fetch skip events data from api and return a prepared object for supported skip types if data is valid """
 
         # if none of the skip options are enabled in setting, don't fetch that data
@@ -304,7 +329,8 @@ class VideoStream(Object):
         supported_skips = ['intro', 'credits']
         prepared = dict()
         for skip_type in supported_skips:
-            if req.get(skip_type) and req.get(skip_type).get('start') is not None and req.get(skip_type).get('end') is not None:
+            if req.get(skip_type) and req.get(skip_type).get('start') is not None and req.get(skip_type).get(
+                    'end') is not None:
                 prepared.update({
                     skip_type: dict(start=req.get(skip_type).get('start'), end=req.get(skip_type).get('end'))
                 })
