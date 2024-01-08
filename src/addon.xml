@@ -24,16 +24,9 @@
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <disclaimer lang="fr_FR">ATTENTION: Vous DEVEZ être un utilisateur PREMIUM pour pouvoir utiliser ce plugin</disclaimer>
         <news>
-            v4.0.3 (2024.01.04)
-            Features:
-            - Adding the possiblity to browse Crunchylists
-            - Adding the possiblity to browse history
-            Settings:
-            - Adding a setting for pagination size
-            - Adding a setting for prefered stream resolution
-            Others:
-            - Almost complete migration to v2 api (only a little remaining on stream selection)
-            - Fix value es-LA to es-419
+            v4.0.4 (2024.01.05)
+            - Add tests
+            - Handle API exception on monitor side to avoid crash
         </news>
         <license>GNU Affero General Public License, v3</license>
         <forum></forum>

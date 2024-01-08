@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-# pylint: disable=E0401
-from codequick import Route, Resolver, Listitem
+# pylint: disable=E0401,W0611
+from codequick import Route, Resolver, Listitem, run # noqa = F401
 import xbmcaddon
 from .client import CrunchyrollClient
 from . import utils

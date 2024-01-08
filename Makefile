@@ -5,9 +5,11 @@ install: clean
 clean:
 	rm -rf "${KODI_INSTALL}/addons/plugin.video.crunchyroll"
 
-test:
+test: lint
+	.venv/bin/pytest
+
+lint:
 	pylint $$(find -name *.py -not -path "./.venv/*")
 	flake8
-	.venv/bin/nosetests -v
 
 .PHONY: clean

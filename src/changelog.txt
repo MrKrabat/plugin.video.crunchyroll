@@ -1,3 +1,7 @@
+v4.0.3 (2024.01.08)
+- Add tests
+- Handle API exception on monitor side to avoid crash
+
 v4.0.3 (2024.01.04)
 Features:
 - Adding the possiblity to browse Crunchylists

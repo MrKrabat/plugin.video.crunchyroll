@@ -1,10 +1,13 @@
 import unittest
 import sys
-import time
 import os
+import time
 from unittest.mock import MagicMock
 from requests.exceptions import HTTPError
 from .mocks import MockPersistentDict
+root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+source_path = os.path.join(root_path, 'src')
+sys.path.append(source_path)
 
 codequick_mock = MagicMock()
 codequick_storage_mock = MagicMock()
@@ -12,10 +15,6 @@ codequick_storage_mock.PersistentDict = MockPersistentDict
 
 sys.modules['codequick'] = codequick_mock
 sys.modules['codequick.storage'] = codequick_storage_mock
-
-# Need to be imported after modules modifications
-# pylint: disable=E0401,C0413,C0411
-from resources.lib.auth import CrunchyrollAuth # noqa = E402,
 
 if 'CRUNCHYROLL_EMAIL' not in os.environ:
     print("You need to defined CRUNCHYROLL_EMAIL to run tests", file=sys.stderr)
@@ -26,6 +25,10 @@ if 'CRUNCHYROLL_PASSWORD' not in os.environ:
     print("You need to defined CRUNCHYROLL_PASSWORD to run tests", file=sys.stderr)
     sys.exit(1)
 PASSWORD = os.environ['CRUNCHYROLL_PASSWORD']
+
+# Need to be imported after modules modifications
+# pylint: disable=E0401,C0413,C0411
+from resources.lib.auth import CrunchyrollAuth # noqa = E402,
 
 
 class AuthTest(unittest.TestCase):
@@ -56,8 +59,8 @@ class AuthTest(unittest.TestCase):
         # Change expires_in to reduce test duration
         auth.data['expires_in'] = 5
         wait = auth.data['expires_in'] * 3 / 4
-        print(f"Sleep for {wait+1}s")
-        time.sleep(wait+1)
+        print(f"Sleep for {wait+2}s")
+        time.sleep(wait+2)
         self.assertTrue(auth.need_refresh())
 
     def test_refresh(self):

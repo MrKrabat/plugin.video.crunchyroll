@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 ADDON_ID = "plugin.video.crunchyroll"
+# The idea is to be able mock it for future tests
+CRUNCHYROLL_BASE_URL = "https://beta-api.crunchyroll.com"
 
 
 def local_from_id(locale_id):

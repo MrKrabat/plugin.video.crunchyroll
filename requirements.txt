@@ -3,3 +3,4 @@ kodistubs==20.0.1
 flake8==7.0.0
 pylint==3.0.3
 m3u8==4.0.0
+requests==2.31.0

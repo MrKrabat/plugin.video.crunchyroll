@@ -20,6 +20,7 @@ import requests
 from requests.auth import AuthBase
 # pylint: disable=E0401
 from codequick.storage import PersistentDict
+from . import utils
 
 
 class CrunchyrollAuth(AuthBase):
@@ -61,7 +62,7 @@ class CrunchyrollAuth(AuthBase):
             "grant_type": "password",
             "scope": "offline_access"
         }
-        url = "https://beta-api.crunchyroll.com/auth/v1/token"
+        url = f"{utils.CRUNCHYROLL_BASE_URL}/auth/v1/token"
         resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
         resp.raise_for_status()
         self._store_token(resp.json())
@@ -72,7 +73,7 @@ class CrunchyrollAuth(AuthBase):
             "grant_type": "refresh_token",
             "scope": "offline_access"
         }
-        url = "https://beta-api.crunchyroll.com/auth/v1/token"
+        url = f"{utils.CRUNCHYROLL_BASE_URL}/auth/v1/token"
         resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
         resp.raise_for_status()
         self._store_token(resp.json())

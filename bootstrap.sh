@@ -44,5 +44,6 @@ if [ ! -e "$VENV_PATH" ]; then
     ok "Done\n"
 fi
 
+$VENV_PATH/bin/pip install wheel==0.42.0
 msg "Checking python depenencies\n"
 $VENV_PATH/bin/pip install -r requirements.txt
