@@ -1,3 +1,6 @@
+v4.1.1 (2024.01.10)
+- Fix typo
+
 v4.1.0 (2024.01.10)
 - renew Basic Auth credentials and User Agent (from the app in version 3.46.2)
 

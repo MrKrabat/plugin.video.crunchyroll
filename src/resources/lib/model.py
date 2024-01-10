@@ -53,7 +53,7 @@ class Episode:
                 "totaltime": self.duration
             },
             "params": {
-                "id": self.id
+                "episode_id": self.id
             }
         }
 
