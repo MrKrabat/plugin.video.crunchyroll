@@ -1,6 +1,10 @@
 # Crunchyroll plugin for Kodi
 
-Crunchyroll a KODI (XBMC) plugin for Crunchyroll.com.
+Crunchyroll is a KODI (XBMC) plugin for Crunchyroll.com.
+
+**WARNING: You MUST be a PREMIUM member to use this plugin!**
+**This plugin does not intend to let you do illegal stuff**
+***
 
 # Contributors
 
@@ -11,10 +15,8 @@ Contributors:
 
 Git repo: https://github.com/xtero/plugin.video.crunchyroll
 
-Forum posting: xxx
 
-**WARNING: You MUST be a PREMIUM member to use this plugin!**
-***
+# Features
 
 What this plugin currently can do:
 - [x] Supports all Crunchyroll regions
@@ -36,7 +38,19 @@ What this plugin currently can do:
 - [x] Synchronizes playback stats with Crunchyroll
 ***
 
-_This website and addon is not affiliated with Crunchyroll._
+_This page and addon are not affiliated with Crunchyroll._
 
 _Kodi® (formerly known as XBMC™) is a registered trademark of the XBMC Foundation.
-This website and addon is not affiliated with Kodi, Team Kodi, or the XBMC Foundation._
+This page and addon are not affiliated with Kodi, Team Kodi, or the XBMC Foundation._
+
+# How to run tests
+If you are using a Linux distro, you probably can run the bootstrap.sh script.  
+It will ensure that you have all required dependencies in the freshly created Python VirtualEnv.  
+This virtualenv is stored in the folder .venv.
+
+Before running tests, you need to defined enviroment variable CRUNCHYROLL_EMAIL and CRUNCHYROLL_PASSWORD.
+On my side, I used to do it through my .bash_aliases. But you can do it the way you like it :)  
+
+If you don't like Makefile, you can just run pytest.
+Otherwise, you can use `make test` that will also run pylint and flake8 on the code to ensure a minimal quality level.
+

@@ -42,7 +42,7 @@ class CrunchyrollClient:
 
     # pylint: disable=W0102
     def _post(self, url, params={}, headers={}, data={}, json=False):
-        headers['User-Agent'] = "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1"
+        headers['User-Agent'] = utils.CRUNCHYROLL_UA
         if json:
             response = requests.post(url, params=params, headers=headers, auth=self.auth, json=data, timeout=30)
         else:
@@ -52,7 +52,7 @@ class CrunchyrollClient:
 
     # pylint: disable=W0102
     def _get(self, url, params={}, headers={}):
-        headers['User-Agent'] = "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1"
+        headers['User-Agent'] = utils.CRUNCHYROLL_UA
         params['locale'] = self.locale
         response = requests.get(url, params=params, headers=headers, auth=self.auth, timeout=30)
         response.raise_for_status()
