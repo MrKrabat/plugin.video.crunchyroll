@@ -17,7 +17,7 @@
 
 import random
 
-import inputstreamhelper
+import inputstreamhelper # noqa
 import xbmc
 import xbmcaddon
 import xbmcgui
