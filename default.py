@@ -17,6 +17,8 @@
 
 import sys
 
+sys.modules['_asyncio'] = None  # @see: https://kodi.wiki/view/Python_Problems#asyncio
+
 import xbmc
 import xbmcaddon
 
