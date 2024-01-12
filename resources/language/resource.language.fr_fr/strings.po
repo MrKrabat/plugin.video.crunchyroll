@@ -15,6 +15,22 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 
 # Crunchyroll Settings
+msgctxt "#30200"
+msgid "Login"
+msgstr "Se connecter"
+
+msgctxt "#30210"
+msgid "Languages"
+msgstr "Lanagages"
+
+msgctxt "#30220"
+msgid "Playback"
+msgstr "Lecture"
+
+msgctxt "#30230"
+msgid "Other"
+msgstr "Autre"
+
 msgctxt "#30001"
 msgid "Email"
 msgstr "Email"
@@ -34,6 +50,22 @@ msgstr "Configurer InputStream Adaptive"
 msgctxt "#30005"
 msgid "Soft Subtitles"
 msgstr ""
+
+msgctxt "#30010"
+msgid "General"
+msgstr "Général"
+
+msgctxt "#30011"
+msgid "Skip intro"
+msgstr "Passer l'introduction"
+
+msgctxt "#30012"
+msgid "Skip credits"
+msgstr "Passer les crédits"
+
+msgctxt "#30015"
+msgid "Skip"
+msgstr "Passer"
 
 msgctxt "#30020"
 msgid "Subtitle Language"
@@ -112,6 +144,16 @@ msgctxt "#30046"
 msgid "Goto season"
 msgstr "Aller à saisons"
 
+msgctxt "#30047"
+msgid "Resume"
+msgstr "Reprendre"
+
+# 30048 free
+
+msgctxt "#30049"
+msgid "Crunchylists"
+msgstr ""
+
 msgctxt "#30050"
 msgid "Anime"
 msgstr "Animes"
@@ -183,11 +225,11 @@ msgstr "Si la vidéo ne démarre pas, attendez 30 secondes et recommencez."
 
 msgctxt "#30067"
 msgid "Add to queue"
-msgstr "Add to queue"
+msgstr "Ajouter à la file d'attente"
 
 msgctxt "#30068"
 msgid "Remove from queue"
-msgstr "Remove from queue"
+msgstr "Supprimer de la file d'attente"
 
 msgctxt "#30069"
 msgid "Alternative Subtitle Language"
@@ -199,4 +241,4 @@ msgstr "Aucun"
 
 msgctxt "#30071"
 msgid "Added to queue"
-msgstr "Added to queue"
+msgstr "Ajouté à la file d'attente"
