@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+	<defaultcontrol always="true">1000</defaultcontrol>
+	<zorder>0</zorder>
+	<controls>
+		<control type="grouplist">
+			<align>right</align>
+			<orientation>horizontal</orientation>
+			<right>30</right>
+			<bottom>30</bottom>
+			<height>60</height>
+			<width>600</width>
+			<control type="button" id="1000">
+				<description>Skip intro</description>
+				<width max="600">auto</width>
+				<height>60</height>
+				<font>font20_title</font>
+				<label/>
+				<textcolor>FFededed</textcolor>
+				<focusedcolor>FFededed</focusedcolor>
+				<selectedcolor>FFededed</selectedcolor>
+				<shadowcolor>66000000</shadowcolor>
+				<textoffsetx>30</textoffsetx>
+				<aligny>center</aligny>
+				<align>center</align>
+				<texturefocus border="10" colordiffuse="B3f47418">smallbutton.png</texturefocus>  <!-- Color ARGB: B3=70% transparency -->
+				<texturenofocus border="10" colordiffuse="B3f47418">smallbutton.png</texturenofocus>
+				<animation effect="fade" start="0" end="100" time="200">WindowOpen</animation>
+				<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+				<!--
+				allowhiddenfocus is necessary because the window is opened completely transparently (animation fade effect start from 0)
+				Without it, the button cannot receive focus and a double "click" is required to trigger the action
+				-->
+				<visible allowhiddenfocus="true">true</visible>
+			</control>
+		</control>
+	</controls>
+</window>
