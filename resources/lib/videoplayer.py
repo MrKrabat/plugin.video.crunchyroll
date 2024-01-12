@@ -18,7 +18,7 @@ import threading
 import time
 from typing import Optional
 
-import inputstreamhelper
+import inputstreamhelper # noqa
 import requests
 import xbmc
 import xbmcgui
