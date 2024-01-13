@@ -38,46 +38,44 @@
                 </setting>
             </group>
             <group id="2" label="30210">
-                <setting id="subtitle_language" type="integer" label="30020" help="">
+                <setting id="subtitle_language" type="string" label="30020" help="">
                     <level>0</level>
-                    <default>0</default>
+                    <default>en-US</default>
                     <constraints>
                         <options>
-                            <option label="30021">0</option>
-                            <option label="30022">1</option>
-                            <option label="30023">2</option>
-                            <option label="30024">3</option>
-                            <option label="30025">4</option>
-                            <option label="30026">5</option>
-                            <option label="30027">6</option>
-                            <option label="30028">7</option>
-                            <option label="30029">8</option>
-                            <option label="30030">9</option>
-                            <option label="30031">10</option>
+                            <option label="30021">en-US</option>
+                            <option label="30023">es-419</option>
+                            <option label="30024">es-ES</option>
+                            <option label="30025">pt-BR</option>
+                            <option label="30026">pt-PT</option>
+                            <option label="30027">fr-FR</option>
+                            <option label="30028">de-DE</option>
+                            <option label="30029">ar-SA</option>
+                            <option label="30030">it-IT</option>
+                            <option label="30031">ru-RU</option>
                         </options>
                     </constraints>
                     <control type="list" format="string">
                         <heading>30020</heading>
                     </control>
                 </setting>
-                <setting id="subtitle_language_fallback" type="integer" label="30069" help="">
+                <setting id="subtitle_language_fallback" type="string" label="30069" help="">
                     <level>0</level>
-                    <default>0</default>
+                    <default/>
                     <constraints>
                         <options>
-                            <option label="30021">0</option>
-                            <option label="30022">1</option>
-                            <option label="30023">2</option>
-                            <option label="30024">3</option>
-                            <option label="30025">4</option>
-                            <option label="30026">5</option>
-                            <option label="30027">6</option>
-                            <option label="30028">7</option>
-                            <option label="30029">8</option>
-                            <option label="30030">9</option>
-                            <option label="30031">10</option>
-                            <option label="30070">11</option>
+                            <option label="30021">en-US</option>
+                            <option label="30023">es-419</option>
+                            <option label="30024">es-ES</option>
+                            <option label="30025">pt-BR</option>
+                            <option label="30026">pt-PT</option>
+                            <option label="30027">fr-FR</option>
+                            <option label="30028">de-DE</option>
+                            <option label="30029">ar-SA</option>
+                            <option label="30030">it-IT</option>
+                            <option label="30031">ru-RU</option>
                         </options>
+                        <allowempty>true</allowempty>
                     </constraints>
                     <control type="list" format="string">
                         <heading>30069</heading>

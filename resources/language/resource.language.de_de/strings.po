@@ -73,12 +73,10 @@ msgid "Subtitle Language"
 msgstr "Untertitel Sprache"
 
 msgctxt "#30021"
-msgid "English (US)"
-msgstr "Englisch (US)"
+msgid "English"
+msgstr "Englisch"
 
-msgctxt "#30022"
-msgid "English (UK)"
-msgstr "Englisch (UK)"
+# 30022 free
 
 msgctxt "#30023"
 msgid "Spanish"
