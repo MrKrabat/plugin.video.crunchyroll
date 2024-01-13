@@ -28,7 +28,7 @@ import xbmcvfs
 
 from resources.lib.api import API
 from resources.lib.model import Object, Args, CrunchyrollError, PlayableItem
-from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log, \
+from resources.lib.utils import log_error_with_trace, crunchy_log, \
     get_playheads_from_api, get_cms_object_data_by_ids, get_listables_from_response
 
 
@@ -293,7 +293,7 @@ class VideoStream(Object):
         iso_parts = subtitle_language.split('-')
 
         filename = xbmcvfs.makeLegalFilename(
-            convert_language_iso_to_string(self.args, subtitle_language) +
+            subtitle_language +
             '.' + iso_parts[0] +
             '.' + subtitle_format
         )

@@ -72,12 +72,10 @@ msgid "Subtitle Language"
 msgstr "Linguagem da legenda"
 
 msgctxt "#30021"
-msgid "English (US)"
-msgstr "Inglês (US)"
+msgid "English"
+msgstr "Inglês"
 
-msgctxt "#30022"
-msgid "English (UK)"
-msgstr "Inglês (UK)"
+# 30022 free
 
 msgctxt "#30023"
 msgid "Spanish"

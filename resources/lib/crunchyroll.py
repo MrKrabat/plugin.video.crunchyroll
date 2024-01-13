@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import random
+import re
 
 import inputstreamhelper  # noqa
 import xbmc
@@ -60,9 +61,18 @@ def main(argv):
         args.addon.setSetting("device_id", args.device_id)
 
     # get subtitle language
-    args._subtitle = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language"))
-    args._subtitle_fallback = utils.convert_subtitle_index_to_string(
-        args.addon.getSetting("subtitle_language_fallback"))
+    args._subtitle = args.addon.getSetting("subtitle_language")
+    args._subtitle_fallback = args.addon.getSetting("subtitle_language_fallback")  # @todo: test with empty
+
+    # temporary dialog to notify about subtitle settings change
+    # @todo: remove eventually
+    if args.subtitle is int or args.subtitle_fallback is int or re.match("^([0-9]+)$", args.subtitle):
+        xbmcgui.Dialog().notification(
+            '%s INFO' % args.addon_name,
+            'Language settings have changed. Please adjust settings.',
+            xbmcgui.NOTIFICATION_INFO,
+            10
+        )
 
     api = API(
         args=args,
