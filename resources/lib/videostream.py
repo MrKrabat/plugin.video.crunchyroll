@@ -99,7 +99,7 @@ class VideoStream(Object):
         # also not sure if this is thread safe in any way, what if session is timed-out when starting this?
         t_stream_data = asyncio.create_task(self._get_stream_data_from_api())
         t_skip_events_data = asyncio.create_task(self._get_skip_events(self.args.get_arg('episode_id')))
-        t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))  # obsolete
+        t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))
         t_item_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, [self.args.get_arg('episode_id')]))
         #t_item_parent_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, self.args.get_arg('series_id')))
 
@@ -111,7 +111,7 @@ class VideoStream(Object):
         return {
             'stream_data': results[0] or {},
             'skip_events_data': results[1] or {},
-            'playheads_data': results[2] or {}, # obsolete
+            'playheads_data': results[2] or {},
             'playable_item': playable_item[0] if playable_item else None,
             'playable_item_parent': None # get_listables_from_response(self.args, [results[4]])[0] if results[4] else None
         }
@@ -334,10 +334,10 @@ class VideoStream(Object):
                     "end": intro_req.get("endTime"),
                 }}
             except (requests.exceptions.RequestException, CrunchyrollError):
-                # can be okay for e.g. movies, thus only log error with trace, but don't show notification
-                log_error_with_trace(
+                # can be okay for e.g. movies, thus only log error, but don't show notification
+                crunchy_log(
                     self.args,
-                    "_get_skip_events: error in requesting skip events data from api",
+                    "_get_skip_events: error in requesting skip events data from api. possibly no data available",
                     False
                 )
                 return None

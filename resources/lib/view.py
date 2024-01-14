@@ -287,16 +287,17 @@ def add_listables(
             ))
 
         if options & OPT_CTX_SEASONS and hasattr(listable, 'series_id') and getattr(listable, 'series_id') is not None:
-            cm.append((
-                args.addon.getLocalizedString(30045),
-                "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "seasons", u)
-            ))
+            route = (args.addonurl +
+                     router.create_path_from_route('series_view', {'series_id': listable.series_id}))
+            cm.append((args.addon.getLocalizedString(30045), "Container.Update(%s)" % route))
 
         if options & OPT_CTX_EPISODES and hasattr(listable, 'season_id') and getattr(listable, 'season_id') is not None:
-            cm.append((
-                args.addon.getLocalizedString(30046),
-                "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)
-            ))
+            route = (args.addonurl +
+                     router.create_path_from_route(
+                         'season_view',
+                         {'series_id': listable.series_id, 'season_id': listable.season_id}
+                     ))
+            cm.append((args.addon.getLocalizedString(30046), "Container.Update(%s)" % route))
 
         if len(cm) > 0:
             list_item.addContextMenuItems(cm)

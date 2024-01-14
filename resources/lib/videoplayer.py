@@ -138,12 +138,12 @@ class VideoPlayer(Object):
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), True, item)
 
             # wait for playback
-            if wait_for_playback(10):
-                # if successful wait more
-                xbmc.sleep(3000)
+            # if wait_for_playback(10):
+            #     # if successful wait more (why?)
+            #     xbmc.sleep(3000)
 
         # start fallback
-        if not wait_for_playback(2):
+        if not wait_for_playback(10):
             # start without inputstream adaptive
             utils.crunchy_log(self._args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGINFO)
             item.setProperty("inputstream", "")
