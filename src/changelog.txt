@@ -1,3 +1,7 @@
+v4.1.2 (2024.01.16)
+- Fix typos
+- Use crunchyroll android 4.37.0 for UserAgent and Basic Auth
+
 v4.1.1 (2024.01.10)
 - Fix typo
 

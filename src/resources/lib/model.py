@@ -82,7 +82,7 @@ class Season:
         res = {
             "label": self.label,
             "params": {
-                "id": self.id
+                "season_id": self.id
             }
 
         }
@@ -107,7 +107,7 @@ class Series:
                 "landscape": self.landscape
             },
             "params": {
-                "id": self.id
+                "series_id": self.id
             }
 
         }

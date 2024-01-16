@@ -5,3 +5,6 @@ __pycache__
 *.mo
 *.swp
 .venv
+release
+archive
+decompiled_crunchyroll

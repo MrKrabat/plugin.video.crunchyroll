@@ -18,7 +18,7 @@
 ADDON_ID = "plugin.video.crunchyroll"
 # The idea is to be able mock it for future tests
 CRUNCHYROLL_BASE_URL = "https://beta-api.crunchyroll.com"
-CRUNCHYROLL_UA = "Crunchyroll/3.46.2 Android/8.0 okhttp/4.12.0"
+CRUNCHYROLL_UA = "Crunchyroll/3.47.0 Android/14 okhttp/4.12.0"
 
 
 def local_from_id(locale_id):
