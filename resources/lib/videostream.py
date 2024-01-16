@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,8 +27,9 @@ import xbmcplugin
 import xbmcvfs
 
 from resources.lib.api import API
-from resources.lib.model import Object, Args, CrunchyrollError
-from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log, get_playheads_from_api
+from resources.lib.model import Object, Args, CrunchyrollError, PlayableItem
+from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log, \
+    get_playheads_from_api, get_cms_object_data_by_ids, get_listables_from_response
 
 
 class VideoPlayerStreamData(Object):
@@ -39,6 +40,10 @@ class VideoPlayerStreamData(Object):
         self.subtitle_urls: list[str] | None = None
         self.skip_events_data: Dict = {}
         self.playheads_data: Dict = {}
+        # PlayableItem which is about to be played, that contains cms object data
+        self.playable_item: PlayableItem | None = None
+        # PlayableItem which contains cms obj data of playable_item's parent, if exists (Episodes, not Movies). currently not used.
+        self.playable_item_parent: PlayableItem | None = None
 
 
 class VideoStream(Object):
@@ -81,6 +86,8 @@ class VideoStream(Object):
         video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(async_data.get('stream_data'))
         video_player_stream_data.skip_events_data = async_data.get('skip_events_data')
         video_player_stream_data.playheads_data = async_data.get('playheads_data')
+        video_player_stream_data.playable_item = async_data.get('playable_item')
+        video_player_stream_data.playable_item_parent = async_data.get('playable_item_parent')
 
         return video_player_stream_data
 
@@ -92,15 +99,21 @@ class VideoStream(Object):
         # also not sure if this is thread safe in any way, what if session is timed-out when starting this?
         t_stream_data = asyncio.create_task(self._get_stream_data_from_api())
         t_skip_events_data = asyncio.create_task(self._get_skip_events(self.args.get_arg('episode_id')))
-        t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))
+        t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))  # obsolete
+        t_item_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, [self.args.get_arg('episode_id')]))
+        #t_item_parent_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, self.args.get_arg('series_id')))
 
         # start async requests and fetch results
-        results = await asyncio.gather(t_stream_data, t_skip_events_data, t_playheads)
+        results = await asyncio.gather(t_stream_data, t_skip_events_data, t_playheads, t_item_data)
+
+        playable_item = get_listables_from_response(self.args, [results[3].get(self.args.get_arg('episode_id'))]) if results[3] else None
 
         return {
             'stream_data': results[0] or {},
             'skip_events_data': results[1] or {},
-            'playheads_data': results[2] or {}
+            'playheads_data': results[2] or {}, # obsolete
+            'playable_item': playable_item[0] if playable_item else None,
+            'playable_item_parent': None # get_listables_from_response(self.args, [results[4]])[0] if results[4] else None
         }
 
     async def _get_stream_data_from_api(self) -> Union[Dict, bool]:
@@ -138,7 +151,15 @@ class VideoStream(Object):
                     url = url[""]["url"]
             else:
                 # multitrack_adaptive_hls_v2 includes soft subtitles in the stream
-                url = api_data["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+                if "" in api_data["streams"]["multitrack_adaptive_hls_v2"]:
+                    url = api_data["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+                # But sometimes, there is no default stream
+                elif self.args.subtitle in api_data["streams"]["multitrack_adaptive_hls_v2"]:
+                    url = api_data["streams"]["multitrack_adaptive_hls_v2"][self.args.subtitle]["url"]
+                elif self.args.subtitle_fallback in api_data["streams"]["multitrack_adaptive_hls_v2"]:
+                    url = api_data["streams"]["multitrack_adaptive_hls_v2"][self.args.subtitle_fallback]["url"]
+                else:
+                    raise CrunchyrollError("No stream URL found")
 
         except IndexError:
             item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))

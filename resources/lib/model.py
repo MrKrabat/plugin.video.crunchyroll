@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import re
 import sys
 from abc import abstractmethod
 from typing import Any, Dict, Union
@@ -30,6 +31,8 @@ from json import dumps
 
 import xbmcaddon
 
+from . import router
+
 
 class Args(object):
     """Arguments class
@@ -44,19 +47,27 @@ class Args(object):
         """
         # addon specific data
         self.PY2 = sys.version_info[0] == 2  #: True for Python 2
-        self._argv = argv
-        self._addonid = self._argv[0][9:-1]
+        self._argv: list = argv
+        self._addonurl = re.sub(r"^(plugin://[^/]+)/.*$", r"\1", argv[0])
+        self._addonid = self._addonurl[9:]
         self._addon = xbmcaddon.Addon(id=self._addonid)
         self._addonname = self._addon.getAddonInfo("name")
         self._cj = None
         self._device_id = None
         self._args: dict = {}  # holds all parameters provided via URL
-
         # data from settings
         self._subtitle = None
         self._subtitle_fallback = None
 
-        # copy url args to self._args
+        self._url = re.sub(r"plugin://[^/]+/", "/", argv[0])
+
+        route_params = router.extract_url_params(self._url)
+
+        if route_params is not None:
+            for key, value in route_params.items():
+                if value:
+                    self._args[key] = unquote_plus(value)
+
         for key, value in kwargs.items():
             if value:
                 self._args[key] = unquote_plus(value[0])
@@ -87,6 +98,10 @@ class Args(object):
         return self._addonid
 
     @property
+    def addonurl(self):
+        return self._addonurl
+
+    @property
     def argv(self):
         return self._argv
 
@@ -105,6 +120,10 @@ class Args(object):
     @property
     def args(self):
         return self._args
+
+    @property
+    def url(self):
+        return self._url
 
 
 class Meta(type, metaclass=type("", (type,), {"__str__": lambda _: "~hi"})):
@@ -167,8 +186,8 @@ class ListableItem(Object):
         super().__init__()
         # just a very few that all child classes have in common, so I can spare myself of using hasattr() and getattr()
         self.id: str | None = None
-        self.series_id: str | None = None
-        self.season_id: str | None = None
+        self.series_id: str | None = None  # @todo: this is not present in all subclasses, move that
+        self.season_id: str | None = None  # @todo: this is not present in all subclasses, move that
         self.title: str | None = None
         self.thumb: str | None = None
         self.fanart: str | None = None
@@ -224,6 +243,22 @@ class ListableItem(Object):
             setattr(self, 'playcount', 1)
         else:
             self.recalc_playcount()
+
+
+class PlayableItem(ListableItem):
+    """ Intermediate base class for playable items """
+
+    def __init__(self):
+        super().__init__()
+        self.playhead: int = 0
+        self.duration: int = 0
+        self.playcount: int = 0
+
+    @abstractmethod
+    def get_info(self, args: Args) -> Dict:
+        """ return a dict with info to set on the kodi ListItem (filtered) and access some data """
+
+        pass
 
 
 """Naming convention for reference:
@@ -353,7 +388,7 @@ class SeasonData(ListableItem):
 
 
 # dto
-class EpisodeData(ListableItem):
+class EpisodeData(PlayableItem):
     """ A single Episode of a Season of a Series """
 
     def __init__(self, data: dict):
@@ -424,7 +459,7 @@ class EpisodeData(ListableItem):
         }
 
 
-class MovieData(ListableItem):
+class MovieData(PlayableItem):
     def __init__(self, data: dict):
         super().__init__()
         from . import utils

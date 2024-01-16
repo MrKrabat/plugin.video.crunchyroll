@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
 # Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,7 +18,7 @@
 
 import random
 
-import inputstreamhelper # noqa
+import inputstreamhelper  # noqa
 import xbmc
 import xbmcaddon
 import xbmcgui
