@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,7 @@ import json
 import re
 from json import dumps
 
+import requests
 import xbmc
 import xbmcgui
 
@@ -44,7 +45,7 @@ def parse(argv) -> Args:
 # @todo we could change the return type and along with the listables return additional data that we preload
 #       like info what is on watchlist, artwork, playhead, ...
 #       for that we should use async requests (asyncio)
-def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
+def get_listables_from_response(args: Args, data: List[dict]) -> List[ListableItem]:
     """ takes an API response object, determines type of its contents and creates DTOs for further processing """
 
     listable_items = []
@@ -55,7 +56,8 @@ def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
         if not item_type:
             crunchy_log(
                 None,
-                "get_listables_from_response | failed to determine type for response item %s" % (json.dumps(item, indent=4)),
+                "get_listables_from_response | failed to determine type for response item %s" % (
+                    json.dumps(item, indent=4)),
                 xbmc.LOGERROR
             )
             continue
@@ -82,18 +84,28 @@ def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
     return listable_items
 
 
-async def get_objects_from_api(args: Args, api: API, ids: list) -> dict:
+async def get_cms_object_data_by_ids(args: Args, api: API, ids: list) -> dict:
     """ fetch info from api object endpoint for given ids. Useful to complement missing data """
 
-    req = api.make_request(
-        method='GET',
-        url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids)),
-        params={
-            'locale': args.subtitle,
-            'ratings': 'true'
-            # "preferred_audio_language": ""
-        }
-    )
+    # filter out entries with no value
+    ids_filtered = [item for item in ids if item != 0 and item is not None]
+    if len(ids_filtered) == 0:
+        return {}
+
+    try:
+        req = api.make_request(
+            method='GET',
+            url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids_filtered)),
+            params={
+                'locale': args.subtitle,
+                'ratings': 'true'
+                # "preferred_audio_language": ""
+            }
+        )
+    except (CrunchyrollError, requests.exceptions.RequestException) as e:
+        crunchy_log(args, "get_cms_object_data_by_ids: failed to load for: %s" % ",".join(ids_filtered))
+        return {}
+
     if not req or 'error' in req:
         return {}
 
@@ -212,12 +224,12 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
 
     for trace in trace_back:
         stack_trace.append(
-            "File : %s , Line : %d, Func.Name : %s, Message : %s\n" % (trace[0], trace[1], trace[2], trace[3]))
+            "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
 
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
 
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), xbmc.LOGERROR)
-    xbmc.log("[PLUGIN] %s: %s %s %s" % (addon_name, ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
+    xbmc.log("[PLUGIN] %s: %s %s\n%s" % (addon_name, ex_type.__name__, ex_value, "\n".join(stack_trace)), xbmc.LOGERROR)
 
     if show_notification:
         xbmcgui.Dialog().notification(

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
 # Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,7 +19,7 @@ import asyncio
 import re
 
 from resources.lib.api import API
-from resources.lib.model import ListableItem, EpisodeData, MovieData, Args, SeasonData, SeriesData
+from resources.lib.model import ListableItem, EpisodeData, Args, SeasonData, SeriesData, PlayableItem
 
 try:
     from urllib import quote_plus
@@ -30,6 +31,7 @@ import xbmcgui
 import xbmcplugin
 
 from typing import Callable, Optional, List, Dict, Any
+from . import router
 
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",
@@ -65,14 +67,18 @@ def add_item(
         This is the old, more verbose approach. Try to use view.add_listables() for adding list items, if possible
     """
 
+    path_params = {}
+    path_params.update(args.args)
+    path_params.update(info)
+
+    # get url
+    u = build_url(args, path_params)
+
     # create list item
-    li = xbmcgui.ListItem(label=info["title"])
+    li = xbmcgui.ListItem(label=info["title"], path=u)
 
     # get infoLabels
     info_labels = make_info_label(args, info)
-
-    # get url
-    u = build_url(args, info)
 
     if is_folder:
         # directory
@@ -87,12 +93,12 @@ def add_item(
         # add context menu to jump to seasons xor episodes
         # @todo: this only makes sense in some very specific places, we need a way to handle these better.
         cm = []
-        if u"series_id" in u:
+        if path_params.get("series_id"):
             cm.append((args.addon.getLocalizedString(30045),
-                       "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "seasons", u)))
-        if u"season_id" in u:
+                       "Container.Update(%s)" % build_url(args, path_params, "series_view")))
+        if path_params.get("collection_id"):
             cm.append((args.addon.getLocalizedString(30046),
-                       "Container.Update(%s)" % re.sub(r"(?<=mode=)[^&]*", "episodes", u)))
+                       "Container.Update(%s)" % build_url(args, path_params, "season_view")))
 
         if len(cm) > 0:
             li.addContextMenuItems(cm)
@@ -130,15 +136,17 @@ async def complement_listables(
         listables: List[ListableItem]
 ) -> Dict[str, Dict[str, Any]]:
     # for all playable items fetch playhead data from api, as sometimes we already have them, sometimes not
-    from .utils import get_playheads_from_api, get_objects_from_api, get_watchlist_status_from_api, get_img_from_struct
+    from .utils import get_playheads_from_api, get_cms_object_data_by_ids, get_watchlist_status_from_api, \
+        get_img_from_struct
 
     # playheads
     ids_playhead = [listable.id for listable in listables if
-                    isinstance(listable, (EpisodeData, MovieData)) and listable.playhead == 0]
+                    isinstance(listable, PlayableItem) and listable.playhead == 0]
 
     # object data for e.g. poster images
     # for now we use the objects to fetch the series data only, to fetch its images and its rating
-    ids_objects_seasons = [listable.series_id for listable in listables if isinstance(listable, (SeasonData, EpisodeData, SeriesData))]
+    ids_objects_seasons = [listable.series_id for listable in listables if
+                           isinstance(listable, (SeasonData, EpisodeData, SeriesData))]
     # ids_objects_other = [listable.id for listable in listables if
     #                      isinstance(listable, (EpisodeData, MovieData, SeriesData))]
     # ids_objects = ids_objects_seasons + ids_objects_other
@@ -157,7 +165,7 @@ async def complement_listables(
     #        but the sole reason for calling it are the additional images...
     #        for now we use the objects to fetch the series data only, to fetch its images and its rating
     if ids_objects:
-        tasks.append(asyncio.create_task(get_objects_from_api(args, api, ids_objects)))
+        tasks.append(asyncio.create_task(get_cms_object_data_by_ids(args, api, ids_objects)))
         tasks_added.append('objects')
     if ids_watchlist:
         tasks.append(asyncio.create_task(get_watchlist_status_from_api(args, api, ids_watchlist)))
@@ -191,25 +199,32 @@ async def complement_listables(
         # update images for SeasonData, as they come with none by default
         if isinstance(listable, (SeriesData, SeasonData)) and listable.series_id in result_obj.get('objects'):
             setattr(listable, 'thumb',
-                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall", 2) or listable.thumb)
+                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall",
+                                        2) or listable.thumb)
             setattr(listable, 'fanart',
-                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_wide", 2) or listable.fanart)
+                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_wide",
+                                        2) or listable.fanart)
             setattr(listable, 'poster',
-                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall", 2) or listable.poster)
+                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall",
+                                        2) or listable.poster)
 
         elif isinstance(listable, EpisodeData) and listable.series_id in result_obj.get('objects'):
             # for others, only set the thumb image to a nicer one
             setattr(listable, 'thumb',
-                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall", 2) or listable.thumb)
+                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall",
+                                        2) or listable.thumb)
             setattr(listable, 'poster',
-                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall", 2) or listable.poster)
+                    get_img_from_struct(result_obj.get('objects').get(listable.series_id), "poster_tall",
+                                        2) or listable.poster)
             # setattr(listable, 'fanart',
             #         get_image_from_struct(result_obj.get('objects').get(listable.id), "poster_wide", 2) or listable.fanart)
 
-        if listable.id in result_obj.get('objects') and result_obj.get('objects').get(listable.id).get('rating') and hasattr(listable, 'rating'):
+        if listable.id in result_obj.get('objects') and result_obj.get('objects').get(listable.id).get(
+                'rating') and hasattr(listable, 'rating'):
             if result_obj.get('objects').get(listable.id).get('rating').get('average'):
                 listable.rating = float(result_obj.get('objects').get(listable.id).get('rating').get('average')) * 2.0
-            elif result_obj.get('objects').get(listable.id).get('rating').get('up') and result_obj.get('objects').get(listable.id).get('rating').get('down'):
+            elif result_obj.get('objects').get(listable.id).get('rating').get('up') and result_obj.get('objects').get(
+                    listable.id).get('rating').get('down'):
                 # these are user ratings and they are pretty weird (overly positive)
                 ups_obj = result_obj.get('objects').get(listable.id).get('rating').get('up')
                 downs_obj = result_obj.get('objects').get(listable.id).get('rating').get('down')
@@ -295,7 +310,7 @@ def add_listables(
         )
 
 
-def quote_value(value):
+def quote_value(value) -> str:
     """Quote value depending on python
     """
     if not isinstance(value, str):
@@ -303,27 +318,37 @@ def quote_value(value):
     return quote_plus(value)
 
 
-def build_url(args, info):
+# Those parameters will be bypassed to URL as additional query_parameters if found in build_url path_params
+# @todo: in theory it is no longer needed, test that
+whitelist_url_args = ["duration", "playhead"]
+
+
+def build_url(args, path_params: dict, route_name: str = None) -> str:
     """Create url
     """
 
-    # @todo: we really should filter that, as most params added to the url are no longer required
+    # Get base route
+    if route_name is None:
+        path = router.build_path(path_params)
+    else:
+        path = router.create_path_from_route(route_name, path_params)
+    if path is None:
+        path = "/"
 
     s = ""
-    # step 1 copy new information from info
-    for key, value in list(info.items()):
-        if value:
+    # Add whitelisted parameters
+    for key, value in path_params.items():
+        if key in whitelist_url_args and value:
             s = s + "&" + key + "=" + quote_value(value)
+    if len(s) > 0:
+        s = "?" + s[1:]
 
-    # step 2 copy old information from args, but don't append twice
-    for key, value in list(args.args.items()):
-        if value and key in types and not "&" + str(key) + "=" in s:
-            s = s + "&" + key + "=" + quote_value(value)
+    result = args.addonurl + path + s
 
-    return args.argv[0] + "?" + s[1:]
+    return result
 
 
-def make_info_label(args, info):
+def make_info_label(args, info) -> dict:
     """Generate info_labels from existing dict
     """
     info_labels = {}
