@@ -35,11 +35,11 @@ class API:
     """Api documentation
     https://github.com/CloudMax94/crunchyroll-api/wiki/Api
     """
-    URL = "https://api.crunchyroll.com/"
-    VERSION = "1.1.21.0"
-    TOKEN = "LNDJgOit5yaRIWN"
-    DEVICE = "com.crunchyroll.windows.desktop"
-    TIMEOUT = 30
+    # URL = "https://api.crunchyroll.com/"
+    # VERSION = "1.1.21.0"
+    # TOKEN = "LNDJgOit5yaRIWN"
+    # DEVICE = "com.crunchyroll.windows.desktop"
+    # TIMEOUT = 30
 
     INDEX_ENDPOINT = "https://beta-api.crunchyroll.com/index/v2"
     PROFILE_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/profile"
@@ -70,7 +70,7 @@ class API:
     CRUNCHYLISTS_LISTS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists"
     CRUNCHYLISTS_VIEW_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists/{}"
 
-    AUTHORIZATION = "Basic b2VkYXJteHN0bGgxanZhd2ltbnE6OWxFaHZIWkpEMzJqdVY1ZFc5Vk9TNTdkb3BkSnBnbzE="
+    AUTHORIZATION = "Basic bC1wbGZ0bmtneWFycGZxaGpoOC06TVFZX3pDeGlOUFk1RUVPX0xQRk9VNFFaZ1ktWVVZRXM="
 
     def __init__(
             self,
@@ -297,7 +297,7 @@ class API:
 
 def default_request_headers() -> Dict:
     return {
-        "User-Agent": "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1",
+        "User-Agent": "Crunchyroll/3.47.0 Android/14 okhttp/4.12.0",
         "Content-Type": "application/x-www-form-urlencoded"
     }
 
