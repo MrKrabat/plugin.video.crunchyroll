@@ -47,3 +47,7 @@ fi
 $VENV_PATH/bin/pip install wheel==0.42.0
 msg "Checking python depenencies\n"
 $VENV_PATH/bin/pip install -r requirements.txt
+
+PYTHON_VERSION=$(python -V | awk '{ print $2}' | awk -F '.' '{ print $1"."$2}')
+sed -i 's|id="xbmc.python" version="2.25.0"|id="xbmc.python" version="3.0.1"|' $VENV_PATH/lib/python$PYTHON_VERSION/site-packages/addondev/data/xbmc.python/addon.xml
+sed -i 's|backwards-compatibility abi="2.1.0"|backwards-compatibility abi="3.0.0"|' $VENV_PATH/lib/python$PYTHON_VERSION/site-packages/addondev/data/xbmc.python/addon.xml

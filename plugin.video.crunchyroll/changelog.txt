@@ -1,3 +1,8 @@
+v4.1.3 (2024.01.22)
+- Adding tests on routes (not all)
+- using api v2 for watchlist
+- Fix if a search gives empty result
+
 v4.1.2 (2024.01.16)
 - Fix typos
 - Use crunchyroll android 4.37.0 for UserAgent and Basic Auth

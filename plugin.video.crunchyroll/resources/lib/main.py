@@ -47,24 +47,31 @@ def root(plugin, content_type="video"):
 @Route.register
 def search(plugin, search_query, start=0):
     series, next_link = cr.search_anime(search_query, start)
-    for serie in series:
-        infos = serie.to_dict()
-        item = Listitem.from_dict(show_series, **infos)
-        yield item
-    if next_link:
-        yield Listitem.next_page(search_query=search_query, start=next_link['start'])
+    if series:
+        result = []
+        for serie in series:
+            infos = serie.to_dict()
+            item = Listitem.from_dict(show_series, **infos)
+            result.append(item)
+        if next_link:
+            result.append(Listitem.next_page(search_query=search_query, start=next_link['start']))
+        return result
+    return False
 
 
 # pylint: disable=W0613
 @Route.register
 def watchlist(plugin, start=0):
     episodes, next_link = cr.get_watchlist(start)
-    for episode in episodes:
-        infos = episode.to_dict()
-        item = Listitem.from_dict(play_episode, **infos)
-        yield item
-    if next_link:
-        yield Listitem.next_page(start=next_link['start'])
+    if episodes:
+        result = []
+        for episode in episodes:
+            infos = episode.to_dict()
+            item = Listitem.from_dict(play_episode, **infos)
+            result.append(item)
+        if next_link:
+            result.append(Listitem.next_page(start=next_link['start']))
+    return False
 
 
 # pylint: disable=W0613,W0102
@@ -122,7 +129,7 @@ def alpha(plugin):
 # pylint: disable=W0613
 @Route.register
 def alpha_one(plugin, start, number):
-    # We don't care about next_link, but it's send anyway by browse method
+    # We don't care about next_link, but it's returned anyway by browse method
     # pylint: disable=W0612
     series, next_link = cr.browse('alphabetical', start, number)
     for serie in series:

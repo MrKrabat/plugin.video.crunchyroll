@@ -15,10 +15,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+import xbmc
 # pylint: disable=E0401
 from resources.lib import main
 
+if "process_errors" not in locals():
+    # pylint: disable=C0103
+    process_errors = True
 
 if __name__ == "__main__":
+    url = sys.argv[0]
+    xbmc.log(f"[Crunchyroll] {url}", xbmc.LOGDEBUG)
     # start addon
-    main.run()
+    main.run(process_errors=process_errors)

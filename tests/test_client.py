@@ -1,18 +1,14 @@
 import unittest
 import sys
 import os
-from unittest.mock import MagicMock
-from .mocks import MockPersistentDict
+import logging
+from addondev.support import Repo, initializer, logger
+logger.setLevel(logging.DEBUG)
+
+Repo.repo = "nexus"
 root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-source_path = os.path.join(root_path, 'src')
-sys.path.append(source_path)
-
-codequick_mock = MagicMock()
-codequick_storage_mock = MagicMock()
-codequick_storage_mock.PersistentDict = MockPersistentDict
-
-sys.modules['codequick'] = codequick_mock
-sys.modules['codequick.storage'] = codequick_storage_mock
+source_path = os.path.join(root_path, 'plugin.video.crunchyroll')
+initializer(source_path)
 
 # Need to be imported after modules modifications
 # pylint: disable=E0401,C0413,C0411

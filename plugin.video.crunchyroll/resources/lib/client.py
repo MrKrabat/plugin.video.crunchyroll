@@ -68,23 +68,25 @@ class CrunchyrollClient:
 
     def get_watchlist(self, start=0):
         self._log("Showing watchlist")
-        url = f"{utils.CRUNCHYROLL_BASE_URL}/content/v1/{self.auth.data['account_id']}/watchlist"
+        url = f"{utils.CRUNCHYROLL_BASE_URL}/content/v2/discover/{self.auth.data['account_id']}/watchlist"
         params = {
             "n": self.page_size,
             "start": start
         }
         data = self._get(url, params=params).json()
-        playheads = self.get_playhead(map(lambda item: item['panel']['id'], data['items']))
-        res = []
-        for item in data['items']:
-            item = item['panel']
-            playhead = utils.lookup_playhead(playheads['data'], item['id'])
-            res.append(Episode(item, playhead))
+        playheads = self.get_playhead(map(lambda item: item['panel']['id'], data['data']))
+        if len(data['data']) > 0:
+            res = []
+            for item in data['data']:
+                item = item['panel']
+                playhead = utils.lookup_playhead(playheads['data'], item['id'])
+                res.append(Episode(item, playhead))
 
-        next_link = None
-        if start + self.page_size < data['total']:
-            next_link = {"start": start + self.page_size}
-        return res, next_link
+            next_link = None
+            if start + self.page_size < data['total']:
+                next_link = {"start": start + self.page_size}
+            return res, next_link
+        return False, None
 
     def search_anime(self, query, start=0):
         self._log(f"Looking up for animes with query {query}, from {start}")
@@ -96,13 +98,15 @@ class CrunchyrollClient:
             "start": start
         }
         data = self._get(url, params=params).json()
-        res = []
-        for item in data['data'][0]['items']:
-            res.append(Series(item))
-        next_link = None
-        if start + self.page_size < data['data'][0]['count']:
-            next_link = {"start": start + self.page_size}
-        return res, next_link
+        if len(data['data']) > 0:
+            res = []
+            for item in data['data'][0]['items']:
+                res.append(Series(item))
+            next_link = None
+            if start + self.page_size < data['data'][0]['count']:
+                next_link = {"start": start + self.page_size}
+            return res, next_link
+        return False, None
 
     def get_history(self, page=1):
         url = f"{utils.CRUNCHYROLL_BASE_URL}/content/v2/{self.auth.data['account_id']}/watch-history"

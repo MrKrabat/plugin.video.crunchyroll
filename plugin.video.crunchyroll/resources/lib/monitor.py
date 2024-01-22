@@ -27,6 +27,8 @@ def run_crunchyroll_monitor():
         xbmc.log(f"{err=}", xbmc.LOGERROR)
 
     if sync_playtime:
+        # E1128 due to mock
+        # pylint: disable=E1128
         info_tag = item.getVideoInfoTag()
         episode_id = info_tag.getOriginalTitle()
         playhead = player.getTime()

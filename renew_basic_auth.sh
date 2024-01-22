@@ -26,5 +26,5 @@ echo "okhttpVersion=$okhttpVersion"
 basicAuth=$(echo -n "$clientId:$clientSecret" | base64)
 userAgent="\"Crunchyroll/$appVersion Android/$androidVersion okhttp/$okhttpVersion\""
 
-sed -i "s|^CRUNCHYROLL_UA.*\$|CRUNCHYROLL_UA = $userAgent|" src/resources/lib/utils.py
-sed -i "s|^\(\\s*\)\"Authorization\".*|\\1\"Authorization\": \"Basic $basicAuth\"|" src/resources/lib/auth.py
+sed -i "s|^CRUNCHYROLL_UA.*\$|CRUNCHYROLL_UA = $userAgent|" plugin.video.crunchyroll/resources/lib/utils.py
+sed -i "s|^\(\\s*\)\"Authorization\".*|\\1\"Authorization\": \"Basic $basicAuth\"|" plugin.video.crunchyroll/resources/lib/auth.py
