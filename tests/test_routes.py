@@ -79,3 +79,33 @@ class RouteTest(unittest.TestCase):
     def test_newly_added(self):
         url = "plugin://plugin.video.crunchyroll/resources/lib/main/newly_added"
         exec_route(url)
+
+    def test_show_series(self):
+        url = "plugin://plugin.video.crunchyroll/resources/lib/main/show_series"
+        # GG5H5XQX4 is for Frieren
+        pickle_query = serialize_data("Series", {
+            "series_id": "GG5H5XQX4"
+        })
+        query = f"?{pickle_query}"
+        args = [query]
+        exec_route(url, args)
+
+    def test_show_season(self):
+        url = "plugin://plugin.video.crunchyroll/resources/lib/main/show_season"
+        # GYE5CQMQ5 is for the first Frieren season
+        pickle_query = serialize_data("Season", {
+            "season_id": "GYE5CQMQ5"
+        })
+        query = f"?{pickle_query}"
+        args = [query]
+        exec_route(url, args)
+
+    def test_play_episode(self):
+        url = "plugin://plugin.video.crunchyroll/resources/lib/main/play_episode"
+        # G0DUND0K2 if for the first episode of Frieren
+        pickle_query = serialize_data("Episode", {
+            "episode_id": "G0DUND0K2"
+        })
+        query = f"?{pickle_query}"
+        args = [query]
+        exec_route(url, args)
