@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="4.1.3" provider-name="Xtero">
+<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="4.1.4" provider-name="Xtero">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
         <import addon="script.module.inputstreamhelper" version="0.3.3"/>

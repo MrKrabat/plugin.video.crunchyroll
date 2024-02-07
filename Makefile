@@ -24,12 +24,12 @@ release: clean-release test
 	cp ${SOURCE_FOLDER}/resources/*.py release/resources/
 	cp ${SOURCE_FOLDER}/*.py release/
 	mkdir -p release/resources/language
-	cp -r ${SOURCE_FOLDER}/resources/language release/resources/language
+	cp -r ${SOURCE_FOLDER}/resources/language release/resources/
 	mkdir -p release/resources/media
 	cp ${SOURCE_FOLDER}/resources/media/* release/resources/media
 	cp ${SOURCE_FOLDER}/resources/settings.xml release/resources/settings.xml
 	cp ${SOURCE_FOLDER}/{addon.xml,changelog.txt,fanart.jpg,icon.png} release/
 	mkdir -p archive
-	cd release; zip -r ../archive/plugin.video.crunchryoll-${CRUNCHYROLL_VERSION}.zip *
+	cd release; zip -r ../archive/plugin.video.crunchyroll-${CRUNCHYROLL_VERSION}.zip *
 
 .PHONY: clean clean-release
