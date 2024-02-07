@@ -71,6 +71,7 @@ def watchlist(plugin, start=0):
             result.append(item)
         if next_link:
             result.append(Listitem.next_page(start=next_link['start']))
+        return result
     return False
 
 

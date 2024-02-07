@@ -196,3 +196,51 @@ msgstr "Paging-Größe"
 msgctxt "#30071"
 msgid "Resolution"
 msgstr "Auflösung"
+
+msgctxt "#30072"
+msgid "Identification"
+msgstr "Identifikation"
+
+msgctxt "#30073"
+msgid "Localization"
+msgstr "Lokalisierung"
+
+msgctxt "#30074"
+msgid "Plugin options"
+msgstr "Plugin-Optionen"
+
+msgctxt "#30075"
+msgid "Skipping options (when possible)"
+msgstr "Überspringoptionen (wenn möglich)"
+
+msgctxt "#30076"
+msgid "Skip intro"
+msgstr "Intro überspringen"
+
+msgctxt "#30077"
+msgid "Skip ending"
+msgstr "Ende überspringen"
+
+msgctxt "#30078"
+msgid "Skip recap of past episodes"
+msgstr "Zusammenfassung vergangener Episoden überspringen"
+
+msgctxt "#30079"
+msgid "Skip preview of the next episode"
+msgstr "Vorschau der nächsten Folge überspringen"
+
+msgctxt "#30080"
+msgid "Intro skipped"
+msgstr "Intro übersprungen"
+
+msgctxt "#30081"
+msgid "Ending skipped"
+msgstr "Ende übersprungen"
+
+msgctxt "#30082"
+msgid "Recap skipped"
+msgstr "Zusammenfassung übersprungen"
+
+msgctxt "#30083"
+msgid "Preview skipped"
+msgstr "Vorschau übersprungen"

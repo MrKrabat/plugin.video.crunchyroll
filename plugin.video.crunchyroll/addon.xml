@@ -24,10 +24,11 @@
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <disclaimer lang="fr_FR">ATTENTION: Vous DEVEZ être un utilisateur PREMIUM pour pouvoir utiliser ce plugin</disclaimer>
         <news>
-            v4.1.3 (2024.01.22)
-            Adding tests on routes (not all)
-            using api v2 for watchlist
-            Fix if a search gives empty result
+            v4.1.4 (2024.02.07)
+            Fix issue with Watchlist menu (wasn't loading)
+            Adding tests on others routes
+            Support skipping intro, endings, credits and recap
+            reorganizing settings
         </news>
         <license>GNU Affero General Public License, v3</license>
         <forum></forum>

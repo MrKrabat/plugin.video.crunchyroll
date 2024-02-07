@@ -35,7 +35,7 @@ class CrunchyrollAuth(AuthBase):
         # These are extracted from the Android application
         self.auth_headers = {
             "User-Agent": utils.CRUNCHYROLL_UA,
-            "Authorization": "Basic bC1wbGZ0bmtneWFycGZxaGpoOC06TVFZX3pDeGlOUFk1RUVPX0xQRk9VNFFaZ1ktWVVZRXM="
+            "Authorization": "Basic ZGlsYzRmYmpndGV0NGRtbmxhZXY6YVVhNm55ckhvbHVXM2tyWWszWlR0cHVpMzlkWVJCbk4="
         }
 
         # Make sure all above fields are set
@@ -62,7 +62,7 @@ class CrunchyrollAuth(AuthBase):
             "grant_type": "password",
             "scope": "offline_access"
         }
-        url = f"{utils.CRUNCHYROLL_BASE_URL}/auth/v1/token"
+        url = f"{utils.CRUNCHYROLL_API_URL}/auth/v1/token"
         resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
         resp.raise_for_status()
         self._store_token(resp.json())
@@ -73,7 +73,7 @@ class CrunchyrollAuth(AuthBase):
             "grant_type": "refresh_token",
             "scope": "offline_access"
         }
-        url = f"{utils.CRUNCHYROLL_BASE_URL}/auth/v1/token"
+        url = f"{utils.CRUNCHYROLL_API_URL}/auth/v1/token"
         resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
         resp.raise_for_status()
         self._store_token(resp.json())

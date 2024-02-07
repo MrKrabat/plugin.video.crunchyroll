@@ -195,3 +195,51 @@ msgstr "Tamanho da paginação"
 msgctxt "#30071"
 msgid "Resolution"
 msgstr "Resolução"
+
+msgctxt "#30072"
+msgid "Identification"
+msgstr "Identificação"
+
+msgctxt "#30073"
+msgid "Localization"
+msgstr "Localização"
+
+msgctxt "#30074"
+msgid "Plugin options"
+msgstr "Opções de plug-in"
+
+msgctxt "#30075"
+msgid "Skipping options (when possible)"
+msgstr "Ignorando opções (quando possível)"
+
+msgctxt "#30076"
+msgid "Skip intro"
+msgstr "Pular introdução"
+
+msgctxt "#30077"
+msgid "Skip ending"
+msgstr "Pular final"
+
+msgctxt "#30078"
+msgid "Skip recap of past episodes"
+msgstr "Pular recapitulação de episódios anteriores"
+
+msgctxt "#30079"
+msgid "Skip preview of the next episode"
+msgstr "Pular prévia do próximo episódio"
+
+msgctxt "#30080"
+msgid "Intro skipped"
+msgstr "Introdução ignorada"
+
+msgctxt "#30081"
+msgid "Ending skipped"
+msgstr "Final ignorado"
+
+msgctxt "#30082"
+msgid "Recap skipped"
+msgstr "Recapitulação ignorada"
+
+msgctxt "#30083"
+msgid "Preview skipped"
+msgstr "Pré-visualização ignorada"

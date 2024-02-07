@@ -79,7 +79,6 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russe"
 
-# Crunchyroll Menue
 msgctxt "#30040"
 msgid "Queue"
 msgstr "File d'attente"
@@ -148,7 +147,6 @@ msgctxt "#30059"
 msgid "Newest"
 msgstr "Nouveautés"
 
-# Crunchyroll Messages
 msgctxt "#30060"
 msgid "Login failed"
 msgstr "Erreur de connexion"
@@ -196,3 +194,51 @@ msgstr "Taille de pagination"
 msgctxt "#30071"
 msgid "Resolution"
 msgstr "Résolution"
+
+msgctxt "#30072"
+msgid "Identification"
+msgstr "Identification"
+
+msgctxt "#30073"
+msgid "Localization"
+msgstr "Localisation"
+
+msgctxt "#30074"
+msgid "Plugin options"
+msgstr "Options du plugin"
+
+msgctxt "#30075"
+msgid "Skipping options (when possible)"
+msgstr "Options d'évitement (quand c'est possible)"
+
+msgctxt "#30076"
+msgid "Skip intro"
+msgstr "Passer le générique de début"
+
+msgctxt "#30077"
+msgid "Skip ending"
+msgstr "Passer le générique de fin"
+
+msgctxt "#30078"
+msgid "Skip recap of past episodes"
+msgstr "Passer le récapitulatif des épisodes précédent"
+
+msgctxt "#30079"
+msgid "Skip preview of the next episode"
+msgstr "Passer la preview du futur épisode"
+
+msgctxt "#30080"
+msgid "Intro skipped"
+msgstr "Intro passé"
+
+msgctxt "#30081"
+msgid "Ending skipped"
+msgstr "Générique de fin passé"
+
+msgctxt "#30082"
+msgid "Recap skipped"
+msgstr "Recap passé"
+
+msgctxt "#30083"
+msgid "Preview skipped"
+msgstr "Preview passé"

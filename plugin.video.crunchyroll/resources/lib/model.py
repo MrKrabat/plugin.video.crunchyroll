@@ -29,7 +29,7 @@ class Episode:
         self.thumbnail = item["images"]["thumbnail"][0][0]["source"]
         self.landscape = item["images"]["thumbnail"][0][-1]["source"]
         self.duration = item["episode_metadata"]["duration_ms"] / 1000
-        self.description = item["description"]
+        self.description = item["description"] if item["description"] else "no description"
 
     # Format info for codequick
     def to_dict(self):
@@ -44,7 +44,7 @@ class Episode:
             "info": {
                 "duration": self.duration,
                 "plot": self.description,
-                "episode": self.item["episode_metadata"]["episode_number"],
+                "episode": self.item["episode_metadata"]["episode_number"] if self.item["episode_metadata"]["episode_number"] else 1,
                 "tvshowtitle": self.item["episode_metadata"]["series_title"],
                 "season": self.item["episode_metadata"]["season_number"],
                 "originaltitle": self.id
@@ -67,6 +67,7 @@ class Episode:
                 res["info"]["playcount"] = 0
             else:
                 res["properties"]["resumetime"] = self.playhead["playhead"]
+
         return res
 
 
