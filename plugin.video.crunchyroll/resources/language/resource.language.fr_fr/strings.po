@@ -242,3 +242,12 @@ msgstr "Recap passé"
 msgctxt "#30083"
 msgid "Preview skipped"
 msgstr "Preview passé"
+
+msgctxt "#30084"
+msgid "Audio track"
+msgstr "Piste audio"
+
+msgctxt "#30085"
+msgid "Original"
+msgstr "VO"
+

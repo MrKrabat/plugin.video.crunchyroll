@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 # pylint: disable=E0401,W0611
+from urllib.parse import urlencode
 from codequick import Route, Resolver, Listitem, run # noqa = F401
 import xbmcaddon
 from .client import CrunchyrollClient
@@ -24,10 +25,13 @@ from . import utils
 ADDON = xbmcaddon.Addon(id=utils.ADDON_ID)
 EMAIL = ADDON.getSetting("crunchyroll_username")
 PASSWORD = ADDON.getSetting("crunchyroll_password")
-LOCALE = utils.local_from_id(ADDON.getSetting("subtitle_language"))
-PAGE_SIZE = ADDON.getSettingInt("page_size")
-RESOLUTION = ADDON.getSetting("resolution")
-cr = CrunchyrollClient(EMAIL, PASSWORD, LOCALE, PAGE_SIZE, RESOLUTION)
+SETTINGS = {
+    "prefered_subtitle": utils.local_from_id(ADDON.getSettingInt("subtitle_language")),
+    "prefered_audio": ADDON.getSettingInt("prefered_audio"),
+    "page_size": ADDON.getSettingInt("page_size"),
+    "resolution": int(ADDON.getSetting("resolution"))
+}
+cr = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
 
 
 # pylint: disable=W0613
@@ -229,4 +233,38 @@ def history(plugin, page=1):
 # pylint: disable=W0613
 @Resolver.register
 def play_episode(plugin, episode_id):
-    return cr.get_stream_url(episode_id)
+    infos = cr.get_stream_infos(episode_id)
+    item = Listitem()
+    item.label = infos["name"]
+    sub = utils.lookup_subtitle(infos['subtitles'], cr.prefered_subtitle)
+    item.set_path(infos['url'])
+    listitem = item.listitem
+    if sub:
+        item.subtitles = [sub]
+    listitem.setMimeType('application/xml+dash')
+    listitem.setContentLookup(False)
+    listitem.setProperty('inputstream', 'inputstream.adaptive')
+    listitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+    listitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+    manifest_headers = {
+        'User-Agent': utils.CRUNCHYROLL_UA,
+        'Authorization': infos['auth']
+    }
+    listitem.setProperty('inputstream.adaptive.manifest_headers', urlencode(manifest_headers))
+    license_headers = {
+        'User-Agent': utils.CRUNCHYROLL_UA,
+        'Content-Type': 'application/octet-stream',
+        'Origin': 'https://static.crunchyroll.com',
+        'Authorization': infos['auth'],
+        'x-cr-content-id': episode_id,
+        'x-cr-video-token': infos['token']
+    }
+    license_config = {
+        'license_server_url': 'https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine',
+        'headers': urlencode(license_headers),
+        'post_data': 'R{SSM}',
+        'reponse_data': 'JBlicense'
+    }
+    listitem.setProperty('inputstream.adaptive.license_key', '|'.join(license_config.values()))
+
+    return item

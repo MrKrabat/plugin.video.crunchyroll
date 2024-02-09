@@ -244,3 +244,12 @@ msgstr "Recap skipped"
 msgctxt "#30083"
 msgid "Preview skipped"
 msgstr "Preview skipped"
+
+msgctxt "#30084"
+msgid "Audio track"
+msgstr "Audio track"
+
+msgctxt "#30085"
+msgid "Original"
+msgstr "Original"
+

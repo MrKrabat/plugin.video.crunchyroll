@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from datetime import datetime
+import uuid
 import requests
 from requests.auth import AuthBase
 # pylint: disable=E0401
@@ -28,9 +29,18 @@ class CrunchyrollAuth(AuthBase):
     def __init__(self, email, password):
         self.email = email
         self.password = password
+        self.device_name = "Phone"
+        self.device_type = "Kodi"
 
         with PersistentDict(f"crunchyroll_auth@{email}") as data:
             self.data = data
+
+        with PersistentDict("device_uuid") as device_uuid:
+            self.device_uuid = device_uuid
+
+        if "uuid" not in self.device_uuid.keys():
+            self.device_uuid["uuid"] = str(uuid.uuid4())
+            self.device_uuid.flush()
 
         # These are extracted from the Android application
         self.auth_headers = {
@@ -60,7 +70,10 @@ class CrunchyrollAuth(AuthBase):
             "username": self.email,
             "password": self.password,
             "grant_type": "password",
-            "scope": "offline_access"
+            "scope": "offline_access",
+            "device_id": self.device_uuid["uuid"],
+            "device_type": self.device_type,
+            "device_name": self.device_name
         }
         url = f"{utils.CRUNCHYROLL_API_URL}/auth/v1/token"
         resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
@@ -71,7 +84,10 @@ class CrunchyrollAuth(AuthBase):
         data = {
             "refresh_token": self.data['refresh_token'],
             "grant_type": "refresh_token",
-            "scope": "offline_access"
+            "scope": "offline_access",
+            "device_id": self.device_uuid["uuid"],
+            "device_type": self.device_type,
+            "device_name": self.device_name
         }
         url = f"{utils.CRUNCHYROLL_API_URL}/auth/v1/token"
         resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)

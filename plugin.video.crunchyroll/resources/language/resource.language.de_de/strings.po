@@ -244,3 +244,12 @@ msgstr "Zusammenfassung übersprungen"
 msgctxt "#30083"
 msgid "Preview skipped"
 msgstr "Vorschau übersprungen"
+
+msgctxt "#30084"
+msgid "Audio track"
+msgstr "Audiospur"
+
+msgctxt "#30085"
+msgid "Original"
+msgstr "Original"
+
