@@ -243,3 +243,12 @@ msgstr "Recapitulação ignorada"
 msgctxt "#30083"
 msgid "Preview skipped"
 msgstr "Pré-visualização ignorada"
+
+msgctxt "#30084"
+msgid "Audio track"
+msgstr "Faixa de áudio"
+
+msgctxt "#30085"
+msgid "Original"
+msgstr "Original"
+

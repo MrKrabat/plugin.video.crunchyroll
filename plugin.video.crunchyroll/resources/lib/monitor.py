@@ -17,7 +17,10 @@ class MonitorTask:
 
     def should_run(self):
         now = int(datetime.now().timestamp())
-        return now > self.lastrun + self.interval
+        next_run = self.lastrun + self.interval
+        should_run = now > next_run
+        xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] Is now[{now}] > next_run[{next_run}]: {should_run}")
+        return should_run
 
     def update_lastrun(self):
         self.lastrun = int(datetime.now().timestamp())
@@ -27,15 +30,18 @@ class MonitorTask:
             addon = xbmcaddon.Addon(id=utils.ADDON_ID)
             email = addon.getSetting("crunchyroll_username")
             password = addon.getSetting("crunchyroll_password")
-            locale = utils.local_from_id(addon.getSetting("subtitle_language"))
-            page_size = addon.getSettingInt("page_size")
-            resolution = addon.getSetting("resolution")
+            settings = {
+                "prefered_subtitle": utils.local_from_id(addon.getSetting("subtitle_language")),
+                "prefered_audio": addon.getSetting("prefered_audio"),
+                "page_size": addon.getSettingInt("page_size"),
+                "resolution": int(addon.getSetting("resolution"))
+            }
 
             try:
-                self.client = CrunchyrollClient(email, password, locale, page_size, resolution)
+                self.client = CrunchyrollClient(email, password, settings)
             # pylint: disable=W0718
             except Exception as err:
-                xbmc.log(f"{err=}", xbmc.LOGERROR)
+                xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {err=}", xbmc.LOGERROR)
         return self.client
 
     def is_playing_crunchyroll_video(self):
@@ -43,7 +49,7 @@ class MonitorTask:
         if player.isPlayingVideo():
             # pylint: disable=E1101
             url = player.getPlayingFile()
-            return re.search("crunchyroll.com", url)
+            return re.search("crunchyroll", url)
         return False
 
     def _run(self, episode_id):
@@ -51,7 +57,7 @@ class MonitorTask:
 
     def run(self):
         if self.is_playing_crunchyroll_video():
-            xbmc.log(f"Running task {self.name}")
+            xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] Running")
             player = xbmc.Player()
             item = player.getPlayingItem()
             # E1128 due to mock
@@ -75,7 +81,7 @@ class UpdatePlayhead(MonitorTask):
                 self.get_crunchyroll_client().update_playhead(episode_id, int(playhead))
             # pylint: disable=W0718
             except Exception as err:
-                xbmc.log(f"{err=}", xbmc.LOGERROR)
+                xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {err=}", xbmc.LOGERROR)
 
 
 class SkipEvent(MonitorTask):
@@ -94,14 +100,14 @@ class SkipEvent(MonitorTask):
                 skip_events = self.get_crunchyroll_client().get_episode_skip_events(episode_id)
                 if self.event_id in skip_events.keys():
                     skip_event = skip_events[self.event_id]
-                    xbmc.log(f"{skip_event['end']} > {playhead} > {skip_event['start']} ?")
+                    xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {skip_event['end']} > {playhead} > {skip_event['start']} ?")
                     if skip_event['end'] > playhead > skip_event['start']:
                         player.seekTime(int(skip_event['end']))
                         icon_url = addon.getAddonInfo("icon")
                         xbmcgui.Dialog().notification(self.skip_message, "", icon_url, 5000)
             # pylint: disable=W0718
             except Exception as err:
-                xbmc.log(f"{err=}", xbmc.LOGERROR)
+                xbmc.log(f"[Crunchyroll-Monitor] {err=}", xbmc.LOGERROR)
 
 
 class SkipIntro(SkipEvent):
@@ -134,9 +140,11 @@ class MonitorTaskManager:
         self.tasks = []
 
     def register_task(self, task):
+        xbmc.log(f"[Crunchyroll-Monitor] Registering task {task.name}", xbmc.LOGDEBUG)
         self.tasks.append(task)
 
     def run_tasks(self):
+        xbmc.log("[Crunchyroll-Monitor] Checking tasks to run", xbmc.LOGDEBUG)
         for task in self.tasks:
             if task.should_run():
                 task.update_lastrun()
@@ -153,6 +161,7 @@ def run():
     task_manager.register_task(SkipPreview())
     task_manager.register_task(SkipRecap())
 
+    xbmc.log("[Crunchyroll-Monitor] Starting monitoring", xbmc.LOGDEBUG)
     while not monitor.abortRequested():
         task_manager.run_tasks()
         if monitor.waitForAbort(1):

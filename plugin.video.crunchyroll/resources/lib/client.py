@@ -18,7 +18,6 @@
 import requests
 from requests.exceptions import HTTPError
 import xbmc
-import m3u8
 import urlquick
 from . import auth, utils
 from .model import Series, Season, Episode, Category
@@ -30,12 +29,13 @@ class CrunchyrollClient:
         xbmc.log(f"[Crunchyroll-Client] {msg}")
 
     # pylint: disable=R0913
-    def __init__(self, email, password, locale, page_size, resolution):
+    def __init__(self, email, password, settings):
         self.auth = auth.CrunchyrollAuth(email, password)
-        self.locale = locale
-        self.page_size = page_size
+        self.prefered_subtitle = settings['prefered_subtitle']
+        self.prefered_audio = settings['prefered_audio']
+        self.page_size = settings['page_size']
+        self.resolution = settings['resolution']
         self.cms = self._get_cms_info()
-        self.resolution = resolution
 
     def _get_cms_info(self):
         url = f"{utils.CRUNCHYROLL_API_URL}/index/v2"
@@ -53,9 +53,15 @@ class CrunchyrollClient:
         return response
 
     # pylint: disable=W0102
+    def _get_localized(self, url, params={}, headers={}):
+        params['locale'] = self.prefered_subtitle
+        response = self._get(url, params=params, headers=headers)
+        response.raise_for_status()
+        return response
+
+    # pylint: disable=W0102
     def _get(self, url, params={}, headers={}):
         headers['User-Agent'] = utils.CRUNCHYROLL_UA
-        params['locale'] = self.locale
         response = requests.get(url, params=params, headers=headers, auth=self.auth, timeout=30)
         response.raise_for_status()
         return response
@@ -83,7 +89,7 @@ class CrunchyrollClient:
             "n": self.page_size,
             "start": start
         }
-        data = self._get(url, params=params).json()
+        data = self._get_localized(url, params=params).json()
         playheads = self.get_playhead(map(lambda item: item['panel']['id'], data['data']))
         if len(data['data']) > 0:
             res = []
@@ -107,7 +113,7 @@ class CrunchyrollClient:
             "type": "series",
             "start": start
         }
-        data = self._get(url, params=params).json()
+        data = self._get_localized(url, params=params).json()
         if len(data['data']) > 0:
             res = []
             for item in data['data'][0]['items']:
@@ -124,7 +130,7 @@ class CrunchyrollClient:
             "page_size": self.page_size,
             "page": page
         }
-        data = self._get(url, params=params).json()
+        data = self._get_localized(url, params=params).json()
         playheads = self.get_playhead(map(lambda item: item['panel']['id'], data['data']))
         res = []
         for item in data['data']:
@@ -137,12 +143,12 @@ class CrunchyrollClient:
 
     def get_crunchylists(self):
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/{self.auth.data['account_id']}/custom-lists"
-        data = self._get(url).json()
+        data = self._get_localized(url).json()
         return data['data']
 
     def get_crunchylist(self, list_id):
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/{self.auth.data['account_id']}/custom-lists/{list_id}"
-        data = self._get(url).json()
+        data = self._get_localized(url).json()
         res = []
         for item in data['data']:
             res.append(Series(item['panel']))
@@ -151,7 +157,7 @@ class CrunchyrollClient:
     def get_series_seasons(self, series_id):
         self._log(f"Get seasons of series {series_id}")
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/cms/series/{series_id}/seasons"
-        data = self._get(url).json()
+        data = self._get_localized(url).json()
         res = []
         for item in data['data']:
             res.append(Season(item))
@@ -160,7 +166,7 @@ class CrunchyrollClient:
     def get_season_episodes(self, season_id):
         self._log(f"Get episodes of seasons {season_id}")
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/cms/seasons/{season_id}/episodes"
-        data = self._get(url).json()
+        data = self._get_localized(url).json()
         list_ids = list(map(lambda item: item['id'], data['data']))
         playheads = self.get_playhead(list_ids)
         episodes = self.get_objects(list_ids)
@@ -175,21 +181,24 @@ class CrunchyrollClient:
         objects = ",".join(id_list)
         self._log(f"Get objects {objects}")
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/cms/objects/{objects}"
-        response = self._get(url)
+        response = self._get_localized(url)
         return response.json()
 
-    def get_stream_url(self, episode_id):
+    def get_stream_infos(self, episode_id):
         self._log(f"Get streams for episode id {episode_id}")
         episode = self.get_objects([episode_id])["data"][0]
-        audio_local = episode['episode_metadata']['audio_locale']
-        for version in episode['episode_metadata']['versions']:
-            if version['audio_locale'] == audio_local:
-                stream_id = version['media_guid']
+        stream_id = utils.lookup_stream_id(episode, self.prefered_audio)
         self._log(f"Resolved stream id {stream_id}")
-        url = f"{utils.CRUNCHYROLL_API_URL}/cms/v2{self.cms['bucket']}/videos/{stream_id}/streams"
-        data = self._get_cms(url).json()
-        playlist = m3u8.load(utils.lookup_playlist_url(data['streams']['adaptive_hls'], self.locale))
-        return utils.lookup_stream_url(playlist.playlists, self.resolution)
+        url = f"{utils.CRUNCHYROLL_PLAY_SERVICE}/v1/{episode_id}/android/phone/play"
+        data = self._get(url).json()
+        infos = {
+            "url": data['url'],
+            "subtitles": data["subtitles"],
+            "name": episode["title"],
+            "auth": f"Bearer {self.auth.data['access_token']}",
+            "token": data['token']
+        }
+        return infos
 
     def get_playhead(self, id_list):
         episodes = ','.join(id_list)
@@ -198,7 +207,7 @@ class CrunchyrollClient:
             "content_ids": episodes
         }
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/{self.auth.data['account_id']}/playheads"
-        data = self._get(url, params=params).json()
+        data = self._get_localized(url, params=params).json()
         return data
 
     def update_playhead(self, episode_id, time):
@@ -223,7 +232,7 @@ class CrunchyrollClient:
         if seasonal_tag:
             params['seasonal_tag'] = seasonal_tag
 
-        data = self._get(url, params=params).json()
+        data = self._get_localized(url, params=params).json()
         res = []
         for item in data['data']:
             res.append(Series(item))
@@ -237,7 +246,7 @@ class CrunchyrollClient:
         params = {
             "sort_by": sort_by
         }
-        response = self._get(url, params=params)
+        response = self._get_localized(url, params=params)
         return response.json()
 
     def get_alpha(self):
@@ -261,7 +270,7 @@ class CrunchyrollClient:
 
     def get_categories(self):
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/discover/categories"
-        data = self._get(url).json()
+        data = self._get_localized(url).json()
         res = []
         for category in data['data']:
             res.append(Category(category))
@@ -269,7 +278,7 @@ class CrunchyrollClient:
 
     def get_sub_categories(self, parent_id):
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/discover/categories/{parent_id}/sub_categories"
-        data = self._get(url).json()
+        data = self._get_localized(url).json()
         res = []
         for category in data['data']:
             res.append(Category(category, parent_id))
@@ -277,7 +286,7 @@ class CrunchyrollClient:
 
     def get_seasonal_tags(self):
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/discover/seasonal_tags"
-        data = self._get(url).json()
+        data = self._get_localized(url).json()
         return data['data']
 
     def get_episode_skip_events(self, episode_id):

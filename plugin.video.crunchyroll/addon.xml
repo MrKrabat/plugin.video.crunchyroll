@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="4.1.4" provider-name="Xtero">
+<addon id="plugin.video.crunchyroll" name="Crunchyroll" version="4.2.0" provider-name="Xtero">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
         <import addon="script.module.inputstreamhelper" version="0.3.3"/>
         <import addon="script.module.requests" version="2.31.0" />
         <import addon="script.module.codequick" version="1.0.3" />
-        <import addon="script.module.m3u8" version="3.5.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" library="main.py">
         <provides>video</provides>
@@ -24,11 +23,10 @@
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <disclaimer lang="fr_FR">ATTENTION: Vous DEVEZ être un utilisateur PREMIUM pour pouvoir utiliser ce plugin</disclaimer>
         <news>
-            v4.1.4 (2024.02.07)
-            Fix issue with Watchlist menu (wasn't loading)
-            Adding tests on others routes
-            Support skipping intro, endings, credits and recap
-            reorganizing settings
+            v4.2.0 (2024.XX.XX)
+            Move to new endpoint for stream (with DRM management)
+            Fix issue with episode without versions
+            Add soft subtitles
         </news>
         <license>GNU Affero General Public License, v3</license>
         <forum></forum>

@@ -6,15 +6,29 @@ Crunchyroll is a KODI (XBMC) plugin for Crunchyroll.com.
 **This plugin does not intend to let you do illegal stuff**
 ***
 
+**Before playing videos, don't forget to install Widevine CDM**
+**InputStream Helper will do the job for you. Go in your Addon->My Addon->Addon Script->InpustStream Helper**
+
+_This page and addon are not affiliated with Crunchyroll._
+
+_Kodi® (formerly known as XBMC™) is a registered trademark of the XBMC Foundation.
+This page and addon are not affiliated with Kodi, Team Kodi, or the XBMC Foundation._
+
+
 # Contributors
 
 Original creator: MrKrabat  
+Maintainer: Xtero
 Contributors:
-- Xtero
 - Smirgo
+- TheFantasticLoki
+- robofunk
+- APachecoDiSanti
+- jasonfrancis
+- vlfr1997
+- Nux007
 
 Git repo: https://github.com/xtero/plugin.video.crunchyroll
-
 
 # Features
 
@@ -37,11 +51,6 @@ What this plugin currently can do:
 - [x] Watch videos with premium subscription
 - [x] Synchronizes playback stats with Crunchyroll
 ***
-
-_This page and addon are not affiliated with Crunchyroll._
-
-_Kodi® (formerly known as XBMC™) is a registered trademark of the XBMC Foundation.
-This page and addon are not affiliated with Kodi, Team Kodi, or the XBMC Foundation._
 
 # How to run tests
 If you are using a Linux distro, you probably can run the bootstrap.sh script.  

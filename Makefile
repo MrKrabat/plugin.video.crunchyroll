@@ -19,16 +19,16 @@ clean-release:
 	rm -rf release
 
 release: clean-release test
-	mkdir -p release/resources/lib/
-	cp ${SOURCE_FOLDER}/resources/lib/*.py release/resources/lib/
-	cp ${SOURCE_FOLDER}/resources/*.py release/resources/
-	cp ${SOURCE_FOLDER}/*.py release/
-	mkdir -p release/resources/language
-	cp -r ${SOURCE_FOLDER}/resources/language release/resources/
-	mkdir -p release/resources/media
-	cp ${SOURCE_FOLDER}/resources/media/* release/resources/media
-	cp ${SOURCE_FOLDER}/resources/settings.xml release/resources/settings.xml
-	cp ${SOURCE_FOLDER}/{addon.xml,changelog.txt,fanart.jpg,icon.png} release/
+	mkdir -p release/${SOURCE_FOLDER}/resources/lib/
+	cp ${SOURCE_FOLDER}/resources/lib/*.py release/${SOURCE_FOLDER}/resources/lib/
+	cp ${SOURCE_FOLDER}/resources/*.py release/${SOURCE_FOLDER}/resources/
+	cp ${SOURCE_FOLDER}/*.py release/${SOURCE_FOLDER}/
+	mkdir -p release/${SOURCE_FOLDER}/resources/language
+	cp -r ${SOURCE_FOLDER}/resources/language release/${SOURCE_FOLDER}/resources/
+	mkdir -p release/${SOURCE_FOLDER}/resources/media
+	cp ${SOURCE_FOLDER}/resources/media/* release/${SOURCE_FOLDER}/resources/media
+	cp ${SOURCE_FOLDER}/resources/settings.xml release/${SOURCE_FOLDER}/resources/settings.xml
+	cp ${SOURCE_FOLDER}/{addon.xml,changelog.txt,fanart.jpg,icon.png} release/${SOURCE_FOLDER}/
 	mkdir -p archive
 	cd release; zip -r ../archive/plugin.video.crunchyroll-${CRUNCHYROLL_VERSION}.zip *
 
