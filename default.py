@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import asyncio
 import re
 import sys
 
@@ -29,6 +29,12 @@ _plugin = _addon.getAddonInfo("name")
 _version = _addon.getAddonInfo("version")
 
 xbmc.log("[PLUGIN] %s: version %s initialized" % (_plugin, _version))
+
+# Fix for bug in old python version on windows
+# @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/44
+# @see: https://stackoverflow.com/questions/63860576/asyncio-event-loop-is-closed-when-using-asyncio-run
+if sys.platform == "win32" and sys.version_info >= (3, 8, 0):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 if __name__ == "__main__":
     from resources.lib import crunchyroll
