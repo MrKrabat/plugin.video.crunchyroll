@@ -29,6 +29,7 @@ from . import controller
 from . import utils
 from . import view
 from .api import API
+from .model import CrunchyrollError, LoginError
 
 
 def main(argv):
@@ -87,11 +88,16 @@ def main(argv):
         return False
     else:
         # login
-        if api.start():
-            # list menu
-            xbmcplugin.setContent(int(args.argv[1]), "tvshows")
-            return check_mode(args, api)
-        else:
+        try:
+            success = api.start()
+            if success:
+                # list menu
+                xbmcplugin.setContent(int(args.argv[1]), "tvshows")
+                return check_mode(args, api)
+        except (LoginError, CrunchyrollError) as e:
+            success = False
+
+        if not success:
             # login failed
             utils.crunchy_log(args, "Login failed", xbmc.LOGERROR)
             view.add_item(args, {"title": args.addon.getLocalizedString(30060)})
