@@ -1,3 +1,4 @@
+import traceback
 from datetime import datetime
 import re
 import xbmc
@@ -31,8 +32,8 @@ class MonitorTask:
             email = addon.getSetting("crunchyroll_username")
             password = addon.getSetting("crunchyroll_password")
             settings = {
-                "prefered_subtitle": utils.local_from_id(addon.getSetting("subtitle_language")),
-                "prefered_audio": addon.getSetting("prefered_audio"),
+                "prefered_subtitle": utils.local_from_id(addon.getSettingInt("subtitle_language")),
+                "prefered_audio": addon.getSettingInt("prefered_audio"),
                 "page_size": addon.getSettingInt("page_size"),
                 "resolution": int(addon.getSetting("resolution"))
             }
@@ -42,6 +43,7 @@ class MonitorTask:
             # pylint: disable=W0718
             except Exception as err:
                 xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {err=}", xbmc.LOGERROR)
+                xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {traceback.format_exc()}", xbmc.LOGERROR)
         return self.client
 
     def is_playing_crunchyroll_video(self):
@@ -76,12 +78,13 @@ class UpdatePlayhead(MonitorTask):
         sync_playtime = addon.getSetting("sync_playtime")
         if sync_playtime:
             player = xbmc.Player()
-            playhead = player.getTime()
             try:
+                playhead = player.getTime()
                 self.get_crunchyroll_client().update_playhead(episode_id, int(playhead))
             # pylint: disable=W0718
             except Exception as err:
                 xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {err=}", xbmc.LOGERROR)
+                xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {traceback.format_exc()}", xbmc.LOGERROR)
 
 
 class SkipEvent(MonitorTask):
@@ -95,19 +98,20 @@ class SkipEvent(MonitorTask):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
         if addon.getSetting(f"skip_{self.event_id}"):
             player = xbmc.Player()
-            playhead = int(player.getTime())
             try:
+                playhead = int(player.getTime())
                 skip_events = self.get_crunchyroll_client().get_episode_skip_events(episode_id)
-                if self.event_id in skip_events.keys():
+                if self.event_id in list(skip_events.keys()):
                     skip_event = skip_events[self.event_id]
                     xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {skip_event['end']} > {playhead} > {skip_event['start']} ?")
-                    if skip_event['end'] > playhead > skip_event['start']:
+                    if int(skip_event['end']) > playhead > int(skip_event['start']):
                         player.seekTime(int(skip_event['end']))
                         icon_url = addon.getAddonInfo("icon")
                         xbmcgui.Dialog().notification(self.skip_message, "", icon_url, 5000)
             # pylint: disable=W0718
             except Exception as err:
                 xbmc.log(f"[Crunchyroll-Monitor] {err=}", xbmc.LOGERROR)
+                xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {traceback.format_exc()}", xbmc.LOGERROR)
 
 
 class SkipIntro(SkipEvent):

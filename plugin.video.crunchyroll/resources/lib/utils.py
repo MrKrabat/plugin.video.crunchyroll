@@ -16,41 +16,42 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import re
+import os
+from datetime import datetime
+import xbmc
+import xbmcvfs
+import requests
 
 ADDON_ID = "plugin.video.crunchyroll"
 # The idea is to be able mock it for future tests
 CRUNCHYROLL_API_URL = "https://beta-api.crunchyroll.com"
 CRUNCHYROLL_STATIC_URL = "https://static.crunchyroll.com"
-CRUNCHYROLL_PLAY_SERVICE = "https://cr-play-service.prd.crunchyrollsvc.com"
+CRUNCHYROLL_PLAY_URL = "https://cr-play-service.prd.crunchyrollsvc.com"
+CRUNCHYROLL_LICENSE_URL = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 CRUNCHYROLL_UA = "Crunchyroll/3.48.3 Android/14 okhttp/4.12.0"
 
 
 def local_from_id(locale_id):
-    subtitle = "en-US"
-    if locale_id == 0:
-        subtitle = "en-US"
-    elif locale_id == 1:
-        subtitle = "en-GB"
-    elif locale_id == 2:
-        subtitle = "es-419"
-    elif locale_id == 3:
-        subtitle = "es-ES"
-    elif locale_id == 4:
-        subtitle = "pt-BR"
-    elif locale_id == 5:
-        subtitle = "pt-PT"
-    elif locale_id == 6:
-        subtitle = "fr-FR"
-    elif locale_id == 7:
-        subtitle = "de-DE"
-    elif locale_id == 8:
-        subtitle = "ar-ME"
-    elif locale_id == 9:
-        subtitle = "it-IT"
-    elif locale_id == 10:
-        subtitle = "ru-RU"
+    locales = [
+        "en-US",
+        "en-GB",
+        "es-419",
+        "es-ES",
+        "pt-BR",
+        "pt-PT",
+        "fr-FR",
+        "de-DE",
+        "ar-SA",
+        "it-IT",
+        "ru-RU",
+        "ta-IN",
+        "hi-IN"
+    ]
 
-    return subtitle
+    if locale_id < len(locales):
+        return locales[locale_id]
+
+    return "en-US"
 
 
 def lookup_playhead(playheads, content_id):
@@ -108,7 +109,41 @@ def lookup_stream_id(episode, prefered_audio_id):
 
 
 def lookup_subtitle(subtitles, prefered_subtitle):
-    for sub in subtitles.values():
+    for sub in list(subtitles.values()):
         if sub['language'] == prefered_subtitle:
             return sub['url']
     return None
+
+
+def download_subtitle(url, output):
+    with open(output, "w", encoding="utf8") as fh:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        response.encoding = "UTF-8"
+        fh.write(response.text)
+        fh.close()
+
+
+def get_subtitles(episode_id, subtitles):
+    cache_folder = xbmcvfs.translatePath("special://temp/crunchyroll_cache_subtitles")
+    if not xbmcvfs.exists(cache_folder):
+        xbmcvfs.mkdirs(cache_folder)
+
+    return_subtitles = []
+    for sub in list(subtitles.values()):
+        lang = sub['language'].split('-')[0]
+        # We keep sub['language'] in the name as we might have for the same lang many different language
+        filename = f"{episode_id}.{sub['language']}.{lang}.{sub['format']}"
+        file_path = xbmcvfs.translatePath(f"{cache_folder}/{filename}")
+
+        if not xbmcvfs.exists(file_path):
+            download_subtitle(sub['url'], file_path)
+        else:
+            now = datetime.timestamp(datetime.now())
+            seven_days = 7 * 86400
+            if xbmcvfs.Stat(file_path).st_ctime() > (now + seven_days):
+                os.remove(xbmc.validatePath(file_path))
+                download_subtitle(sub['url'], file_path)
+
+        return_subtitles.append(file_path)
+    return return_subtitles

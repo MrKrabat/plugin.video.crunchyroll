@@ -11,9 +11,14 @@ clean:
 test: lint
 	.venv/bin/pytest
 
-lint:
+cleanup:
+	FOLDERS=$$(find . -name __pycache__ -not -path "./.venv/*") &&\
+	for folder in $${FOLDERS[@]}; do rm -r $$folder; done
+
+lint: cleanup
 	.venv/bin/pylint $$(find -name *.py -not -path "./.venv/*")
 	.venv/bin/flake8
+	.venv/bin/kodi-addon-checker --branch  nexus ${SOURCE_FOLDER}
 
 clean-release:
 	rm -rf release

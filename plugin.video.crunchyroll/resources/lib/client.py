@@ -90,7 +90,7 @@ class CrunchyrollClient:
             "start": start
         }
         data = self._get_localized(url, params=params).json()
-        playheads = self.get_playhead(map(lambda item: item['panel']['id'], data['data']))
+        playheads = self.get_playhead([item['panel']['id'] for item in data['data']])
         if len(data['data']) > 0:
             res = []
             for item in data['data']:
@@ -131,7 +131,7 @@ class CrunchyrollClient:
             "page": page
         }
         data = self._get_localized(url, params=params).json()
-        playheads = self.get_playhead(map(lambda item: item['panel']['id'], data['data']))
+        playheads = self.get_playhead([item['panel']['id'] for item in data['data']])
         res = []
         for item in data['data']:
             playhead = utils.lookup_playhead(playheads['data'], item['id'])
@@ -167,7 +167,7 @@ class CrunchyrollClient:
         self._log(f"Get episodes of seasons {season_id}")
         url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/cms/seasons/{season_id}/episodes"
         data = self._get_localized(url).json()
-        list_ids = list(map(lambda item: item['id'], data['data']))
+        list_ids = [item['id'] for item in data['data']]
         playheads = self.get_playhead(list_ids)
         episodes = self.get_objects(list_ids)
         res = []
@@ -187,14 +187,12 @@ class CrunchyrollClient:
     def get_stream_infos(self, episode_id):
         self._log(f"Get streams for episode id {episode_id}")
         episode = self.get_objects([episode_id])["data"][0]
-        stream_id = utils.lookup_stream_id(episode, self.prefered_audio)
-        self._log(f"Resolved stream id {stream_id}")
-        url = f"{utils.CRUNCHYROLL_PLAY_SERVICE}/v1/{episode_id}/android/phone/play"
+        url = f"{utils.CRUNCHYROLL_PLAY_URL}/v1/{episode_id}/android/phone/play"
         data = self._get(url).json()
         infos = {
             "url": data['url'],
             "subtitles": data["subtitles"],
-            "name": episode["title"],
+            "name": episode["episode_metadata"]["series_title"] + " #" + str(episode["episode_metadata"]["episode_number"]) + " - " + episode["title"],
             "auth": f"Bearer {self.auth.data['access_token']}",
             "token": data['token']
         }

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR=$(dirname $(readlink -f $0))
+ROOT_DIR=$(readlink "$SCRIPT_DIR/..")
+
 varLookup(){
     name=$1
     basicAuthFile=$(grep -r get${name^} $SOURCE |grep public |grep amazon | grep final | awk -F ':' '{ print $1}')
@@ -13,12 +16,12 @@ CURRENT=$(ls -v "./decompiled_crunchyroll/" | tail -n1)
 echo "Last version available=$LATEST"
 echo "Current version=$CURRENT"
 if [ "$CURRENT" != "$LATEST" ]; then
-    cd "./apk/"
+    pushd "$ROOT_DIR/apk/"
     wget --content-disposition https://d.apkpure.net/b/APK/com.crunchyroll.crunchyroid?version=latest
-    cd ..
+    popd
     VERSION=$LATEST
-    apktool d ./apk/Crunchyroll_${VERSION}_Apkpure.apk -o "./decompiled_crunchyroll/$VERSION"
-    SOURCE="./decompiled_crunchyroll/$VERSION"
+    apktool d "$ROOT_DIR/apk/Crunchyroll_${VERSION}_Apkpure.apk" -o "$ROOT_DIR/decompiled_crunchyroll/$VERSION"
+    SOURCE="$ROOT_DIR/decompiled_crunchyroll/$VERSION"
     clientId=$(varLookup "clientId")
     clientSecret=$(varLookup "clientSecret")
     appVersion=$VERSION
@@ -34,8 +37,8 @@ if [ "$CURRENT" != "$LATEST" ]; then
     basicAuth=$(echo -n "$clientId:$clientSecret" | base64)
     userAgent="\"Crunchyroll/$appVersion Android/$androidVersion okhttp/$okhttpVersion\""
 
-    sed -i "s|^CRUNCHYROLL_UA.*\$|CRUNCHYROLL_UA = $userAgent|" plugin.video.crunchyroll/resources/lib/utils.py
-    sed -i "s|^\(\\s*\)\"Authorization\".*|\\1\"Authorization\": \"Basic $basicAuth\"|" plugin.video.crunchyroll/resources/lib/auth.py
+    sed -i "s|^CRUNCHYROLL_UA.*\$|CRUNCHYROLL_UA = $userAgent|" "$ROOT_DIR/plugin.video.crunchyroll/resources/lib/utils.py"
+    sed -i "s|^\(\\s*\)\"Authorization\".*|\\1\"Authorization\": \"Basic $basicAuth\"|" "$ROOT_DIR/plugin.video.crunchyroll/resources/lib/auth.py"
 else
     echo "Nothing to do, we are up to date"
 fi

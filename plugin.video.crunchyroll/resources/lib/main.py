@@ -236,11 +236,9 @@ def play_episode(plugin, episode_id):
     infos = cr.get_stream_infos(episode_id)
     item = Listitem()
     item.label = infos["name"]
-    sub = utils.lookup_subtitle(infos['subtitles'], cr.prefered_subtitle)
+    item.subtitles = utils.get_subtitles(episode_id, infos['subtitles'])
     item.set_path(infos['url'])
     listitem = item.listitem
-    if sub:
-        item.subtitles = [sub]
     listitem.setMimeType('application/xml+dash')
     listitem.setContentLookup(False)
     listitem.setProperty('inputstream', 'inputstream.adaptive')
@@ -260,11 +258,11 @@ def play_episode(plugin, episode_id):
         'x-cr-video-token': infos['token']
     }
     license_config = {
-        'license_server_url': 'https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine',
+        'license_server_url': utils.CRUNCHYROLL_LICENSE_URL,
         'headers': urlencode(license_headers),
         'post_data': 'R{SSM}',
         'reponse_data': 'JBlicense'
     }
-    listitem.setProperty('inputstream.adaptive.license_key', '|'.join(license_config.values()))
+    listitem.setProperty('inputstream.adaptive.license_key', '|'.join(list(license_config.values())))
 
     return item

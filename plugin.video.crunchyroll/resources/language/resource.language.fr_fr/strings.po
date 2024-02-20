@@ -79,6 +79,14 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russe"
 
+msgctxt "#30032"
+msgid "Tamil"
+msgstr "Tamil"
+
+msgctxt "#30033"
+msgid "Hindi"
+msgstr "Hindi"
+
 msgctxt "#30040"
 msgid "Queue"
 msgstr "File d'attente"

@@ -38,7 +38,7 @@ class CrunchyrollAuth(AuthBase):
         with PersistentDict("device_uuid") as device_uuid:
             self.device_uuid = device_uuid
 
-        if "uuid" not in self.device_uuid.keys():
+        if "uuid" not in list(self.device_uuid.keys()):
             self.device_uuid["uuid"] = str(uuid.uuid4())
             self.device_uuid.flush()
 
