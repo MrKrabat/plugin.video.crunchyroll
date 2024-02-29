@@ -1,7 +1,7 @@
 SHELL=/usr/bin/bash
 SOURCE_FOLDER="plugin.video.crunchyreroll"
 CRUNCHYROLL_VERSION := $(shell xq -r '.addon."@version"' plugin.video.crunchyreroll/addon.xml)
-REPO="https://api.github.com/repos/xtero/plugin.video.crunchyreroll/releases"
+REPO="https://api.github.com/repos/xtero/CrunchyREroll/releases"
 ARCHIVE="archive/plugin.video.crunchyreroll-${CRUNCHYROLL_VERSION}.zip"
 
 install: clean
