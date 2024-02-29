@@ -9,7 +9,7 @@ logger.setLevel(logging.DEBUG)
 
 Repo.repo = "nexus"
 root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-source_path = os.path.join(root_path, 'plugin.video.crunchyroll')
+source_path = os.path.join(root_path, 'plugin.video.crunchyreroll')
 initializer(source_path)
 
 if 'CRUNCHYROLL_EMAIL' not in os.environ:

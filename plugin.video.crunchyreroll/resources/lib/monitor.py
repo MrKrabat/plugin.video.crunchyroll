@@ -5,7 +5,6 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 from . import utils
-from .client import CrunchyrollClient
 
 
 class MonitorTask:
@@ -28,18 +27,8 @@ class MonitorTask:
 
     def get_crunchyroll_client(self):
         if not self.client:
-            addon = xbmcaddon.Addon(id=utils.ADDON_ID)
-            email = addon.getSetting("crunchyroll_username")
-            password = addon.getSetting("crunchyroll_password")
-            settings = {
-                "prefered_subtitle": utils.local_from_id(addon.getSettingInt("subtitle_language")),
-                "prefered_audio": addon.getSettingInt("prefered_audio"),
-                "page_size": addon.getSettingInt("page_size"),
-                "resolution": int(addon.getSetting("resolution"))
-            }
-
             try:
-                self.client = CrunchyrollClient(email, password, settings)
+                self.client = utils.init_crunchyroll_client()
             # pylint: disable=W0718
             except Exception as err:
                 xbmc.log(f"[Crunchyroll-Monitor][Task {self.name}] {err=}", xbmc.LOGERROR)

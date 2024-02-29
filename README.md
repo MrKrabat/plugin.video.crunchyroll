@@ -1,6 +1,6 @@
 # Crunchyroll plugin for Kodi
 
-Crunchyroll is a KODI (XBMC) plugin for Crunchyroll.com.
+CrunchyREroll is a KODI (XBMC) plugin for Crunchyroll.com.
 
 **WARNING: You MUST be a PREMIUM member to use this plugin!**
 **This plugin does not intend to let you do illegal stuff**
@@ -17,9 +17,9 @@ This page and addon are not affiliated with Kodi, Team Kodi, or the XBMC Foundat
 
 # Contributors
 
-Original creator: MrKrabat  
 Maintainer: Xtero
 Contributors:
+- MrKrabat
 - Smirgo
 - TheFantasticLoki
 - robofunk
@@ -28,7 +28,7 @@ Contributors:
 - vlfr1997
 - Nux007
 
-Git repo: https://github.com/xtero/plugin.video.crunchyroll
+Git repo: https://github.com/xtero/CrunchyREroll
 
 # Features
 

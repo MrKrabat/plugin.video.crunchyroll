@@ -20,15 +20,17 @@ import os
 from datetime import datetime
 import xbmc
 import xbmcvfs
+import xbmcaddon
 import requests
+from .client import CrunchyrollClient
 
-ADDON_ID = "plugin.video.crunchyroll"
+ADDON_ID = "plugin.video.crunchyreroll"
 # The idea is to be able mock it for future tests
 CRUNCHYROLL_API_URL = "https://beta-api.crunchyroll.com"
 CRUNCHYROLL_STATIC_URL = "https://static.crunchyroll.com"
 CRUNCHYROLL_PLAY_URL = "https://cr-play-service.prd.crunchyrollsvc.com"
 CRUNCHYROLL_LICENSE_URL = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
-CRUNCHYROLL_UA = "Crunchyroll/3.48.3 Android/14 okhttp/4.12.0"
+CRUNCHYROLL_UA = "Crunchyroll/3.50.1 Android/14 okhttp/4.12.0"
 
 
 def local_from_id(locale_id):
@@ -147,3 +149,16 @@ def get_subtitles(episode_id, subtitles):
 
         return_subtitles.append(file_path)
     return return_subtitles
+
+
+def init_crunchyroll_client():
+    addon = xbmcaddon.Addon(id=ADDON_ID)
+    email = addon.getSetting("crunchyroll_username")
+    password = addon.getSetting("crunchyroll_password")
+    settings = {
+        "prefered_subtitle": local_from_id(addon.getSettingInt("subtitle_language")),
+        "prefered_audio": addon.getSettingInt("prefered_audio"),
+        "page_size": addon.getSettingInt("page_size"),
+        "resolution": int(addon.getSetting("resolution"))
+    }
+    return CrunchyrollClient(email, password, settings)

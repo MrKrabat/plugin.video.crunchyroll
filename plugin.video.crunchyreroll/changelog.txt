@@ -1,3 +1,8 @@
+v1.0.0(2024.02.29)
+- Renaming the plugin
+- Forwarding to settings at first run
+- When we try to play the first stream, now a modal propose to install Widevine
+
 v4.2.1 (2024.02.20)
 - Fix issue with monitor (might crash when it try to getTime although file is not playing anymore)
 - Using variable for license url
