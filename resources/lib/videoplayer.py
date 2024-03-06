@@ -193,27 +193,12 @@ class VideoPlayer(Object):
                 ):
                     last_updated_playtime = self._player.getTime()
                     # api request
-                    try:
-                        self._api.make_request(
-                            method="POST",
-                            url=self._api.PLAYHEADS_ENDPOINT.format(self._api.account_data.account_id),
-                            json_data={
-                                'playhead': int(self._player.getTime()),
-                                'content_id': self._args.get_arg('episode_id')
-                            },
-                            headers={
-                                'Content-Type': 'application/json'
-                            }
-                        )
-                    except (CrunchyrollError, requests.exceptions.RequestException) as e:
-                        # catch timeout or any other possible exception
-                        utils.crunchy_log(
-                            self._args,
-                            "Failed to update playhead to crunchyroll: %s for %s" % (
-                                str(e), self._args.get_arg('episode_id')
-                            )
-                        )
-                        pass
+                    update_playhead(
+                        self._api,
+                        self._args.get_arg('episode_id'),
+                        int(self._player.getTime())
+                    )
+
         except RuntimeError:
             utils.crunchy_log(self._args, 'Playback aborted', xbmc.LOGINFO)
 
@@ -282,10 +267,35 @@ class VideoPlayer(Object):
                 'seconds': dialog_duration,
                 'seek_time': self._stream_data.skip_events_data.get(section).get('end'),
                 'label': self._args.addon.getLocalizedString(30015),
-                'addon_path': self._args.addon.getAddonInfo("path")
+                'addon_path': self._args.addon.getAddonInfo("path"),
+                'api': self._api,
+                'content_id': self._args.get_arg('episode_id'),
             }
         ).start()
 
+
+def update_playhead(api: API, content_id: str, playhead: int):
+    try:
+        api.make_request(
+            method="POST",
+            url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
+            json_data={
+                'playhead': playhead,
+                'content_id': content_id
+            },
+            headers={
+                'Content-Type': 'application/json'
+            }
+        )
+    except (CrunchyrollError, requests.exceptions.RequestException) as e:
+        # catch timeout or any other possible exception
+        utils.crunchy_log(
+            None,
+            "Failed to update playhead to crunchyroll: %s for %s" % (
+                str(e), content_id
+            )
+        )
+        pass
 
 def wait_for_playback(timeout: int = 30):
     """ function that waits for playback """
