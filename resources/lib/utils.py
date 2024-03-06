@@ -252,7 +252,10 @@ def filter_seasons(args: Args, item: Dict) -> bool:
         return True
 
     # is it japanese audio, but there are subtitles in my main language?
-    if item.get("audio_locale") == "ja-JP":
+    #
+    # edge case for chinese only anime where there is no japanese dub
+    # @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/51
+    if item.get("audio_locale") == "ja-JP" or item.get("audio_locale") == "zh-CN":
         # fix for missing subtitles in data
         if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
             return True
