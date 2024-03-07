@@ -243,6 +243,9 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
 def filter_seasons(args: Args, item: Dict) -> bool:
     """ takes an API info struct and returns if it matches user language settings """
 
+    if args.addon.getSetting("filter_dubs_by_language") != "true":
+        return True
+
     # is it a dub in my main language?
     if args.subtitle == item.get('audio_locale', ""):
         return True
