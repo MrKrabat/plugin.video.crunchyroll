@@ -114,7 +114,9 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russisch"
 
-
+msgctxt "#30032"
+msgid "Hindi"
+msgstr ""
 
 msgctxt "#30038"
 msgid "Filter available dubs"

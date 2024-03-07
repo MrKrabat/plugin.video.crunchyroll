@@ -53,6 +53,7 @@
                             <option label="30029">ar-SA</option>
                             <option label="30030">it-IT</option>
                             <option label="30031">ru-RU</option>
+                            <option label="30032">hi-IN</option>
                         </options>
                     </constraints>
                     <control type="list" format="string">
@@ -74,6 +75,7 @@
                             <option label="30029">ar-SA</option>
                             <option label="30030">it-IT</option>
                             <option label="30031">ru-RU</option>
+                            <option label="30032">hi-IN</option>
                         </options>
                         <allowempty>true</allowempty>
                     </constraints>
