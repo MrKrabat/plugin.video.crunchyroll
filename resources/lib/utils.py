@@ -102,7 +102,7 @@ async def get_cms_object_data_by_ids(args: Args, api: API, ids: list) -> dict:
                 # "preferred_audio_language": ""
             }
         )
-    except (CrunchyrollError, requests.exceptions.RequestException) as e:
+    except (CrunchyrollError, requests.exceptions.RequestException):
         crunchy_log(args, "get_cms_object_data_by_ids: failed to load for: %s" % ",".join(ids_filtered))
         return {}
 

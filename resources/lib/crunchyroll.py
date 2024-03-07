@@ -94,7 +94,7 @@ def main(argv):
                 # list menu
                 xbmcplugin.setContent(int(args.argv[1]), "tvshows")
                 return check_mode(args, api)
-        except (LoginError, CrunchyrollError) as e:
+        except (LoginError, CrunchyrollError):
             success = False
 
         if not success:

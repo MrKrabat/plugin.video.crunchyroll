@@ -57,7 +57,7 @@ class VideoPlayer(Object):
 
         self._prepare_and_start_playback()
 
-        self._handle_resume()
+        self._handle_update_playhead()
         self._handle_skipping()
 
     def is_playing(self) -> bool:
@@ -108,9 +108,9 @@ class VideoPlayer(Object):
 
         # copy playhead to PlayableItem (if resume is true on argv[3]) - this is required for resume capability
         if (
-            self._stream_data.playable_item.playhead == 0
-            and self._stream_data.playheads_data.get(self._args.get_arg('episode_id'), {})
-            and self._args.argv[3] == 'resume:true'
+                self._stream_data.playable_item.playhead == 0
+                and self._stream_data.playheads_data.get(self._args.get_arg('episode_id'), {})
+                and self._args.argv[3] == 'resume:true'
         ):
             self._stream_data.playable_item.update_playcount_from_playhead(
                 self._stream_data.playheads_data.get(self._args.get_arg('episode_id'))
@@ -149,8 +149,12 @@ class VideoPlayer(Object):
             item.setProperty("inputstream", "")
             self._player.play(self._stream_data.stream_url, item)
 
-    def _handle_resume(self):
+    def _handle_update_playhead(self):
         """ Handles resuming and updating playhead info back to crunchyroll """
+
+        # if disabled in settings, no need to start thread
+        if self._args.addon.getSetting("sync_playtime") != "true":
+            return
 
         # wait for video to begin
         if not wait_for_playback(30):
@@ -194,6 +198,7 @@ class VideoPlayer(Object):
                     last_updated_playtime = self._player.getTime()
                     # api request
                     update_playhead(
+                        self._args,
                         self._api,
                         self._args.get_arg('episode_id'),
                         int(self._player.getTime())
@@ -268,13 +273,20 @@ class VideoPlayer(Object):
                 'seek_time': self._stream_data.skip_events_data.get(section).get('end'),
                 'label': self._args.addon.getLocalizedString(30015),
                 'addon_path': self._args.addon.getAddonInfo("path"),
+                'args': self._args,
                 'api': self._api,
                 'content_id': self._args.get_arg('episode_id'),
             }
         ).start()
 
 
-def update_playhead(api: API, content_id: str, playhead: int):
+def update_playhead(args: Args, api: API, content_id: str, playhead: int):
+    """ Update playtime to Crunchyroll """
+
+    # if sync_playtime is disabled in settings, do nothing
+    if args.addon.getSetting("sync_playtime") != "true":
+        return
+
     try:
         api.make_request(
             method="POST",
@@ -296,6 +308,7 @@ def update_playhead(api: API, content_id: str, playhead: int):
             )
         )
         pass
+
 
 def wait_for_playback(timeout: int = 30):
     """ function that waits for playback """
