@@ -115,6 +115,16 @@ msgid "Russian"
 msgstr "Russisch"
 
 
+
+msgctxt "#30038"
+msgid "Filter available dubs"
+msgstr "Verfügbare Dubs filtern"
+
+msgctxt "#30039"
+msgid "In an anime seasons view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "Zeige in der Season-Übersicht eines Anime nur Dubs in Japanisch, deiner CR Sprache oder in einer der von Dir konfigurierten Untertitel-Sprachen"
+
+
 # Crunchyroll Menue
 
 msgctxt "#30040"

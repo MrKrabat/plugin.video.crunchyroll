@@ -82,6 +82,7 @@
                     </control>
                 </setting>
             </group>
+
             <group id="3" label="30230">
                 <setting id="inputstream_adaptive" type="action" label="30004" help="">
                     <level>0</level>
@@ -89,6 +90,12 @@
                     <control type="button" format="action">
                         <close>true</close>
                     </control>
+                </setting>
+
+                <setting id="filter_dubs_by_language" type="boolean" label="30038" help="30039">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
                 </setting>
             </group>
         </category>

@@ -113,6 +113,16 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russo"
 
+msgctxt "#30038"
+msgid "Filter available dubs"
+msgstr "Filtrar os idiomas de áudio disponíveis"
+
+msgctxt "#30039"
+msgid "In an anime seasons view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "Em uma exibição de temporadas de anime, exiba apenas os idiomas de áudio em japonês, o idioma Crunchyroll ou qualquer um dos idiomas de legenda configurados."
+
+
+
 # Crunchyroll Menue
 msgctxt "#30040"
 msgid "Queue"
