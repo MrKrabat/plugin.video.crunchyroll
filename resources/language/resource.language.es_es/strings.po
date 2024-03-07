@@ -113,6 +113,10 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Ruso"
 
+msgctxt "#30032"
+msgid "Hindi"
+msgstr ""
+
 
 msgctxt "#30038"
 msgid "Filter available dubs"
