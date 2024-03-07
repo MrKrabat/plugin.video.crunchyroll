@@ -100,20 +100,23 @@ class VideoStream(Object):
         t_stream_data = asyncio.create_task(self._get_stream_data_from_api())
         t_skip_events_data = asyncio.create_task(self._get_skip_events(self.args.get_arg('episode_id')))
         t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))
-        t_item_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, [self.args.get_arg('episode_id')]))
-        #t_item_parent_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, self.args.get_arg('series_id')))
+        t_item_data = asyncio.create_task(
+            get_cms_object_data_by_ids(self.args, self.api, [self.args.get_arg('episode_id')]))
+        # t_item_parent_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, self.args.get_arg('series_id')))
 
         # start async requests and fetch results
         results = await asyncio.gather(t_stream_data, t_skip_events_data, t_playheads, t_item_data)
 
-        playable_item = get_listables_from_response(self.args, [results[3].get(self.args.get_arg('episode_id'))]) if results[3] else None
+        playable_item = get_listables_from_response(self.args, [results[3].get(self.args.get_arg('episode_id'))]) if \
+        results[3] else None
 
         return {
             'stream_data': results[0] or {},
             'skip_events_data': results[1] or {},
             'playheads_data': results[2] or {},
             'playable_item': playable_item[0] if playable_item else None,
-            'playable_item_parent': None # get_listables_from_response(self.args, [results[4]])[0] if results[4] else None
+            'playable_item_parent': None
+            # get_listables_from_response(self.args, [results[4]])[0] if results[4] else None
         }
 
     async def _get_stream_data_from_api(self) -> Union[Dict, bool]:
