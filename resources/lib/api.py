@@ -70,7 +70,7 @@ class API:
     CRUNCHYLISTS_LISTS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists"
     CRUNCHYLISTS_VIEW_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists/{}"
 
-    AUTHORIZATION = "Basic bC1wbGZ0bmtneWFycGZxaGpoOC06TVFZX3pDeGlOUFk1RUVPX0xQRk9VNFFaZ1ktWVVZRXM="
+    AUTHORIZATION = "Basic bHF0ai11YmY1aHF4dGdvc2ZsYXQ6N2JIY3hfYnI0czJubWE1bVdrdHdKZEY0ZTU2UU5neFQ="
 
     def __init__(
             self,
@@ -297,7 +297,7 @@ class API:
 
 def default_request_headers() -> Dict:
     return {
-        "User-Agent": "Crunchyroll/3.47.0 Android/14 okhttp/4.12.0",
+        "User-Agent": "Crunchyroll/3.50.2 Android/14 okhttp/4.12.0",
         "Content-Type": "application/x-www-form-urlencoded"
     }
 
