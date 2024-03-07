@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import asyncio
+import sys
 
 from resources.lib.api import API
 from resources.lib.model import ListableItem, EpisodeData, Args, SeasonData, SeriesData, PlayableItem
@@ -31,6 +32,12 @@ import xbmcplugin
 
 from typing import Callable, Optional, List, Dict, Any
 from . import router
+
+# Fix for bug in old python version on windows
+# @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/44
+# @see: https://stackoverflow.com/questions/63860576/asyncio-event-loop-is-closed-when-using-asyncio-run
+if sys.platform == "win32" and sys.version_info >= (3, 8, 0):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",
