@@ -17,8 +17,8 @@
 import threading
 import time
 from typing import Optional
+from urllib.parse import urlencode
 
-import inputstreamhelper  # noqa
 import requests
 import xbmc
 import xbmcgui
@@ -118,14 +118,39 @@ class VideoPlayer(Object):
 
         item = self._stream_data.playable_item.to_item(self._args)
         item.setPath(self._stream_data.stream_url)
-        item.setMimeType("application/vnd.apple.mpegurl")
+        item.setMimeType('application/dash+xml')
         item.setContentLookup(False)
 
         # inputstream adaptive
-        is_helper = inputstreamhelper.Helper("hls")
+        from inputstreamhelper import Helper  # noqa
+
+        is_helper = Helper("mpd", drm='com.widevine.alpha')
         if is_helper.check_inputstream():
+            manifest_headers = {
+                'User-Agent': API.CRUNCHYROLL_UA,
+                'Authorization': f"Bearer {self._api.account_data.access_token}"
+            }
+            license_headers = {
+                'User-Agent': API.CRUNCHYROLL_UA,
+                'Content-Type': 'application/octet-stream',
+                'Origin': 'https://static.crunchyroll.com',
+                'Authorization': f"Bearer {self._api.account_data.access_token}",
+                'x-cr-content-id': self._args.get_arg('episode_id'),
+                'x-cr-video-token': self._stream_data.token
+            }
+            license_config = {
+                'license_server_url': API.LICENSE_ENDPOINT,
+                'headers': urlencode(license_headers),
+                'post_data': 'R{SSM}',
+                'response_data': 'JBlicense'
+            }
+
             item.setProperty("inputstream", "inputstream.adaptive")
-            item.setProperty("inputstream.adaptive.manifest_type", "hls")
+            item.setProperty("inputstream.adaptive.manifest_type", "mpd")
+            item.setProperty("inputstream.adaptive.license_type", "com.widevine.alpha")
+            item.setProperty('inputstream.adaptive.stream_headers', urlencode(manifest_headers))
+            item.setProperty("inputstream.adaptive.manifest_headers", urlencode(manifest_headers))
+            item.setProperty('inputstream.adaptive.license_key', '|'.join(list(license_config.values())))
 
             # @todo: i think other meta data like description and images are still fetched from args.
             #        we should call the objects endpoint and use this data to remove args dependency (besides id)
