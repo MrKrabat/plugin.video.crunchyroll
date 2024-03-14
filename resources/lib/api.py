@@ -41,11 +41,14 @@ class API:
     # DEVICE = "com.crunchyroll.windows.desktop"
     # TIMEOUT = 30
 
+    CRUNCHYROLL_UA = "Crunchyroll/3.51.1 Android/14 okhttp/4.12.0"
+
     INDEX_ENDPOINT = "https://beta-api.crunchyroll.com/index/v2"
     PROFILE_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/profile"
     TOKEN_ENDPOINT = "https://beta-api.crunchyroll.com/auth/v1/token"
     SEARCH_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/search"
     STREAMS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/videos/{}/streams"
+    STREAMS_ENDPOINT_DRM = "https://cr-play-service.prd.crunchyrollsvc.com/v1/{}/android/phone/play"
     # SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
     SEASONS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/seasons"
     EPISODES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/episodes"
@@ -70,7 +73,8 @@ class API:
     CRUNCHYLISTS_LISTS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists"
     CRUNCHYLISTS_VIEW_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists/{}"
 
-    AUTHORIZATION = "Basic bHF0ai11YmY1aHF4dGdvc2ZsYXQ6N2JIY3hfYnI0czJubWE1bVdrdHdKZEY0ZTU2UU5neFQ="
+    AUTHORIZATION = "Basic OTQzcTkxX3NtMXVhbnZiX3ppbjQ6bDZ5cXJTQ1NPNzZNeXFVZ295c19SQVFKcWsyemU3YnE="
+    LICENSE_ENDPOINT = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 
     def __init__(
             self,
@@ -196,7 +200,7 @@ class API:
             params=None,
             data=None,
             json_data=None,
-            is_retry=False
+            is_retry=False,
     ) -> Optional[Dict]:
         if params is None:
             params = dict()
@@ -297,7 +301,7 @@ class API:
 
 def default_request_headers() -> Dict:
     return {
-        "User-Agent": "Crunchyroll/3.50.2 Android/14 okhttp/4.12.0",
+        "User-Agent": API.CRUNCHYROLL_UA,
         "Content-Type": "application/x-www-form-urlencoded"
     }
 

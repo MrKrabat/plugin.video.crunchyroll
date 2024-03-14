@@ -19,7 +19,6 @@
 import random
 import re
 
-import inputstreamhelper  # noqa
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -39,7 +38,8 @@ def main(argv):
 
     # inputstream adaptive settings
     if args.get_arg('mode') == "hls":
-        is_helper = inputstreamhelper.Helper("hls")
+        from inputstreamhelper import Helper  # noqa
+        is_helper = Helper("hls")
         if is_helper.check_inputstream():
             xbmcaddon.Addon(id="inputstream.adaptive").openSettings()
         return True

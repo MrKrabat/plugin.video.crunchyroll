@@ -44,6 +44,7 @@ class VideoPlayerStreamData(Object):
         self.playable_item: PlayableItem | None = None
         # PlayableItem which contains cms obj data of playable_item's parent, if exists (Episodes, not Movies). currently not used.
         self.playable_item_parent: PlayableItem | None = None
+        self.token: str | None = None
 
 
 class VideoStream(Object):
@@ -82,8 +83,10 @@ class VideoStream(Object):
         if not api_stream_data:
             raise CrunchyrollError("Failed to fetch stream data from api")
 
-        video_player_stream_data.stream_url = self._get_stream_url_from_api_data(async_data.get('stream_data'))
+        video_player_stream_data.stream_url = self._get_stream_url_from_api_data_v2(async_data.get('stream_data'))
         video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(async_data.get('stream_data'))
+        video_player_stream_data.token = async_data.get('stream_data').get('token')
+
         video_player_stream_data.skip_events_data = async_data.get('skip_events_data')
         video_player_stream_data.playheads_data = async_data.get('playheads_data')
         video_player_stream_data.playable_item = async_data.get('playable_item')
@@ -97,7 +100,7 @@ class VideoStream(Object):
         # create threads
         # actually not sure if this works, as the requests lib is not async
         # also not sure if this is thread safe in any way, what if session is timed-out when starting this?
-        t_stream_data = asyncio.create_task(self._get_stream_data_from_api())
+        t_stream_data = asyncio.create_task(self._get_stream_data_from_api_v2())
         t_skip_events_data = asyncio.create_task(self._get_skip_events(self.args.get_arg('episode_id')))
         t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))
         t_item_data = asyncio.create_task(
@@ -108,7 +111,7 @@ class VideoStream(Object):
         results = await asyncio.gather(t_stream_data, t_skip_events_data, t_playheads, t_item_data)
 
         playable_item = get_listables_from_response(self.args, [results[3].get(self.args.get_arg('episode_id'))]) if \
-        results[3] else None
+            results[3] else None
 
         return {
             'stream_data': results[0] or {},
@@ -140,12 +143,34 @@ class VideoStream(Object):
 
         return req
 
+    async def _get_stream_data_from_api_v2(self) -> Union[Dict, bool]:
+        """ get json stream data from cr api for given args.stream_id using new endpoint b/c drm """
+
+        # from utils import crunchy_log
+        crunchy_log(None, "URL: %s" % self.api.STREAMS_ENDPOINT_DRM.format(self.args.get_arg('episode_id')))
+
+        req = self.api.make_request(
+            method="GET",
+            url=self.api.STREAMS_ENDPOINT_DRM.format(self.args.get_arg('episode_id')),
+        )
+
+        # check for error
+        if "error" in req or req is None:
+            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
+            xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
+            return False
+
+        return req
+
+    # @deprecated
     def _get_stream_url_from_api_data(self, api_data: Dict) -> Union[str, None]:
         """ retrieve appropriate stream url from api data """
 
         try:
             if self.args.addon.getSetting("soft_subtitles") == "false":
                 url = api_data["streams"]["adaptive_hls"]
+
                 if self.args.subtitle in url:
                     url = url[self.args.subtitle]["url"]
                 elif self.args.subtitle_fallback in url:
@@ -163,6 +188,30 @@ class VideoStream(Object):
                     url = api_data["streams"]["multitrack_adaptive_hls_v2"][self.args.subtitle_fallback]["url"]
                 else:
                     raise CrunchyrollError("No stream URL found")
+
+        except IndexError:
+            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
+            xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
+            return None
+
+        return url
+
+    def _get_stream_url_from_api_data_v2(self, api_data: Dict) -> Union[str, None]:
+        """ uses new endpoint to retrieve encryption data along with stream url """
+
+        try:
+            if self.args.addon.getSetting("soft_subtitles") == "false":
+                url = api_data["hardSubs"]
+
+                if self.args.subtitle in url:
+                    url = url[self.args.subtitle]["url"]
+                elif self.args.subtitle_fallback in url:
+                    url = url[self.args.subtitle_fallback]["url"]
+                else:
+                    url = api_data["url"]
+            else:
+                url = api_data["url"]
 
         except IndexError:
             item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
