@@ -16,11 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import sys
-
-import inputstreamhelper
 import math
+import sys
 import time
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
+
+import inputstreamhelper  # noqa
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -746,14 +750,40 @@ def start_playback(args, api):
 
     # prepare playback
     item = xbmcgui.ListItem(getattr(args, "title", "Title not provided"), path=stream_info.stream_url)
-    item.setMimeType("application/vnd.apple.mpegurl")
+    item.setMimeType('application/dash+xml')
     item.setContentLookup(False)
 
     # inputstream adaptive
-    is_helper = inputstreamhelper.Helper("hls")
+    from inputstreamhelper import Helper  # noqa
+
+    is_helper = Helper("mpd", 'com.widevine.alpha')
     if is_helper.check_inputstream():
+        manifest_headers = {
+            'User-Agent': API.CRUNCHYROLL_UA,
+            'Authorization': f"Bearer {api.account_data.access_token}"
+        }
+        license_headers = {
+            'User-Agent': API.CRUNCHYROLL_UA,
+            'Content-Type': 'application/octet-stream',
+            'Origin': 'https://static.crunchyroll.com',
+            'Authorization': f"Bearer {api.account_data.access_token}",
+            'x-cr-content-id': args.get_arg('episode_id'),
+            'x-cr-video-token': stream_info.token
+        }
+        license_config = {
+            'license_server_url': API.LICENSE_ENDPOINT,
+            'headers': urlencode(license_headers),
+            'post_data': 'R{SSM}',
+            'response_data': 'JBlicense'
+        }
+
         item.setProperty("inputstream", "inputstream.adaptive")
-        item.setProperty("inputstream.adaptive.manifest_type", "hls")
+        item.setProperty("inputstream.adaptive.manifest_type", "mpd")
+        item.setProperty("inputstream.adaptive.license_type", "com.widevine.alpha")
+        item.setProperty('inputstream.adaptive.stream_headers', urlencode(manifest_headers))
+        item.setProperty("inputstream.adaptive.manifest_headers", urlencode(manifest_headers))
+        item.setProperty('inputstream.adaptive.license_key', '|'.join(list(license_config.values())))
+
         # add soft subtitles url for configured language
         if stream_info.subtitle_urls:
             item.setSubtitles(stream_info.subtitle_urls)
