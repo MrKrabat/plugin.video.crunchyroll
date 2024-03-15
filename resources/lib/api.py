@@ -123,12 +123,18 @@ class API:
                 "password": password,
                 "grant_type": "password",
                 "scope": "offline_access",
+                "device_id": self.args.device_id,
+                "device_name": 'Kodi',
+                "device_type": 'MediaCenter'
             }
         elif refresh:
             data = {
                 "refresh_token": self.account_data.refresh_token,
                 "grant_type": "refresh_token",
                 "scope": "offline_access",
+                "device_id": self.args.device_id,
+                "device_name": 'Kodi',
+                "device_type": 'MediaCenter'
             }
 
         r = self.http.request(

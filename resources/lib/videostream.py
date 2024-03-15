@@ -244,7 +244,7 @@ class VideoStream(Object):
         for subtitle_data in subtitles_data_raw:
             cache_result = self._get_subtitle_from_cache(
                 subtitle_data.get('url', ""),
-                subtitle_data.get('locale', ""),
+                subtitle_data.get('language', ""),
                 subtitle_data.get('format', "")
             )
 
