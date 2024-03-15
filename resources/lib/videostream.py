@@ -102,7 +102,7 @@ class VideoStream(Object):
 
         req = self.api.make_request(
             method="GET",
-            url=self.api.STREAMS_ENDPOINT_DRM.format(self.args.get_arg('episode_id')),
+            url=self.api.STREAMS_ENDPOINT_DRM.format(self.args.episode_id),
         )
 
         # check for error
