@@ -760,13 +760,13 @@ def start_playback(args, api):
     if is_helper.check_inputstream():
         manifest_headers = {
             'User-Agent': API.CRUNCHYROLL_UA,
-            'Authorization': f"Bearer {api.account_data.access_token}"
+            'Authorization': "Bearer {}".format(api.account_data.access_token)
         }
         license_headers = {
             'User-Agent': API.CRUNCHYROLL_UA,
             'Content-Type': 'application/octet-stream',
             'Origin': 'https://static.crunchyroll.com',
-            'Authorization': f"Bearer {api.account_data.access_token}",
+            'Authorization': "Bearer {}".format(api.account_data.access_token),
             'x-cr-content-id': args.get_arg('episode_id'),
             'x-cr-video-token': stream_info.token
         }
