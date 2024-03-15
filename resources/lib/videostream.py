@@ -66,7 +66,7 @@ class VideoStream(Object):
 
         video_player_stream_data = VideoPlayerStreamData()
 
-        api_stream_data = self._get_stream_data_from_api()
+        api_stream_data = self._get_stream_data_from_api_v2()
         if api_stream_data is False:
             raise CrunchyrollError("Failed to fetch stream data from api")
 
@@ -75,6 +75,7 @@ class VideoStream(Object):
 
         return video_player_stream_data
 
+    # @deprecated
     def _get_stream_data_from_api(self):
         """ get json stream data from cr api for given args.stream_id """
 
