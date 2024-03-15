@@ -767,7 +767,7 @@ def start_playback(args, api):
             'Content-Type': 'application/octet-stream',
             'Origin': 'https://static.crunchyroll.com',
             'Authorization': "Bearer {}".format(api.account_data.access_token),
-            'x-cr-content-id': args.get_arg('episode_id'),
+            'x-cr-content-id': args.episode_id,
             'x-cr-video-token': stream_info.token
         }
         license_config = {

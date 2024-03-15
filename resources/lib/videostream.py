@@ -107,7 +107,7 @@ class VideoStream(Object):
 
         # check for error
         if "error" in req or req is None:
-            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
+            item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
             xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
             xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
             return False
@@ -155,7 +155,7 @@ class VideoStream(Object):
                 url = api_data["url"]
 
         except IndexError:
-            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
+            item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
             xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
             xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
             return None
