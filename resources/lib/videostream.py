@@ -72,6 +72,7 @@ class VideoStream(Object):
 
         video_player_stream_data.stream_url = self._get_stream_url_from_api_data_v2(api_stream_data)
         video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(api_stream_data)
+        video_player_stream_data.token = api_stream_data["token"]
 
         return video_player_stream_data
 
