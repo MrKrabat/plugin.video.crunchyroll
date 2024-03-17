@@ -19,6 +19,8 @@ import json
 import math
 import sys
 import time
+from collections import OrderedDict
+
 try:
     from urllib.parse import urlencode
 except ImportError:
@@ -758,26 +760,28 @@ def start_playback(args, api):
 
     is_helper = Helper("mpd", 'com.widevine.alpha')
     if is_helper.check_inputstream():
-        manifest_headers = {
-            'User-Agent': API.CRUNCHYROLL_UA,
-            'Authorization': "Bearer {}".format(api.account_data.access_token)
-        }
-        license_headers = {
-            'User-Agent': API.CRUNCHYROLL_UA,
-            'Content-Type': 'application/octet-stream',
-            'Origin': 'https://static.crunchyroll.com',
-            'Authorization': "Bearer {}".format(api.account_data.access_token),
-            'x-cr-content-id': args.episode_id,
-            'x-cr-video-token': stream_info.token
-        }
-        license_config = {
-            'license_server_url': API.LICENSE_ENDPOINT,
-            'headers': urlencode(license_headers),
-            'post_data': 'R{SSM}',
-            'response_data': 'JBlicense'
-        }
+        manifest_headers = OrderedDict([
+            ('User-Agent', API.CRUNCHYROLL_UA),
+            ('Authorization', "Bearer {}".format(api.account_data.access_token))
+        ])
 
-        item.setProperty("inputstream", "inputstream.adaptive")
+        license_headers = OrderedDict([
+            ('User-Agent', API.CRUNCHYROLL_UA),
+            ('Content-Type', 'application/octet-stream'),
+            ('Origin', 'https://static.crunchyroll.com'),
+            ('Authorization', "Bearer {}".format(api.account_data.access_token)),
+            ('x-cr-content-id', args.episode_id),
+            ('x-cr-video-token', stream_info.token)
+        ])
+
+        license_config = OrderedDict([
+            ('license_server_url', API.LICENSE_ENDPOINT),
+            ('headers', urlencode(license_headers)),
+            ('post_data', 'R{SSM}'),
+            ('response_data', 'JBlicense')
+        ])
+
+        item.setProperty("inputstreamaddon", "inputstream.adaptive")
         item.setProperty("inputstream.adaptive.manifest_type", "mpd")
         item.setProperty("inputstream.adaptive.license_type", "com.widevine.alpha")
         item.setProperty('inputstream.adaptive.stream_headers', urlencode(manifest_headers))
@@ -802,7 +806,7 @@ def start_playback(args, api):
     if not wait_for_playback(2):
         # start without inputstream adaptive
         utils.crunchy_log(args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGDEBUG)
-        item.setProperty("inputstream", "")
+        item.setProperty("inputstreamaddon", "")
         xbmc.Player().play(stream_info.stream_url, item)
 
     # sync playtime with crunchyroll

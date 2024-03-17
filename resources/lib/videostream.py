@@ -107,7 +107,7 @@ class VideoStream(Object):
         )
 
         # check for error
-        if "error" in req or req is None:
+        if req is None or "error" in req:
             item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
             xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
             xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
