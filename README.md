@@ -12,12 +12,12 @@ Forum posting: xxx
 What this plugin currently can do:
 - [x] Supports all Crunchyroll regions
 - [x] Login with your account
-- [x] Search for animes
-- [x] Browse all featured anime/drama
+- [x] Search for anime
+- [ ] Browse all featured anime/drama
 - [x] Browse all popular anime/drama
-- [x] Browse all simulcasts
+- [ ] Browse all simulcasts
 - [x] Browse all updated anime/drama
-- [x] Browse all new anime/drama
+- [ ] Browse all new anime/drama
 - [x] Browse all anime/drama alphabetically
 - [x] Browse all genres
 - [x] Browse all seasons
@@ -25,10 +25,11 @@ What this plugin currently can do:
 - [x] View history
 - [ ] View random anime/drama
 - [x] View all seasons/arcs of an anime/drama
-- [x] View all episodes of an season/arc
-- [x] Context menue "Goto series" and "Goto season"
-- [ ] Add or remove anime/drama from your queue/playlist
-- [x] Display various informations
+- [x] View all episodes of and season/arc
+- [x] Context menu "Goto series" and "Goto season"
+- [x] Add anime/drama to your queue/playlist
+- [ ] Remove anime/drama from your queue/playlist
+- [x] Display various information
 - [x] Watch videos with premium subscription
 - [x] Synchronizes playback stats with Crunchyroll
 ***
