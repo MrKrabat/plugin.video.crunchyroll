@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.crunchyreroll" name="Crunchyroll" version="1.0.0" provider-name="Xtero">
+<addon id="plugin.video.crunchyreroll" name="Crunchyroll" version="1.0.1" provider-name="Xtero">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
         <import addon="script.module.inputstreamhelper" version="0.3.3"/>
@@ -23,10 +23,13 @@
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <disclaimer lang="fr_FR">ATTENTION: Vous DEVEZ être un utilisateur PREMIUM pour pouvoir utiliser ce plugin</disclaimer>
         <news>
-            v1.0.0 (2024.02.29)
-            Renaming the plugin
-            Forwarding to settings at first run
-            When we try to play the first stream, now a modal propose to install Widevine
+            v1.0.1(2024.03.19)
+            better management of audio preference (Fix issue #3)
+            code cleanup
+            popup for skipping event instead of just skipping
+            thread is use at monitor level to manage an episode
+            Fix skipping event always enabled (Fix issue #4)
+            If playtime sync is enabled, when we stop playing video, the playtime is synced
         </news>
         <license>GNU Affero General Public License, v3</license>
         <forum></forum>

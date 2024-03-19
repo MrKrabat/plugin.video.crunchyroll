@@ -266,7 +266,7 @@ def play_episode(plugin, episode_id):
         'Content-Type': 'application/octet-stream',
         'Origin': 'https://static.crunchyroll.com',
         'Authorization': infos['auth'],
-        'x-cr-content-id': episode_id,
+        'x-cr-content-id': infos['stream_id'],
         'x-cr-video-token': infos['token']
     }
     license_config = {

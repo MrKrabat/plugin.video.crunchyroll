@@ -25,7 +25,8 @@ class Episode:
         self.item = item
         self.playhead = playhead
         self.id = item["id"]
-        self.label = item["episode_metadata"]["series_title"] + " #" + str(item["episode_metadata"]["episode_number"]) + " - " + item["title"]
+        self.number = item["episode_metadata"]["episode"] if item["episode_metadata"]["episode"] else "0"
+        self.label = item["episode_metadata"]["series_title"] + " #" + self.number + " - " + item["title"]
         self.thumbnail = item["images"]["thumbnail"][0][0]["source"]
         self.landscape = item["images"]["thumbnail"][0][-1]["source"]
         self.duration = item["episode_metadata"]["duration_ms"] / 1000
@@ -44,7 +45,7 @@ class Episode:
             "info": {
                 "duration": self.duration,
                 "plot": self.description,
-                "episode": self.item["episode_metadata"]["episode_number"] if self.item["episode_metadata"]["episode_number"] else 1,
+                "episode": self.number,
                 "tvshowtitle": self.item["episode_metadata"]["series_title"],
                 "season": self.item["episode_metadata"]["season_number"],
                 "originaltitle": self.id

@@ -260,3 +260,6 @@ msgctxt "#30085"
 msgid "Original"
 msgstr "Original"
 
+msgctxt "#30086"
+msgid "Do you want to skip this moment"
+msgstr "Você quer pular esse momento"

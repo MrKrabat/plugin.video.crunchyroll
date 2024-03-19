@@ -6,27 +6,22 @@ CrunchyREroll is a KODI (XBMC) plugin for Crunchyroll.com.
 **This plugin does not intend to let you do illegal stuff**
 ***
 
-**Before playing videos, don't forget to install Widevine CDM**
-**InputStream Helper will do the job for you. Go in your Addon->My Addon->Addon Script->InpustStream Helper**
+**This plugin support DRM streams**
+**Even if you didn't installed Widevice CDM, the plugin will propose you to install it before playing an episode**
 
+***
 _This page and addon are not affiliated with Crunchyroll._
 
 _Kodi® (formerly known as XBMC™) is a registered trademark of the XBMC Foundation.
 This page and addon are not affiliated with Kodi, Team Kodi, or the XBMC Foundation._
-
+***
 
 # Contributors
 
-Maintainer: Xtero
+Maintainer: Xtero  
+
 Contributors:
-- MrKrabat
 - Smirgo
-- TheFantasticLoki
-- robofunk
-- APachecoDiSanti
-- jasonfrancis
-- vlfr1997
-- Nux007
 
 Git repo: https://github.com/xtero/CrunchyREroll
 
@@ -46,7 +41,6 @@ What this plugin currently can do:
 - [x] View history
 - [x] View all seasons/arcs of an anime
 - [x] View all episodes of an season/arc
-- [ ] Add or remove anime from your queue/playlist
 - [x] Display various informations
 - [x] Watch videos with premium subscription
 - [x] Synchronizes playback stats with Crunchyroll

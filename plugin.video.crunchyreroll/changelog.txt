@@ -1,3 +1,11 @@
+v1.0.1(2024.03.19)
+- better management of audio preference (Fix issue #3)
+- code cleanup
+- popup for skipping event instead of just skipping
+- thread is use at monitor level to manage an episode
+- Fix skipping event always enabled (Fix issue #4)
+- If playtime sync is enabled, when we stop playing video, the playtime is synced
+
 v1.0.0(2024.02.29)
 - Renaming the plugin
 - Forwarding to settings at first run

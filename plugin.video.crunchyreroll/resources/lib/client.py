@@ -187,14 +187,16 @@ class CrunchyrollClient:
     def get_stream_infos(self, episode_id):
         self._log(f"Get streams for episode id {episode_id}")
         episode = self.get_objects([episode_id])["data"][0]
-        url = f"{utils.CRUNCHYROLL_PLAY_URL}/v1/{episode_id}/android/phone/play"
+        stream_id = utils.lookup_stream_id(episode, self.prefered_audio)
+        url = f"{utils.CRUNCHYROLL_PLAY_URL}/v1/{stream_id}/android/phone/play"
         data = self._get(url).json()
         infos = {
             "url": data['url'],
             "subtitles": data["subtitles"],
             "name": episode["episode_metadata"]["series_title"] + " #" + str(episode["episode_metadata"]["episode_number"]) + " - " + episode["title"],
             "auth": f"Bearer {self.auth.data['access_token']}",
-            "token": data['token']
+            "token": data['token'],
+            "stream_id": stream_id
         }
         return infos
 

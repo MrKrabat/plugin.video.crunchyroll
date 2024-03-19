@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import re
 import os
 from datetime import datetime
 import xbmc
@@ -47,7 +46,11 @@ def local_from_id(locale_id):
         "it-IT",
         "ru-RU",
         "ta-IN",
-        "hi-IN"
+        "hi-IN",
+        "id-ID"
+        "ms-MY",
+        "th-TH",
+        "vi-VN"
     ]
 
     if locale_id < len(locales):
@@ -71,50 +74,26 @@ def lookup_episode(episodes, episode_id):
     return None
 
 
-def lookup_playlist_url(stream_list, locale):
-    # pylint: disable=R1705
-    if locale in stream_list:
-        return stream_list[locale]["url"]
-    elif 'en-US' in stream_list:
-        return stream_list["en-US"]["url"]
-    else:
-        return stream_list[""]["url"]
-
-
-def lookup_stream_url(playlist, resolution):
-    for item in playlist:
-        if item.stream_info.resolution[1] == resolution:
-            return item.uri
-    return playlist[0].uri
-
-
 def lookup_stream_id(episode, prefered_audio_id):
     stream_id = None
     if "versions" in episode['episode_metadata'] and episode['episode_metadata']['versions']:
         if prefered_audio_id == 0:
             for version in episode['episode_metadata']['versions']:
                 if version['original']:
-                    stream_id = version['media_guid']
+                    stream_id = version['guid']
         else:
             prefered_audio = local_from_id(prefered_audio_id - 1)
             # If we find prefered_audio, it's return
             for version in episode['episode_metadata']['versions']:
                 if version['audio_locale'] == prefered_audio:
-                    stream_id = version['media_guid']
+                    stream_id = version['guid']
             # Else, we provide original version
             for version in episode['episode_metadata']['versions']:
                 if version['original']:
-                    stream_id = version['media_guid']
+                    stream_id = version['guid']
     else:
-        stream_id = re.search(r"/content/v2/cms/videos/(\w+)/streams", episode['streams_link']).group(1)
+        stream_id = episode['id']
     return stream_id
-
-
-def lookup_subtitle(subtitles, prefered_subtitle):
-    for sub in list(subtitles.values()):
-        if sub['language'] == prefered_subtitle:
-            return sub['url']
-    return None
 
 
 def download_subtitle(url, output):
@@ -162,3 +141,29 @@ def init_crunchyroll_client():
         "resolution": int(addon.getSetting("resolution"))
     }
     return CrunchyrollClient(email, password, settings)
+
+
+def sub_locale_from_id(locale_id):
+    locales = [
+        "eng",
+        "eng",
+        "spa",
+        "spa",
+        "por",
+        "por",
+        "fre",
+        "ger",
+        "ara",
+        "ita",
+        "rus",
+        "tam",
+        "hin",
+        "ind",
+        "may",
+        "tha",
+        "vie"
+    ]
+    if locale_id < len(locales):
+        return locales[locale_id]
+
+    return "eng"

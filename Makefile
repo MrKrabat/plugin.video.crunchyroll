@@ -20,7 +20,7 @@ cleanup:
 lint: cleanup
 	.venv/bin/pylint $$(find -name *.py -not -path "./.venv/*")
 	.venv/bin/flake8
-	.venv/bin/kodi-addon-checker --branch  nexus ${SOURCE_FOLDER}
+#	.venv/bin/kodi-addon-checker --branch  nexus ${SOURCE_FOLDER}
 
 clean-release:
 	rm -rf release

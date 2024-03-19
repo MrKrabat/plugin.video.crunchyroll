@@ -259,3 +259,6 @@ msgctxt "#30085"
 msgid "Original"
 msgstr "VO"
 
+msgctxt "#30086"
+msgid "Do you want to skip this moment"
+msgstr "Voulez vous passer ce moment"
