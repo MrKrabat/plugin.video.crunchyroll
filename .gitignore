@@ -1,3 +1,11 @@
 Thumbs.db
 *.pyo
 __pycache__
+.idea
+*.mo
+*.swp
+.venv
+release
+archive
+decompiled_crunchyroll
+apk

@@ -1,0 +1,98 @@
+v1.0.1(2024.03.19)
+- better management of audio preference (Fix issue #3)
+- code cleanup
+- popup for skipping event instead of just skipping
+- thread is use at monitor level to manage an episode
+- Fix skipping event always enabled (Fix issue #4)
+- If playtime sync is enabled, when we stop playing video, the playtime is synced
+
+v1.0.0(2024.02.29)
+- Renaming the plugin
+- Forwarding to settings at first run
+- When we try to play the first stream, now a modal propose to install Widevine
+
+v4.2.1 (2024.02.20)
+- Fix issue with monitor (might crash when it try to getTime although file is not playing anymore)
+- Using variable for license url
+- Add Tamil and Hindi language
+- Fix encoding issue at download for soft subtitles
+
+v4.2.0 (2024.02.11)
+- Move to new endpoint for stream (with DRM management)
+- Fix issue with episode without versions
+- Add soft subtitles
+
+v4.1.4 (2024.02.07)
+- Fix issue with Watchlist menu (wasn't loading)
+- Adding tests on others routes
+- Support skipping intro, endings, credits and recap
+- reorganizing settings
+
+v4.1.3 (2024.01.22)
+- Adding tests on routes (not all)
+- using api v2 for watchlist
+- Fix if a search gives empty result
+
+v4.1.2 (2024.01.16)
+- Fix typos
+- Use crunchyroll android 4.37.0 for UserAgent and Basic Auth
+
+v4.1.1 (2024.01.10)
+- Fix typo
+
+v4.1.0 (2024.01.10)
+- renew Basic Auth credentials and User Agent (from the app in version 3.46.2)
+
+v4.0.3 (2024.01.08)
+- Add tests
+- Handle API exception on monitor side to avoid crash
+
+v4.0.3 (2024.01.04)
+Features:
+- Adding the possiblity to browse Crunchylists
+- Adding the possiblity to browse history
+Settings:
+- Adding a setting for pagination size
+- Adding a setting for prefered stream resolution
+Others:
+- Almost complete migration to v2 api (only a little remaining on stream selection)
+- Fix value es-LA to es-419
+Dependencies:
+- add script.module.m3u8
+
+v4.0.2 (2024.01.03)
+Re-add Categories and Simulcast browsing
+Migrating to v2 api in progress
+Synchronisation of playhead using a service
+
+v4.0.1 (2023.12.29)
+-Fix the way a stream is selected
+Now, in first case, it tries to use prefered lang for subtitles
+Otherwise, it will try to fallback on english
+In ultimate case, it will use no subtitle at all
+-Add alphabetical search for anime
+
+v4.0.0 (2023.12.28)
+- New implementation with Beta-Api
+- A lot of regression in term of features
+Dependencies:
+- add script.module.requests and script.module.codequick
+
+v3.3.0 (2023.03.08)
+- Update for Kodi 20 Nexus
+
+v3.2.0 (2020.09.01)
+- Update for Kodi 19 Matrix
+
+v3.1.1 (2018.09.29)
+- Remove video quality selection
+
+v3.1.0 (2018.06.16)
+- Added context menu
+- Improvements
+- Fix playback
+- Small fixes
+- Compatibility with latest Kodi 18
+
+v3.0.0 (2018.02.xx)
+- Addon rewriten from scratch

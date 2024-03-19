@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# Copyright (C) 2024 Xtero
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,17 +17,15 @@
 
 import sys
 import xbmc
-import xbmcaddon
+# pylint: disable=E0401
+from resources.lib import main
 
-
-# plugin constants
-_addon   = xbmcaddon.Addon(id=sys.argv[0][9:-1])
-_plugin  = _addon.getAddonInfo("name")
-_version = _addon.getAddonInfo("version")
-
-xbmc.log("[PLUGIN] %s: version %s initialized" % (_plugin, _version))
+if "process_errors" not in locals():
+    # pylint: disable=C0103
+    process_errors = True
 
 if __name__ == "__main__":
-    from resources.lib import crunchyroll
+    url = sys.argv[0]
+    xbmc.log(f"[Crunchyroll] {url}", xbmc.LOGDEBUG)
     # start addon
-    crunchyroll.main(sys.argv)
+    main.run(process_errors=process_errors)
