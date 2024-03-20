@@ -1,3 +1,5 @@
+v1.0.2(2024.XX.XX)
+
 v1.0.1(2024.03.19)
 - better management of audio preference (Fix issue #3)
 - code cleanup
