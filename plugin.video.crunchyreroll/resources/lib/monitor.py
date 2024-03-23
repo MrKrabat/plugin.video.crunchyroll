@@ -78,14 +78,16 @@ class SkipEvent(CrunchyrollTask):
             # We may not have skip event
             if self.event_id in list(skip_events.keys()):
                 skip_event = skip_events[self.event_id]
-                # Are we in the right time range to trigger the modal ?
-                if int(skip_event['end']) > playhead > int(skip_event['start']):
-                    # If the modal have been shown, we never show it again during this episode
-                    self.check_skip = False
-                    if xbmcgui.Dialog().yesno(self.localization['question'], f"{addon.getLocalizedString(30086)} ?", autoclose=10000):
-                        player.seekTime(int(skip_event['end']))
-                        icon_url = addon.getAddonInfo("icon")
-                        xbmcgui.Dialog().notification(self.localization['event'], "", icon_url, 5000)
+                # The object might exist and still be empty
+                if 'end' in skip_event and 'start' in skip_event:
+                    # Are we in the right time range to trigger the modal ?
+                    if int(skip_event['end']) > playhead > int(skip_event['start']):
+                        # If the modal have been shown, we never show it again during this episode
+                        self.check_skip = False
+                        if xbmcgui.Dialog().yesno(self.localization['question'], f"{addon.getLocalizedString(30086)} ?", autoclose=10000):
+                            player.seekTime(int(skip_event['end']))
+                            icon_url = addon.getAddonInfo("icon")
+                            xbmcgui.Dialog().notification(self.localization['event'], "", icon_url, 5000)
 
 
 class SkipIntro(SkipEvent):
