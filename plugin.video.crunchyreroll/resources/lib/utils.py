@@ -32,6 +32,31 @@ CRUNCHYROLL_LICENSE_URL = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/li
 CRUNCHYROLL_UA = "Crunchyroll/3.50.1 Android/14 okhttp/4.12.0"
 
 
+def iso_639_1_to_iso_639_2(code):
+    locales = {
+        "en-US": "eng",
+        "en-GB": "eng",
+        "es-419": "spa",
+        "es-ES": "spa",
+        "pt-BR": "por",
+        "pt-PT": "por",
+        "fr-FR": "fre",
+        "de-DE": "ger",
+        "ar-SA": "ara",
+        "it-IT": "ita",
+        "ru-RU": "rus",
+        "ta-IN": "tam",
+        "hi-IN": "hin",
+        "id-ID": "ind",
+        "ms-MY": "may",
+        "th-TH": "tha",
+        "vi-VN": "vie",
+        "ja-JP": "jpn"
+    }
+
+    return locales.get(code, "unk")
+
+
 def local_from_id(locale_id):
     locales = [
         "en-US",
@@ -50,7 +75,8 @@ def local_from_id(locale_id):
         "id-ID"
         "ms-MY",
         "th-TH",
-        "vi-VN"
+        "vi-VN",
+        "ja-JP"
     ]
 
     if locale_id < len(locales):
@@ -74,26 +100,34 @@ def lookup_episode(episodes, episode_id):
     return None
 
 
-def lookup_stream_id(episode, prefered_audio_id):
+def lookup_stream(episode, prefered_audio_id):
     stream_id = None
+    actual_audio = None
     if "versions" in episode['episode_metadata'] and episode['episode_metadata']['versions']:
         if prefered_audio_id == 0:
             for version in episode['episode_metadata']['versions']:
                 if version['original']:
                     stream_id = version['guid']
+                    actual_audio = version['audio_locale']
         else:
             prefered_audio = local_from_id(prefered_audio_id - 1)
-            # If we find prefered_audio, it's return
+            xbmc.log(prefered_audio)
+            # If we find prefered_audio, it's return this value
             for version in episode['episode_metadata']['versions']:
                 if version['audio_locale'] == prefered_audio:
                     stream_id = version['guid']
+                    actual_audio = prefered_audio
             # Else, we provide original version
-            for version in episode['episode_metadata']['versions']:
-                if version['original']:
-                    stream_id = version['guid']
+            if stream_id is None:
+                for version in episode['episode_metadata']['versions']:
+                    if version['original']:
+                        stream_id = version['guid']
+                        actual_audio = version['audio_locale']
     else:
         stream_id = episode['id']
-    return stream_id
+        actual_audio = episode['episode_metadata']['audio_locale']
+    ret = {"stream_id": stream_id, "actual_audio": actual_audio}
+    return ret
 
 
 def download_subtitle(url, output):
@@ -161,7 +195,8 @@ def sub_locale_from_id(locale_id):
         "ind",
         "may",
         "tha",
-        "vie"
+        "vie",
+        "jpn"
     ]
     if locale_id < len(locales):
         return locales[locale_id]

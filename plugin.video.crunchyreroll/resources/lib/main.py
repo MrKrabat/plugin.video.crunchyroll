@@ -251,6 +251,9 @@ def play_episode(plugin, episode_id):
     item.subtitles = utils.get_subtitles(episode_id, infos['subtitles'])
     item.set_path(infos['url'])
     listitem = item.listitem
+    audio_code = utils.iso_639_1_to_iso_639_2(infos['actual_audio'])
+    listitem.setProperty("audio_language", audio_code)
+    listitem.setProperty("episode_id", episode_id)
     listitem.setMimeType('application/xml+dash')
     listitem.setContentLookup(False)
     listitem.setProperty('inputstream', 'inputstream.adaptive')

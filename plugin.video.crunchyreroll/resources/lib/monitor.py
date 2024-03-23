@@ -42,7 +42,7 @@ class CrunchyrollTask():
         try:
             # E1128 due to mock
             # pylint: disable=E1128
-            episode_id = player.getPlayingItem().getVideoInfoTag().getOriginalTitle()
+            episode_id = player.getPlayingItem().getProperty('episode_id')
             self._run(episode_id)
         except Exception as err:
             self.error(f"{err=}")
@@ -149,7 +149,7 @@ class CrunchyrollVideoHandler:
     def init(self):
         # E1128 due to mock
         # pylint: disable=E1128
-        self.episode_id = self.player.getPlayingItem().getVideoInfoTag().getOriginalTitle()
+        self.episode_id = self.player.getPlayingItem().getProperty('episode_id')
         self.set_subtitles()
         self.register_task(UpdatePlayhead(self.client))
         self.register_task(SkipIntro(self.client))
@@ -168,19 +168,18 @@ class CrunchyrollVideoHandler:
 
     def set_subtitles(self):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
-        prefered_subtitle = addon.getSettingInt("subtitle_language")
-        prefered_audio = addon.getSettingInt("prefered_audio")
-        if (prefered_audio - 1) == prefered_subtitle:
+        prefered_subtitle = utils.sub_locale_from_id(addon.getSettingInt("subtitle_language"))
+        actual_audio = self.player.getPlayingItem().getProperty("audio_language")
+        if actual_audio == prefered_subtitle:
             self.debug("Disabling subtitle")
             self.player.showSubtitles(False)
         else:
             self.debug("Enabling subtitle")
             self.player.showSubtitles(True)
-            prefered_sub_locale = utils.sub_locale_from_id(prefered_subtitle)
-            subtitle_stream_id = 1
+            subtitle_stream_id = 0
             subtitles = self.player.getAvailableSubtitleStreams()
             for idx, sub in enumerate(subtitles):
-                if prefered_sub_locale == sub:
+                if prefered_subtitle == sub:
                     subtitle_stream_id = idx
             self.debug(f"Selecting subtitle stream {subtitle_stream_id}")
             self.player.setSubtitleStream(subtitle_stream_id)

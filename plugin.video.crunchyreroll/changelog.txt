@@ -1,4 +1,6 @@
 v1.0.2(2024.XX.XX)
+- fix audio handling
+- fix subtitle showing when actual audio does not match prefered subtitle
 
 v1.0.1(2024.03.19)
 - better management of audio preference (Fix issue #3)
