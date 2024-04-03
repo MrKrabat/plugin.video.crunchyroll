@@ -231,7 +231,7 @@ async def complement_listables(
                 listable.rating = float(result_obj.get('objects').get(listable.id).get('rating').get('average')) * 2.0
             elif result_obj.get('objects').get(listable.id).get('rating').get('up') and result_obj.get('objects').get(
                     listable.id).get('rating').get('down'):
-                # these are user ratings and they are pretty weird (overly positive)
+                # these are user ratings, and they are pretty weird (overly positive)
                 ups_obj = result_obj.get('objects').get(listable.id).get('rating').get('up')
                 downs_obj = result_obj.get('objects').get(listable.id).get('rating').get('down')
                 ups = float(ups_obj.get('displayed'))
