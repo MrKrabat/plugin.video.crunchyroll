@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
 # Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,8 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import random
+import re
 
-import inputstreamhelper
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -27,6 +28,7 @@ from . import controller
 from . import utils
 from . import view
 from .api import API
+from .model import CrunchyrollError, LoginError
 
 
 def main(argv):
@@ -36,7 +38,8 @@ def main(argv):
 
     # inputstream adaptive settings
     if args.get_arg('mode') == "hls":
-        is_helper = inputstreamhelper.Helper("hls")
+        from inputstreamhelper import Helper  # noqa
+        is_helper = Helper("hls")
         if is_helper.check_inputstream():
             xbmcaddon.Addon(id="inputstream.adaptive").openSettings()
         return True
@@ -59,9 +62,18 @@ def main(argv):
         args.addon.setSetting("device_id", args.device_id)
 
     # get subtitle language
-    args._subtitle = utils.convert_subtitle_index_to_string(args.addon.getSetting("subtitle_language"))
-    args._subtitle_fallback = utils.convert_subtitle_index_to_string(
-        args.addon.getSetting("subtitle_language_fallback"))
+    args._subtitle = args.addon.getSetting("subtitle_language")
+    args._subtitle_fallback = args.addon.getSetting("subtitle_language_fallback")  # @todo: test with empty
+
+    # temporary dialog to notify about subtitle settings change
+    # @todo: remove eventually
+    if args.subtitle is int or args.subtitle_fallback is int or re.match("^([0-9]+)$", args.subtitle):
+        xbmcgui.Dialog().notification(
+            '%s INFO' % args.addon_name,
+            'Language settings have changed. Please adjust settings.',
+            xbmcgui.NOTIFICATION_INFO,
+            10
+        )
 
     api = API(
         args=args,
@@ -76,11 +88,16 @@ def main(argv):
         return False
     else:
         # login
-        if api.start():
-            # list menu
-            xbmcplugin.setContent(int(args.argv[1]), "tvshows")
-            return check_mode(args, api)
-        else:
+        try:
+            success = api.start()
+            if success:
+                # list menu
+                xbmcplugin.setContent(int(args.argv[1]), "tvshows")
+                return check_mode(args, api)
+        except (LoginError, CrunchyrollError):
+            success = False
+
+        if not success:
             # login failed
             utils.crunchy_log(args, "Login failed", xbmc.LOGERROR)
             view.add_item(args, {"title": args.addon.getLocalizedString(30060)})

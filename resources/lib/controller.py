@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
 # Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,7 +18,6 @@
 
 import json
 import math
-import sys
 import time
 
 import xbmc
@@ -55,7 +55,8 @@ def show_queue(args, api: API):
         args=args,
         api=api,
         listables=get_listables_from_response(args, req.get('items')),
-        is_folder=False
+        is_folder=False,
+        options=view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
     view.end_of_directory(args, "episodes")
@@ -99,24 +100,12 @@ def search_anime(args, api: API):
 
     type_data = req.get('items')[0]  # @todo: for now we support only the first type, which should be series
 
-    # fetch info if already in queue
-    ids = [item.get('id') for item in type_data.get('items')]
-    items_already_in_queue = utils.get_in_queue(args, api, ids)
-
     view.add_listables(
         args=args,
         api=api,
         listables=get_listables_from_response(args, type_data.get('items')),
         is_folder=True,
-        callbacks=[
-            lambda li, listable:
-            li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                     'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                         sys.argv[0],
-                                         listable.id))]) if listable.id not in items_already_in_queue else None,
-            lambda li, listable:
-            utils.highlight_list_item_title(li) if listable.id in items_already_in_queue else None
-        ]
+        options=view.OPT_CTX_WATCHLIST | view.OPT_MARK_ON_WATCHLIST | view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
     # pagination
@@ -245,26 +234,13 @@ def list_anime_seasons(args, api: API):
         view.end_of_directory(args)
         return False
 
-    # fetch info if already in queue
-    ids = [item.get('id') for item in req.get('items')]
-    items_already_in_queue = utils.get_in_queue(args, api, ids)
-
     # season / season  (crunchy / xbmc)
-
     view.add_listables(
         args=args,
         api=api,
         listables=get_listables_from_response(args, req.get('items')),
         is_folder=True,
-        callbacks=[
-            lambda li, listable:
-            li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                     'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                         sys.argv[0],
-                                         listable.id))]) if listable.id not in items_already_in_queue else None,
-            lambda li, listable:
-            utils.highlight_list_item_title(li) if listable.id in items_already_in_queue else None
-        ]
+        options=view.OPT_CTX_WATCHLIST | view.OPT_MARK_ON_WATCHLIST | view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
     view.end_of_directory(args, "seasons")
@@ -348,25 +324,13 @@ def list_filter(args, api: API):
         view.end_of_directory(args)
         return False
 
-    # fetch info if already in queue
-    ids = [item.get('id') for item in req.get('items')]
-    items_already_in_queue = utils.get_in_queue(args, api, ids)
-
     # series / collection  (crunchy / xbmc)
     view.add_listables(
         args=args,
         api=api,
         listables=get_listables_from_response(args, req.get('items')),
         is_folder=True,
-        callbacks=[
-            lambda li, listable:
-            li.addContextMenuItems([(args.addon.getLocalizedString(30067),
-                                     'RunPlugin(%s?mode=add_to_queue&content_id=%s&session_restart=True)' % (
-                                         sys.argv[0],
-                                         listable.id))]) if listable.id not in items_already_in_queue else None,
-            lambda li, listable:
-            utils.highlight_list_item_title(li) if listable.id in items_already_in_queue else None
-        ]
+        options=view.OPT_CTX_WATCHLIST | view.OPT_MARK_ON_WATCHLIST | view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
     items_left = req.get('total') - args.get_arg('offset', 0, int) - len(req.get('items'))
@@ -414,8 +378,8 @@ def list_filter_without_category(args, api: API):
                     "title": category_item.get("localization", {}).get("title"),
                     "plot": category_item.get("localization", {}).get("description"),
                     "plotoutline": category_item.get("localization", {}).get("description"),
-                    "thumb": utils.get_image_from_struct(category_item, "low", 1),
-                    "fanart": utils.get_image_from_struct(category_item, "background", 1),
+                    "thumb": utils.get_img_from_struct(category_item, "low", 1),
+                    "fanart": utils.get_img_from_struct(category_item, "background", 1),
                     "category_filter": category_item.get("tenant_category", {}),
                     "mode": args.get_arg('mode')
                 },
@@ -549,6 +513,7 @@ def add_to_queue(args, api: API) -> bool:
 
     return True
 
+
 # NOTE: be super careful when moving the content_id to json or params. it might delete the whole playlist! *sadpanda*
 # def remove_from_queue(args, api: API):
 #     # we absolutely need a content_id, otherwise it will delete the whole playlist!
@@ -643,7 +608,8 @@ def crunchylists_item(args, api):
         args=args,
         api=api,
         listables=get_listables_from_response(args, req.get('data')),
-        is_folder=True
+        is_folder=True,
+        options=view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
     view.end_of_directory(args, "tvshows")

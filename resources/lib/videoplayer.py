@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,8 +17,8 @@
 import threading
 import time
 from typing import Optional
+from urllib.parse import urlencode
 
-import inputstreamhelper
 import requests
 import xbmc
 import xbmcgui
@@ -41,9 +41,8 @@ class VideoPlayer(Object):
         self._args = args
         self._api = api
 
-        self._stream_data: VideoPlayerStreamData | None = None
+        self._stream_data: VideoPlayerStreamData | None = None  # @todo: maybe rename prop and class?
         self._player: Optional[xbmc.Player] = xbmc.Player()  # @todo: what about garbage collection?
-
         self._skip_modal_duration_max = 10
 
     def start_playback(self):
@@ -58,7 +57,7 @@ class VideoPlayer(Object):
 
         self._prepare_and_start_playback()
 
-        self._handle_resume()
+        self._handle_update_playhead()
         self._handle_skipping()
 
     def is_playing(self) -> bool:
@@ -102,15 +101,59 @@ class VideoPlayer(Object):
         """ Sets up the playback"""
 
         # prepare playback
-        item = xbmcgui.ListItem(self._args.get_arg('title', 'Title not provided'), path=self._stream_data.stream_url)
-        item.setMimeType("application/vnd.apple.mpegurl")
+        # note: when setting only a couple of values to the item, kodi will fetch the remaining from the url args
+        #       since we do a full overwrite of the item with data from the cms object, which does not contain all
+        #       wanted data - like playhead - we need to copy over that information to the PlayableItem before
+        #        converting it to a kodi item. be aware of this.
+
+        # copy playhead to PlayableItem (if resume is true on argv[3]) - this is required for resume capability
+        if (
+                self._stream_data.playable_item.playhead == 0
+                and self._stream_data.playheads_data.get(self._args.get_arg('episode_id'), {})
+                and self._args.argv[3] == 'resume:true'
+        ):
+            self._stream_data.playable_item.update_playcount_from_playhead(
+                self._stream_data.playheads_data.get(self._args.get_arg('episode_id'))
+            )
+
+        item = self._stream_data.playable_item.to_item(self._args)
+        item.setPath(self._stream_data.stream_url)
+        item.setMimeType('application/dash+xml')
         item.setContentLookup(False)
 
         # inputstream adaptive
-        is_helper = inputstreamhelper.Helper("hls")
+        from inputstreamhelper import Helper  # noqa
+
+        is_helper = Helper("mpd", drm='com.widevine.alpha')
         if is_helper.check_inputstream():
+            manifest_headers = {
+                'User-Agent': API.CRUNCHYROLL_UA,
+                'Authorization': f"Bearer {self._api.account_data.access_token}"
+            }
+            license_headers = {
+                'User-Agent': API.CRUNCHYROLL_UA,
+                'Content-Type': 'application/octet-stream',
+                'Origin': 'https://static.crunchyroll.com',
+                'Authorization': f"Bearer {self._api.account_data.access_token}",
+                'x-cr-content-id': self._args.get_arg('episode_id'),
+                'x-cr-video-token': self._stream_data.token
+            }
+            license_config = {
+                'license_server_url': API.LICENSE_ENDPOINT,
+                'headers': urlencode(license_headers),
+                'post_data': 'R{SSM}',
+                'response_data': 'JBlicense'
+            }
+
             item.setProperty("inputstream", "inputstream.adaptive")
-            item.setProperty("inputstream.adaptive.manifest_type", "hls")
+            item.setProperty("inputstream.adaptive.manifest_type", "mpd")
+            item.setProperty("inputstream.adaptive.license_type", "com.widevine.alpha")
+            item.setProperty('inputstream.adaptive.stream_headers', urlencode(manifest_headers))
+            item.setProperty("inputstream.adaptive.manifest_headers", urlencode(manifest_headers))
+            item.setProperty('inputstream.adaptive.license_key', '|'.join(list(license_config.values())))
+
+            # @todo: i think other meta data like description and images are still fetched from args.
+            #        we should call the objects endpoint and use this data to remove args dependency (besides id)
 
             # add soft subtitles url for configured language
             if self._stream_data.subtitle_urls:
@@ -120,57 +163,30 @@ class VideoPlayer(Object):
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), True, item)
 
             # wait for playback
-            if wait_for_playback(10):
-                # if successful wait more
-                xbmc.sleep(3000)
+            # if wait_for_playback(10):
+            #     # if successful wait more (why?)
+            #     xbmc.sleep(3000)
 
         # start fallback
-        if not wait_for_playback(2):
+        if not wait_for_playback(10):
             # start without inputstream adaptive
             utils.crunchy_log(self._args, "Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGINFO)
             item.setProperty("inputstream", "")
-            xbmc.Player().play(self._stream_data.stream_url, item)
+            self._player.play(self._stream_data.stream_url, item)
 
-    def _handle_resume(self):
+    def _handle_update_playhead(self):
         """ Handles resuming and updating playhead info back to crunchyroll """
 
-        if self._args.addon.getSetting('sync_playtime') != 'true':
-            utils.crunchy_log(self._args, '_handle_resume: Sync playtime not enabled', xbmc.LOGINFO)
+        # if disabled in settings, no need to start thread
+        if self._args.addon.getSetting("sync_playtime") != "true":
             return
-
-        # fetch playhead info from api if not already available
-        if not self._args.get_arg('playhead'):
-            self._args.set_arg('playhead', 0)
-            utils.crunchy_log(self._args, '_handle_resume: fetching playhead info from api', xbmc.LOGINFO)
-            playheads = utils.get_playheads_from_api(self._args, self._api, self._args.get_arg('episode_id'))
-
-            if playheads and playheads.get('data'):
-                self._args.set_arg('playhead', int(playheads.get(self._args.get_arg('episode_id')).get('playhead')))
-                utils.crunchy_log(self._args, "_handle_resume: playhead is %d" % self._args.get_arg('playhead'))
 
         # wait for video to begin
         if not wait_for_playback(30):
             utils.crunchy_log(self._args, 'Timeout reached, video did not start in 30 seconds', xbmc.LOGERROR)
             return
 
-        # we now set the ResumeTime to kodi, so kodi itself asks the user if he wants to resume. we should no longer
-        # need this.
-
-        # ask if user want to continue playback
-        # if self._args.get_arg('playhead') and self._args.get_arg('duration'):
-        #     resume = int(int(self._args.get_arg('playhead')) / float(self._args.get_arg('duration')) * 100)
-        #     if 5 <= resume <= 90:
-        #         self._player.pause()
-        #         xbmc.sleep(500)
-        #         if xbmcgui.Dialog().yesno(self._args.addon_name,
-        #                                   self._args.addon.getLocalizedString(30065) % int(resume)):
-        #             self._player.seekTime(float(self._args.get_arg('playhead')) - 5)
-        #             xbmc.sleep(1000)
-        #         self._player.pause()
-        # else:
-        #     utils.crunchy_log(self._args, "Missing data for resume - playhead: %d" % self._args.get_arg('playhead'))
-
-            # update playtime at crunchyroll in a background thread
+        # update playtime at crunchyroll in a background thread
         utils.crunchy_log(self._args, "_handle_resume: starting sync thread", xbmc.LOGINFO)
         threading.Thread(target=self.thread_update_playhead).start()
 
@@ -179,7 +195,7 @@ class VideoPlayer(Object):
 
         # check whether we have the required data to enable this
         if not self._check_and_filter_skip_data():
-            utils.crunchy_log(self._args, "_handle_skipping: Nothing to skip", xbmc.LOGINFO)
+            utils.crunchy_log(self._args, "_handle_skipping: required data for skipping is empty", xbmc.LOGINFO)
             return
 
         # run thread in background to check when whe reach a section where we can skip
@@ -206,27 +222,13 @@ class VideoPlayer(Object):
                 ):
                     last_updated_playtime = self._player.getTime()
                     # api request
-                    try:
-                        self._api.make_request(
-                            method="POST",
-                            url=self._api.PLAYHEADS_ENDPOINT.format(self._api.account_data.account_id),
-                            json_data={
-                                'playhead': int(self._player.getTime()),
-                                'content_id': self._args.get_arg('episode_id')
-                            },
-                            headers={
-                                'Content-Type': 'application/json'
-                            }
-                        )
-                    except (CrunchyrollError, requests.exceptions.RequestException) as e:
-                        # catch timeout or any other possible exception
-                        utils.crunchy_log(
-                            self._args,
-                            "Failed to update playhead to crunchyroll: %s for %s" % (
-                                str(e), self._args.get_arg('episode_id')
-                            )
-                        )
-                        pass
+                    update_playhead(
+                        self._args,
+                        self._api,
+                        self._args.get_arg('episode_id'),
+                        int(self._player.getTime())
+                    )
+
         except RuntimeError:
             utils.crunchy_log(self._args, 'Playback aborted', xbmc.LOGINFO)
 
@@ -295,9 +297,42 @@ class VideoPlayer(Object):
                 'seconds': dialog_duration,
                 'seek_time': self._stream_data.skip_events_data.get(section).get('end'),
                 'label': self._args.addon.getLocalizedString(30015),
-                'addon_path': self._args.addon.getAddonInfo("path")
+                'addon_path': self._args.addon.getAddonInfo("path"),
+                'args': self._args,
+                'api': self._api,
+                'content_id': self._args.get_arg('episode_id'),
             }
         ).start()
+
+
+def update_playhead(args: Args, api: API, content_id: str, playhead: int):
+    """ Update playtime to Crunchyroll """
+
+    # if sync_playtime is disabled in settings, do nothing
+    if args.addon.getSetting("sync_playtime") != "true":
+        return
+
+    try:
+        api.make_request(
+            method="POST",
+            url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
+            json_data={
+                'playhead': playhead,
+                'content_id': content_id
+            },
+            headers={
+                'Content-Type': 'application/json'
+            }
+        )
+    except (CrunchyrollError, requests.exceptions.RequestException) as e:
+        # catch timeout or any other possible exception
+        utils.crunchy_log(
+            None,
+            "Failed to update playhead to crunchyroll: %s for %s" % (
+                str(e), content_id
+            )
+        )
+        pass
 
 
 def wait_for_playback(timeout: int = 30):
