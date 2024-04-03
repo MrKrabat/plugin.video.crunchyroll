@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import codecs
+import datetime
 import os
 
-import datetime
+import xbmc
 import xbmcgui
 import xbmcplugin
 import xbmcvfs
-import xbmc
-import codecs
 
 from resources.lib.model import Object, CrunchyrollError
 from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log
@@ -35,6 +35,7 @@ class VideoPlayerStreamData(Object):
         Object.__init__(self)
         self.stream_url = None
         self.subtitle_urls = None
+        self.token = None
 
 
 class VideoStream(Object):
@@ -65,15 +66,17 @@ class VideoStream(Object):
 
         video_player_stream_data = VideoPlayerStreamData()
 
-        api_stream_data = self._get_stream_data_from_api()
+        api_stream_data = self._get_stream_data_from_api_v2()
         if api_stream_data is False:
             raise CrunchyrollError("Failed to fetch stream data from api")
 
-        video_player_stream_data.stream_url = self._get_stream_url_from_api_data(api_stream_data)
+        video_player_stream_data.stream_url = self._get_stream_url_from_api_data_v2(api_stream_data)
         video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(api_stream_data)
+        video_player_stream_data.token = api_stream_data["token"]
 
         return video_player_stream_data
 
+    # @deprecated
     def _get_stream_data_from_api(self):
         """ get json stream data from cr api for given args.stream_id """
 
@@ -91,6 +94,23 @@ class VideoStream(Object):
             item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
             xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
             xbmcgui.Dialog().ok(self.args.addonname, self.args.addon.getLocalizedString(30064))
+            return False
+
+        return req
+
+    def _get_stream_data_from_api_v2(self):
+        """ get json stream data from cr api for given args.stream_id using new endpoint b/c drm """
+
+        req = self.api.make_request(
+            method="GET",
+            url=self.api.STREAMS_ENDPOINT_DRM.format(self.args.episode_id),
+        )
+
+        # check for error
+        if req is None or "error" in req:
+            item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
+            xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
             return False
 
         return req
@@ -119,6 +139,30 @@ class VideoStream(Object):
 
         return url
 
+    def _get_stream_url_from_api_data_v2(self, api_data):
+        """ uses new endpoint to retrieve encryption data along with stream url """
+
+        try:
+            if self.args.addon.getSetting("soft_subtitles") == "false":
+                url = api_data["hardSubs"]
+
+                if self.args.subtitle in url:
+                    url = url[self.args.subtitle]["url"]
+                elif self.args.subtitle_fallback in url:
+                    url = url[self.args.subtitle_fallback]["url"]
+                else:
+                    url = api_data["url"]
+            else:
+                url = api_data["url"]
+
+        except IndexError:
+            item = xbmcgui.ListItem(getattr(self.args, "title", "Title not provided"))
+            xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
+            return None
+
+        return url
+
     def _get_subtitles_from_api_data(self, api_stream_data):
         """ retrieve appropriate subtitle urls from api data, using local caching and renaming """
 
@@ -142,7 +186,7 @@ class VideoStream(Object):
         for subtitle_data in subtitles_data_raw:
             cache_result = self._get_subtitle_from_cache(
                 subtitle_data.get('url', ""),
-                subtitle_data.get('locale', ""),
+                subtitle_data.get('language', ""),
                 subtitle_data.get('format', "")
             )
 

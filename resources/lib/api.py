@@ -17,11 +17,11 @@
 
 import json as JSON
 from contextlib import closing
+from datetime import timedelta
 
 import requests
 import xbmc
 import xbmcvfs
-from datetime import timedelta
 
 from . import utils
 from .model import AccountData
@@ -31,17 +31,20 @@ class API:
     """Api documentation
     https://github.com/CloudMax94/crunchyroll-api/wiki/Api
     """
-    URL = "https://api.crunchyroll.com/"
-    VERSION = "1.1.21.0"
-    TOKEN = "LNDJgOit5yaRIWN"
-    DEVICE = "com.crunchyroll.windows.desktop"
-    TIMEOUT = 30
+    # URL = "https://api.crunchyroll.com/"
+    # VERSION = "1.1.21.0"
+    # TOKEN = "LNDJgOit5yaRIWN"
+    # DEVICE = "com.crunchyroll.windows.desktop"
+    # TIMEOUT = 30
+
+    CRUNCHYROLL_UA = "Crunchyroll/3.51.1 Android/14 okhttp/4.12.0"
 
     INDEX_ENDPOINT = "https://beta-api.crunchyroll.com/index/v2"
     PROFILE_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/profile"
     TOKEN_ENDPOINT = "https://beta-api.crunchyroll.com/auth/v1/token"
     SEARCH_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/search"
     STREAMS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/videos/{}/streams"
+    STREAMS_ENDPOINT_DRM = "https://cr-play-service.prd.crunchyrollsvc.com/v1/{}/android/phone/play"
     SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
     SEASONS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/seasons"
     EPISODES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/episodes"
@@ -59,7 +62,8 @@ class API:
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
 
-    AUTHORIZATION = "Basic bHF0ai11YmY1aHF4dGdvc2ZsYXQ6N2JIY3hfYnI0czJubWE1bVdrdHdKZEY0ZTU2UU5neFQ="
+    AUTHORIZATION = "Basic OTQzcTkxX3NtMXVhbnZiX3ppbjQ6bDZ5cXJTQ1NPNzZNeXFVZ295c19SQVFKcWsyemU3YnE="
+    LICENSE_ENDPOINT = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 
     def __init__(
             self,
@@ -69,7 +73,7 @@ class API:
         self.http = requests.Session()
         self.locale = locale
         self.account_data = AccountData(dict())
-        self.api_headers = utils.headers()
+        self.api_headers = default_request_headers()
         self.args = args
         self.retry_counter = 0
 
@@ -109,12 +113,18 @@ class API:
                 "password": password,
                 "grant_type": "password",
                 "scope": "offline_access",
+                "device_id": self.args.device_id,
+                "device_name": 'Kodi',
+                "device_type": 'MediaCenter'
             }
         elif refresh:
             data = {
                 "refresh_token": self.account_data.refresh_token,
                 "grant_type": "refresh_token",
                 "scope": "offline_access",
+                "device_id": self.args.device_id,
+                "device_name": 'Kodi',
+                "device_type": 'MediaCenter'
             }
 
         r = self.http.request(
@@ -267,3 +277,10 @@ class API:
             result = f.write(json_string)
 
         return result
+
+
+def default_request_headers():
+    return {
+        "User-Agent": API.CRUNCHYROLL_UA,
+        "Content-Type": "application/x-www-form-urlencoded"
+    }

@@ -43,13 +43,6 @@ def parse(argv):
         return Args(argv, {})
 
 
-def headers():
-    return {
-        "User-Agent": "Crunchyroll/3.10.0 Android/6.0 okhttp/4.9.1",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-
-
 def get_date():
     return datetime.utcnow()
 
