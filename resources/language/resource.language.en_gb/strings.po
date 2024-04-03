@@ -257,3 +257,7 @@ msgstr ""
 msgctxt "#30071"
 msgid "Added to queue"
 msgstr "Added to queue"
+
+msgctxt "#30080"
+msgid "There are to many active streams. Please try again later."
+msgstr ""

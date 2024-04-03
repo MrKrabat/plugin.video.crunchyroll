@@ -88,11 +88,17 @@ class VideoPlayer(Object):
                 xbmcgui.Dialog().ok(self._args.addon_name, self._args.addon.getLocalizedString(30064))
                 return False
 
-        except (CrunchyrollError, requests.exceptions.RequestException):
+        except (CrunchyrollError, requests.exceptions.RequestException) as e:
             utils.log_error_with_trace(self._args, "Failed to prepare stream info data", False)
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), False, item)
-            xbmcgui.Dialog().ok(self._args.addon_name,
-                                self._args.addon.getLocalizedString(30064))
+
+            # check for TOO_MANY_ACTIVE_STREAMS
+            if 'TOO_MANY_ACTIVE_STREAMS' in str(e):
+                xbmcgui.Dialog().ok(self._args.addon_name,
+                                    self._args.addon.getLocalizedString(30080))
+            else:
+                xbmcgui.Dialog().ok(self._args.addon_name,
+                                    self._args.addon.getLocalizedString(30064))
             return False
 
         return True
