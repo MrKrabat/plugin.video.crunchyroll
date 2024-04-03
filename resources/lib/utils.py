@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,7 @@ import json
 import re
 from json import dumps
 
+import requests
 import xbmc
 import xbmcgui
 
@@ -44,7 +45,7 @@ def parse(argv) -> Args:
 # @todo we could change the return type and along with the listables return additional data that we preload
 #       like info what is on watchlist, artwork, playhead, ...
 #       for that we should use async requests (asyncio)
-def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
+def get_listables_from_response(args: Args, data: List[dict]) -> List[ListableItem]:
     """ takes an API response object, determines type of its contents and creates DTOs for further processing """
 
     listable_items = []
@@ -55,7 +56,8 @@ def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
         if not item_type:
             crunchy_log(
                 None,
-                "get_listables_from_response | failed to determine type for response item %s" % (json.dumps(item, indent=4)),
+                "get_listables_from_response | failed to determine type for response item %s" % (
+                    json.dumps(item, indent=4)),
                 xbmc.LOGERROR
             )
             continue
@@ -82,21 +84,32 @@ def get_listables_from_response(args: Args, data: Dict) -> List[ListableItem]:
     return listable_items
 
 
-def get_series_data_from_series_ids(args: Args, api: API, ids: list) -> dict:
+async def get_cms_object_data_by_ids(args: Args, api: API, ids: list) -> dict:
     """ fetch info from api object endpoint for given ids. Useful to complement missing data """
 
-    req = api.make_request(
-        method="GET",
-        url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids)),
-        params={
-            "locale": args.subtitle,
-            # "preferred_audio_language": ""
-        }
-    )
-    if not req or "error" in req:
+    # filter out entries with no value
+    ids_filtered = [item for item in ids if item != 0 and item is not None]
+    if len(ids_filtered) == 0:
         return {}
 
-    return {item.get("id"): item for item in req.get("data")}
+    try:
+        req = api.make_request(
+            method='GET',
+            url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids_filtered)),
+            params={
+                'locale': args.subtitle,
+                'ratings': 'true'
+                # "preferred_audio_language": ""
+            }
+        )
+    except (CrunchyrollError, requests.exceptions.RequestException):
+        crunchy_log(args, "get_cms_object_data_by_ids: failed to load for: %s" % ",".join(ids_filtered))
+        return {}
+
+    if not req or 'error' in req:
+        return {}
+
+    return {item.get('id'): item for item in req.get('data')}
 
 
 def get_stream_id_from_item(item: Dict) -> Union[str, None]:
@@ -114,7 +127,7 @@ def get_stream_id_from_item(item: Dict) -> Union[str, None]:
     return stream_id[1]
 
 
-def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) -> Dict:
+async def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) -> Dict:
     """ Retrieve playhead data from API for given episode / movie ids """
 
     if isinstance(episode_ids, str):
@@ -144,7 +157,29 @@ def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) 
     return out
 
 
-def get_image_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
+async def get_watchlist_status_from_api(args: Args, api: API, ids: list) -> list:
+    """ retrieve watchlist status for given media ids """
+
+    req = api.make_request(
+        method="GET",
+        url=api.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
+        params={
+            "content_ids": ','.join(ids),
+            "locale": args.subtitle
+        }
+    )
+
+    if not req or req.get("error") is not None:
+        crunchy_log(args, "get_in_queue: Failed to retrieve data", xbmc.LOGERROR)
+        return []
+
+    if not req.get('data'):
+        return []
+
+    return [item.get('id') for item in req.get('data')]
+
+
+def get_img_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
     """ dive into API info structure and extract requested image from its struct """
 
     # @todo: add option to specify quality / max size
@@ -189,12 +224,12 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
 
     for trace in trace_back:
         stack_trace.append(
-            "File : %s , Line : %d, Func.Name : %s, Message : %s\n" % (trace[0], trace[1], trace[2], trace[3]))
+            "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
 
     addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
 
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), xbmc.LOGERROR)
-    xbmc.log("[PLUGIN] %s: %s %s %s" % (addon_name, ex_type.__name__, ex_value, stack_trace), xbmc.LOGERROR)
+    xbmc.log("[PLUGIN] %s: %s %s\n%s" % (addon_name, ex_type.__name__, ex_value, "\n".join(stack_trace)), xbmc.LOGERROR)
 
     if show_notification:
         xbmcgui.Dialog().notification(
@@ -205,64 +240,11 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
         )
 
 
-def convert_subtitle_index_to_string(subtitle_index: int) -> str:
-    if subtitle_index == "0":
-        return "en-US"
-    elif subtitle_index == "1":
-        return "en-GB"
-    elif subtitle_index == "2":
-        return "es-419"
-    elif subtitle_index == "3":
-        return "es-ES"
-    elif subtitle_index == "4":
-        return "pt-BR"
-    elif subtitle_index == "5":
-        return "pt-PT"
-    elif subtitle_index == "6":
-        return "fr-FR"
-    elif subtitle_index == "7":
-        return "de-DE"
-    elif subtitle_index == "8":
-        return "ar-ME"
-    elif subtitle_index == "9":
-        return "it-IT"
-    elif subtitle_index == "10":
-        return "ru-RU"
-    elif subtitle_index == "11":
-        return ""
-    else:
-        return "en-US"
-
-
-def convert_language_iso_to_string(args: Args, language_iso: str) -> str:
-    if language_iso == "en-US":
-        return args.addon.getLocalizedString(30021)
-    elif language_iso == "en-GB":
-        return args.addon.getLocalizedString(30022)
-    elif language_iso == "es-419":
-        return args.addon.getLocalizedString(30023)
-    elif language_iso == "es-ES":
-        return args.addon.getLocalizedString(30024)
-    elif language_iso == "pt-BR":
-        return args.addon.getLocalizedString(30025)
-    elif language_iso == "pt-PT":
-        return args.addon.getLocalizedString(30026)
-    elif language_iso == "fr-FR":
-        return args.addon.getLocalizedString(30027)
-    elif language_iso == "de-DE":
-        return args.addon.getLocalizedString(30028)
-    elif language_iso == "ar-ME":
-        return args.addon.getLocalizedString(30029)
-    elif language_iso == "it-IT":
-        return args.addon.getLocalizedString(30030)
-    elif language_iso == "ru-RU":
-        return args.addon.getLocalizedString(30031)
-    else:
-        return language_iso
-
-
 def filter_seasons(args: Args, item: Dict) -> bool:
     """ takes an API info struct and returns if it matches user language settings """
+
+    if args.addon.getSetting("filter_dubs_by_language") != "true":
+        return True
 
     # is it a dub in my main language?
     if args.subtitle == item.get('audio_locale', ""):
@@ -273,7 +255,10 @@ def filter_seasons(args: Args, item: Dict) -> bool:
         return True
 
     # is it japanese audio, but there are subtitles in my main language?
-    if item.get("audio_locale") == "ja-JP":
+    #
+    # edge case for chinese only anime where there is no japanese dub
+    # @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/51
+    if item.get("audio_locale") == "ja-JP" or item.get("audio_locale") == "zh-CN":
         # fix for missing subtitles in data
         if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
             return True
@@ -301,28 +286,6 @@ def two_digits(n):
     if n < 10:
         return "0" + str(n)
     return str(n)
-
-
-def get_in_queue(args: Args, api: API, ids: list) -> list:
-    """ retrieve watchlist status for given media ids """
-
-    req = api.make_request(
-        method="GET",
-        url=api.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
-        params={
-            "content_ids": ','.join(ids),
-            "locale": args.subtitle
-        }
-    )
-
-    if not req or req.get("error") is not None:
-        crunchy_log(args, "get_in_queue: Failed to retrieve data", xbmc.LOGERROR)
-        return []
-
-    if not req.get('data'):
-        return []
-
-    return [item.get('id') for item in req.get('data')]
 
 
 def highlight_list_item_title(list_item: xbmcgui.ListItem):

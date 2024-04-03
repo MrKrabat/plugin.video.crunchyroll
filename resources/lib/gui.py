@@ -14,8 +14,6 @@ import time
 import xbmc
 import xbmcgui
 
-from resources.lib import utils
-
 ACTION_PREVIOUS_MENU = 10
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
@@ -29,6 +27,9 @@ class SkipModalDialog(xbmcgui.WindowXMLDialog):
 
     def __init__(self, *args, **kwargs):
         self.seek_time = kwargs['seek_time']
+        self.args = kwargs['args']
+        self.api = kwargs['api']
+        self.content_id = kwargs['content_id']
         self.label = kwargs['label']
         self.action_exit_keys_id = [ACTION_PREVIOUS_MENU,
                                     ACTION_PLAYER_STOP,
@@ -37,25 +38,21 @@ class SkipModalDialog(xbmcgui.WindowXMLDialog):
         super().__init__(*args)
 
     def onInit(self):
-        utils.crunchy_log(None, "Skip::onInit()", xbmc.LOGINFO)
-        self.getControl(1000).setLabel(self.label)
+        self.getControl(1000).setLabel(self.label) # noqa
 
     def onClick(self, control_id):
-        utils.crunchy_log(None, "Skip::onClick()", xbmc.LOGINFO)
+        from resources.lib.videoplayer import update_playhead
         if control_id == 1000:
-            utils.crunchy_log(None, "Skip::onInit()::clicked", xbmc.LOGINFO)
             xbmc.Player().seekTime(self.seek_time)
+            update_playhead(self.args, self.api, self.content_id, int(self.seek_time))
             self.close()
 
     def onAction(self, action):
-        utils.crunchy_log(None, "Skip::onAction()", xbmc.LOGINFO)
         if action.getId() in self.action_exit_keys_id:
-            utils.crunchy_log(None, "Skip::onAction()::close", xbmc.LOGINFO)
             self.close()
 
 
 def _show_modal_dialog(dialog_class, xml_filename, **kwargs):
-    utils.crunchy_log(None, "_show_modal_dialog", xbmc.LOGINFO)
     dialog = dialog_class(xml_filename, kwargs.get('addon_path'), 'default', '1080i', **kwargs)
     minutes = kwargs.get('minutes', 0)
     seconds = kwargs.get('seconds', 0)

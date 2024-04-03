@@ -72,12 +72,10 @@ msgid "Subtitle Language"
 msgstr "Linguagem da legenda"
 
 msgctxt "#30021"
-msgid "English (US)"
-msgstr "Inglês (US)"
+msgid "English"
+msgstr "Inglês"
 
-msgctxt "#30022"
-msgid "English (UK)"
-msgstr "Inglês (UK)"
+# 30022 free
 
 msgctxt "#30023"
 msgid "Spanish"
@@ -114,6 +112,20 @@ msgstr "Italiano"
 msgctxt "#30031"
 msgid "Russian"
 msgstr "Russo"
+
+msgctxt "#30032"
+msgid "Hindi"
+msgstr ""
+
+msgctxt "#30038"
+msgid "Filter available dubs"
+msgstr "Filtrar os idiomas de áudio disponíveis"
+
+msgctxt "#30039"
+msgid "In an anime seasons view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "Em uma exibição de temporadas de anime, exiba apenas os idiomas de áudio em japonês, o idioma Crunchyroll ou qualquer um dos idiomas de legenda configurados."
+
+
 
 # Crunchyroll Menue
 msgctxt "#30040"

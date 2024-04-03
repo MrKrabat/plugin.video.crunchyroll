@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# Copyright (C) 2023 smirgol
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -14,11 +14,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import asyncio
 import datetime
 import os
 import sys
-from typing import Union, Dict, Optional
+from typing import Union, Dict, Optional, Any
 
 import requests
 import xbmc
@@ -27,8 +27,9 @@ import xbmcplugin
 import xbmcvfs
 
 from resources.lib.api import API
-from resources.lib.model import Object, Args, CrunchyrollError
-from resources.lib.utils import log_error_with_trace, convert_language_iso_to_string, crunchy_log
+from resources.lib.model import Object, Args, CrunchyrollError, PlayableItem
+from resources.lib.utils import log_error_with_trace, crunchy_log, \
+    get_playheads_from_api, get_cms_object_data_by_ids, get_listables_from_response
 
 
 class VideoPlayerStreamData(Object):
@@ -38,6 +39,12 @@ class VideoPlayerStreamData(Object):
         self.stream_url: str | None = None
         self.subtitle_urls: list[str] | None = None
         self.skip_events_data: Dict = {}
+        self.playheads_data: Dict = {}
+        # PlayableItem which is about to be played, that contains cms object data
+        self.playable_item: PlayableItem | None = None
+        # PlayableItem which contains cms obj data of playable_item's parent, if exists (Episodes, not Movies). currently not used.
+        self.playable_item_parent: PlayableItem | None = None
+        self.token: str | None = None
 
 
 class VideoStream(Object):
@@ -68,17 +75,54 @@ class VideoStream(Object):
 
         video_player_stream_data = VideoPlayerStreamData()
 
-        api_stream_data = self._get_stream_data_from_api()
-        if api_stream_data is False:
+        crunchy_log(self.args, "VideoStream: Starting to retrieve data async")
+        async_data = asyncio.run(self._gather_async_data())
+        crunchy_log(self.args, "VideoStream: Finished to retrieve data async")
+
+        api_stream_data = async_data.get('stream_data')
+        if not api_stream_data:
             raise CrunchyrollError("Failed to fetch stream data from api")
 
-        video_player_stream_data.stream_url = self._get_stream_url_from_api_data(api_stream_data)
-        video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(api_stream_data)
-        video_player_stream_data.skip_events_data = self._get_skip_events(self.args.get_arg('episode_id'))
+        video_player_stream_data.stream_url = self._get_stream_url_from_api_data_v2(async_data.get('stream_data'))
+        video_player_stream_data.subtitle_urls = self._get_subtitles_from_api_data(async_data.get('stream_data'))
+        video_player_stream_data.token = async_data.get('stream_data').get('token')
+
+        video_player_stream_data.skip_events_data = async_data.get('skip_events_data')
+        video_player_stream_data.playheads_data = async_data.get('playheads_data')
+        video_player_stream_data.playable_item = async_data.get('playable_item')
+        video_player_stream_data.playable_item_parent = async_data.get('playable_item_parent')
 
         return video_player_stream_data
 
-    def _get_stream_data_from_api(self) -> Union[Dict, bool]:
+    async def _gather_async_data(self) -> Dict[str, Any]:
+        """ gather data asynchronously and return them as a dictionary """
+
+        # create threads
+        # actually not sure if this works, as the requests lib is not async
+        # also not sure if this is thread safe in any way, what if session is timed-out when starting this?
+        t_stream_data = asyncio.create_task(self._get_stream_data_from_api_v2())
+        t_skip_events_data = asyncio.create_task(self._get_skip_events(self.args.get_arg('episode_id')))
+        t_playheads = asyncio.create_task(get_playheads_from_api(self.args, self.api, self.args.get_arg('episode_id')))
+        t_item_data = asyncio.create_task(
+            get_cms_object_data_by_ids(self.args, self.api, [self.args.get_arg('episode_id')]))
+        # t_item_parent_data = asyncio.create_task(get_cms_object_data_by_ids(self.args, self.api, self.args.get_arg('series_id')))
+
+        # start async requests and fetch results
+        results = await asyncio.gather(t_stream_data, t_skip_events_data, t_playheads, t_item_data)
+
+        playable_item = get_listables_from_response(self.args, [results[3].get(self.args.get_arg('episode_id'))]) if \
+            results[3] else None
+
+        return {
+            'stream_data': results[0] or {},
+            'skip_events_data': results[1] or {},
+            'playheads_data': results[2] or {},
+            'playable_item': playable_item[0] if playable_item else None,
+            'playable_item_parent': None
+            # get_listables_from_response(self.args, [results[4]])[0] if results[4] else None
+        }
+
+    async def _get_stream_data_from_api(self) -> Union[Dict, bool]:
         """ get json stream data from cr api for given args.stream_id """
 
         # api request streams
@@ -99,12 +143,34 @@ class VideoStream(Object):
 
         return req
 
+    async def _get_stream_data_from_api_v2(self) -> Union[Dict, bool]:
+        """ get json stream data from cr api for given args.stream_id using new endpoint b/c drm """
+
+        # from utils import crunchy_log
+        crunchy_log(None, "URL: %s" % self.api.STREAMS_ENDPOINT_DRM.format(self.args.get_arg('episode_id')))
+
+        req = self.api.make_request(
+            method="GET",
+            url=self.api.STREAMS_ENDPOINT_DRM.format(self.args.get_arg('episode_id')),
+        )
+
+        # check for error
+        if "error" in req or req is None:
+            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
+            xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
+            return False
+
+        return req
+
+    # @deprecated
     def _get_stream_url_from_api_data(self, api_data: Dict) -> Union[str, None]:
         """ retrieve appropriate stream url from api data """
 
         try:
             if self.args.addon.getSetting("soft_subtitles") == "false":
                 url = api_data["streams"]["adaptive_hls"]
+
                 if self.args.subtitle in url:
                     url = url[self.args.subtitle]["url"]
                 elif self.args.subtitle_fallback in url:
@@ -113,7 +179,39 @@ class VideoStream(Object):
                     url = url[""]["url"]
             else:
                 # multitrack_adaptive_hls_v2 includes soft subtitles in the stream
-                url = api_data["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+                if "" in api_data["streams"]["multitrack_adaptive_hls_v2"]:
+                    url = api_data["streams"]["multitrack_adaptive_hls_v2"][""]["url"]
+                # But sometimes, there is no default stream
+                elif self.args.subtitle in api_data["streams"]["multitrack_adaptive_hls_v2"]:
+                    url = api_data["streams"]["multitrack_adaptive_hls_v2"][self.args.subtitle]["url"]
+                elif self.args.subtitle_fallback in api_data["streams"]["multitrack_adaptive_hls_v2"]:
+                    url = api_data["streams"]["multitrack_adaptive_hls_v2"][self.args.subtitle_fallback]["url"]
+                else:
+                    raise CrunchyrollError("No stream URL found")
+
+        except IndexError:
+            item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
+            xbmcplugin.setResolvedUrl(int(self.args.argv[1]), False, item)
+            xbmcgui.Dialog().ok(self.args.addon_name, self.args.addon.getLocalizedString(30064))
+            return None
+
+        return url
+
+    def _get_stream_url_from_api_data_v2(self, api_data: Dict) -> Union[str, None]:
+        """ uses new endpoint to retrieve encryption data along with stream url """
+
+        try:
+            if self.args.addon.getSetting("soft_subtitles") == "false":
+                url = api_data["hardSubs"]
+
+                if self.args.subtitle in url:
+                    url = url[self.args.subtitle]["url"]
+                elif self.args.subtitle_fallback in url:
+                    url = url[self.args.subtitle_fallback]["url"]
+                else:
+                    url = api_data["url"]
+            else:
+                url = api_data["url"]
 
         except IndexError:
             item = xbmcgui.ListItem(self.args.get_arg('title', 'Title not provided'))
@@ -146,7 +244,7 @@ class VideoStream(Object):
         for subtitle_data in subtitles_data_raw:
             cache_result = self._get_subtitle_from_cache(
                 subtitle_data.get('url', ""),
-                subtitle_data.get('locale', ""),
+                subtitle_data.get('language', ""),
                 subtitle_data.get('format', "")
             )
 
@@ -247,7 +345,7 @@ class VideoStream(Object):
         iso_parts = subtitle_language.split('-')
 
         filename = xbmcvfs.makeLegalFilename(
-            convert_language_iso_to_string(self.args, subtitle_language) +
+            subtitle_language +
             '.' + iso_parts[0] +
             '.' + subtitle_format
         )
@@ -260,7 +358,7 @@ class VideoStream(Object):
         # and kodi file system encoding can be set to ASCII
         return filename.encode(sys.getfilesystemencoding(), "ignore").decode(sys.getfilesystemencoding())
 
-    def _get_skip_events(self, episode_id) -> Optional[Dict]:
+    async def _get_skip_events(self, episode_id) -> Optional[Dict]:
         """ fetch skip events data from api and return a prepared object for supported skip types if data is valid """
 
         # if none of the skip options are enabled in setting, don't fetch that data
@@ -288,10 +386,10 @@ class VideoStream(Object):
                     "end": intro_req.get("endTime"),
                 }}
             except (requests.exceptions.RequestException, CrunchyrollError):
-                # can be okay for e.g. movies, thus only log error with trace, but don't show notification
-                log_error_with_trace(
+                # can be okay for e.g. movies, thus only log error, but don't show notification
+                crunchy_log(
                     self.args,
-                    "_get_skip_events: error in requesting skip events data from api",
+                    "_get_skip_events: error in requesting skip events data from api. possibly no data available",
                     False
                 )
                 return None
@@ -304,7 +402,8 @@ class VideoStream(Object):
         supported_skips = ['intro', 'credits']
         prepared = dict()
         for skip_type in supported_skips:
-            if req.get(skip_type) and req.get(skip_type).get('start') is not None and req.get(skip_type).get('end') is not None:
+            if req.get(skip_type) and req.get(skip_type).get('start') is not None and req.get(skip_type).get(
+                    'end') is not None:
                 prepared.update({
                     skip_type: dict(start=req.get(skip_type).get('start'), end=req.get(skip_type).get('end'))
                 })
