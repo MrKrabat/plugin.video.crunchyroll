@@ -11,7 +11,6 @@
     <category label="30074">
         <setting id="sync_playtime" type="bool" label="30003" default="true"/>
         <setting id="page_size" type="number" label="30070" default="20"/>
-        <setting id="resolution" type="select" label="30071" values="1080|720|480|360|240" default="720"/>
         <setting id="inputstream_adaptive" type="action" label="30004" option="close" action="Addon.OpenSettings(script.module.inputstreamhelper)"/>
         <setting id="inputstream_adaptive" type="action" label="(Re)install Widevine CDM..." action="RunScript(script.module.inputstreamhelper,widevine_install)"/>
     </category>
