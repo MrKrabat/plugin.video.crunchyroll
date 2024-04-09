@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Crunchyroll
-# Copyright (C) 2018 MrKrabat
+# based on work by stefanodvx
+# Copyright (C) 2023 smirgol
+#
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,7 +26,8 @@ import xbmc
 import xbmcvfs
 
 from . import utils
-from .model import AccountData
+from .model import AccountData, LoginError
+from ..modules import cloudscraper
 
 
 class API:
@@ -37,7 +40,7 @@ class API:
     # DEVICE = "com.crunchyroll.windows.desktop"
     # TIMEOUT = 30
 
-    CRUNCHYROLL_UA = "Crunchyroll/3.51.1 Android/14 okhttp/4.12.0"
+    CRUNCHYROLL_UA = "Crunchyroll/3.53.1 Android/14 okhttp/4.12.0"
 
     INDEX_ENDPOINT = "https://beta-api.crunchyroll.com/index/v2"
     PROFILE_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/profile"
@@ -45,7 +48,7 @@ class API:
     SEARCH_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/search"
     STREAMS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/videos/{}/streams"
     STREAMS_ENDPOINT_DRM = "https://cr-play-service.prd.crunchyrollsvc.com/v1/{}/android/phone/play"
-    SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
+    # SERIES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/series/{}"
     SEASONS_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/seasons"
     EPISODES_ENDPOINT = "https://beta-api.crunchyroll.com/cms/v2{}/episodes"
     SIMILAR_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/{}/similar_to"
@@ -62,7 +65,7 @@ class API:
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
 
-    AUTHORIZATION = "Basic OTQzcTkxX3NtMXVhbnZiX3ppbjQ6bDZ5cXJTQ1NPNzZNeXFVZ295c19SQVFKcWsyemU3YnE="
+    AUTHORIZATION = "Basic bm12anNoZmtueW14eGtnN2ZiaDk6WllJVnJCV1VQYmNYRHRiRDIyVlNMYTZiNFdRb3Mzelg="
     LICENSE_ENDPOINT = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 
     def __init__(
@@ -142,8 +145,24 @@ class API:
             self.delete_storage()
             if self.retry_counter > 2:
                 utils.crunchy_log(self.args, "Max retries exceeded. Aborting!", xbmc.LOGERROR)
-                return None
+                raise LoginError("Failed to authenticate twice")
             return self.create_session()
+
+        r_json = utils.get_json_from_response(r)
+        if r.status_code == 403:
+            utils.crunchy_log(self.args, "Possible cloudflare shenanigans")
+            scraper = cloudscraper.create_scraper(delay=10, browser={'custom': self.CRUNCHYROLL_UA})
+            r = scraper.post(
+                url=API.TOKEN_ENDPOINT,
+                headers=headers,
+                data=data
+            )
+
+            if 'access_token' not in r.text:
+                from .utils import crunchy_log
+                crunchy_log(None, "Content-Type: %s" % r.headers.get("Content-Type"))
+                crunchy_log(None, "%s" % r.text)
+                raise LoginError("Failed to bypass cloudflare")
 
         r_json = utils.get_json_from_response(r)
 
