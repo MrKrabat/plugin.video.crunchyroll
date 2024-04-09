@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import os
+import re
 from datetime import datetime
 import xbmc
 import xbmcvfs
@@ -98,6 +99,15 @@ def lookup_episode(episodes, episode_id):
         if episode['id'] == episode_id:
             return episode
     return None
+
+
+def lookup_episode_number(episode):
+    number = episode["episode_metadata"].get("episode", "1")
+    if number == "":
+        number = "1"
+    if re.search("OVA", number):
+        number = "1"
+    return number
 
 
 def lookup_stream(episode, prefered_audio_id):

@@ -440,7 +440,9 @@ disable=raw-checker-failed,
         R0902,
         R0903,
         R0801,
-        W0718
+        W0718,
+        E1101
+# Due to false-positive
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

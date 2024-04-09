@@ -1,10 +1,11 @@
-v1.0.2(2024.XX.XX)
-- Fix audio handling
-- Fix subtitle showing when actual audio does not match prefered subtitle
+v1.0.2(2024.04.09)
+- Fix audio handling (#12)
+- Fix subtitle showing when actual audio does not match prefered subtitle (#5)
 - Fix event without data
 - Remove useless setting resolution (handled by inputstream.adaptive)
-- Add Tamil and Hindi as selectionable prefered language and prefered audio
+- Add Tamil and Hindi as selectionable prefered language and prefered audio (#11)
 - Update Basic Auth
+- Fix issue with episode number not integer (#9)
 
 v1.0.1(2024.03.19)
 - better management of audio preference (Fix issue #3)
