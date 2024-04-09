@@ -4,6 +4,7 @@ v1.0.2(2024.XX.XX)
 - Fix event without data
 - Remove useless setting resolution (handled by inputstream.adaptive)
 - Add Tamil and Hindi as selectionable prefered language and prefered audio
+- Update Basic Auth
 
 v1.0.1(2024.03.19)
 - better management of audio preference (Fix issue #3)
