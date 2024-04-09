@@ -166,9 +166,6 @@ class API:
             )
 
             if 'access_token' not in r.text:
-                from .utils import crunchy_log
-                crunchy_log(None, "Content-Type: %s" % r.headers.get("Content-Type"))
-                crunchy_log(None, "%s" % r.text)
                 raise LoginError("Failed to bypass cloudflare")
 
         r_json = get_json_from_response(r)
