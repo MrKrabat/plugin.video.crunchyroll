@@ -148,7 +148,6 @@ class API:
                 raise LoginError("Failed to authenticate twice")
             return self.create_session()
 
-        r_json = utils.get_json_from_response(r)
         if r.status_code == 403:
             utils.crunchy_log(self.args, "Possible cloudflare shenanigans")
             scraper = cloudscraper.create_scraper(delay=10, browser={'custom': self.CRUNCHYROLL_UA})
@@ -159,9 +158,6 @@ class API:
             )
 
             if 'access_token' not in r.text:
-                from .utils import crunchy_log
-                crunchy_log(None, "Content-Type: %s" % r.headers.get("Content-Type"))
-                crunchy_log(None, "%s" % r.text)
                 raise LoginError("Failed to bypass cloudflare")
 
         r_json = utils.get_json_from_response(r)
