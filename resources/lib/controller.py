@@ -473,6 +473,8 @@ def start_playback(args, api: API):
 
     utils.crunchy_log(args, "playback stopped", xbmc.LOGINFO)
 
+    video_player.clear_active_stream()
+
 
 def add_to_queue(args, api: API) -> bool:
     # api request
