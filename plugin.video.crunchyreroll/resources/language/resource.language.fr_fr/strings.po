@@ -262,3 +262,7 @@ msgstr "VO"
 msgctxt "#30086"
 msgid "Do you want to skip this moment"
 msgstr "Voulez vous passer ce moment"
+
+msgctxt "#30087"
+msgid "(Re)install Widevine CDM..."
+msgstr "(Re)installer Widevine CDM..."

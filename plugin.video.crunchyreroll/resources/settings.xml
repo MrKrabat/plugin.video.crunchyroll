@@ -1,23 +1,146 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <category label="30072">
-        <setting id="crunchyroll_username" type="text" label="30001" default=""/>
-        <setting id="crunchyroll_password" type="text" label="30002" option="hidden" default=""/>
-    </category>
-    <category label="30073">
-        <setting id="prefered_audio" type="select" lvalues="30085|30021|30022|30023|30024|30025|30026|30027|30028|30029|30030|30031|30032|30033" label="30084" default="0" />
-        <setting id="subtitle_language" type="select" lvalues="30021|30022|30023|30024|30025|30026|30027|30028|30029|30030|30031|30032|30033" label="30020" default="0" />
-    </category>
-    <category label="30074">
-        <setting id="sync_playtime" type="bool" label="30003" default="true"/>
-        <setting id="page_size" type="number" label="30070" default="20"/>
-        <setting id="inputstream_adaptive" type="action" label="30004" option="close" action="Addon.OpenSettings(script.module.inputstreamhelper)"/>
-        <setting id="inputstream_adaptive" type="action" label="(Re)install Widevine CDM..." action="RunScript(script.module.inputstreamhelper,widevine_install)"/>
-    </category>
-    <category label="30075">
-        <setting id="skip_intro" type="bool" label="30076" default="false"/>
-        <setting id="skip_credits" type="bool" label="30077" default="false"/>
-        <setting id="skip_recap" type="bool" label="30078" default="false"/>
-        <setting id="skip_preview" type="bool" label="30079" default="false"/>
-    </category>
+<settings version="1">
+    <section id="plugin.video.crunchyreroll">
+        <category id="authentication" label="30072" help="">
+            <group id="localization_group" label="30072">
+                <setting id="crunchyroll_username" type="string" label="30001" help="">
+                    <level>0</level>
+                    <default>someone</default>
+                    <constraints>
+                        <allowempty>false</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <heading>30001</heading>
+                    </control>
+                </setting>
+                <setting id="crunchyroll_password" type="string" label="30002" help="">
+                    <level>0</level>
+                    <default>password</default>
+                    <constraints>
+                        <allowempty>false</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <heading>30002</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+            </group>
+        </category>
+        <category id="localization" label="30073" help="">
+            <group id="localization_group" label="30073">
+                <setting id="prefered_audio" type="integer" label="30084">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <option label="30085">0</option>
+                            <option label="30021">1</option>
+                            <option label="30022">2</option>
+                            <option label="30023">3</option>
+                            <option label="30024">4</option>
+                            <option label="30025">5</option>
+                            <option label="30026">6</option>
+                            <option label="30027">7</option>
+                            <option label="30028">8</option>
+                            <option label="30029">9</option>
+                            <option label="30030">10</option>
+                            <option label="30031">11</option>
+                            <option label="30032">12</option>
+                            <option label="30033">13</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                            <heading>30084</heading>
+                    </control>
+                </setting>
+                <setting id="subtitle_language" type="integer" label="30020">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <option label="30021">0</option>
+                            <option label="30022">1</option>
+                            <option label="30023">2</option>
+                            <option label="30024">3</option>
+                            <option label="30025">4</option>
+                            <option label="30026">5</option>
+                            <option label="30027">6</option>
+                            <option label="30028">7</option>
+                            <option label="30029">8</option>
+                            <option label="30030">9</option>
+                            <option label="30031">10</option>
+                            <option label="30032">11</option>
+                            <option label="30033">12</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                            <heading>30020</heading>
+                    </control>
+                </setting>
+            </group>
+        </category>
+        <category id="settings" label="30074" help="">
+            <group id="general_settings">
+                <setting id="sync_playtime" type="boolean" label="30003">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="page_size" type="integer" label="30070" help="">
+                    <level>0</level>
+                    <default>20</default>
+                    <control type="edit" format="integer">
+                        <heading>30070</heading>
+                    </control>
+                </setting>
+            </group>
+
+            <group id="inputstream_adaptive" label="">
+                <setting id="inputstream_adaptive_helper" type="action" label="30004">
+                    <level>0</level>
+                    <control type="button" format="action">
+                        <data>Addon.OpenSettings(script.module.inputstreamhelper)</data>
+                        <close>true</close>
+                    </control>
+                </setting>
+                <setting id="inputstream_adaptive_install_widevine" type="action" label="30087">
+                    <level>0</level>
+                    <control type="button" format="action">
+                        <data>RunScript(script.module.inputstreamhelper,widevine_install)</data>
+                    </control>
+                </setting>
+            </group>
+
+            <group id="skip_settings" label="30075" help="">
+                <setting id="skip_intro" type="boolean" label="30076">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="skip_credits" type="boolean" label="30077">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="skip_recap" type="boolean" label="30078">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="skip_preview" type="boolean" label="30079">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <group id="clear_cache" label="30088">
+                <setting id="clear_subtitle_cache" type="action" label="30089">
+                    <level>0</level>
+                    <control type="button" format="action">
+                        <data>RunScript(plugin.video.crunchyreroll,clear_subtitle_cache)</data>
+                    </control>
+                </setting>
+            </group>
+        </category>
+    </section>
 </settings>
