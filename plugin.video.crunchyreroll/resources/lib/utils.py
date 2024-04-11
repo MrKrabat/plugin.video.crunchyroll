@@ -30,7 +30,7 @@ CRUNCHYROLL_API_URL = "https://beta-api.crunchyroll.com"
 CRUNCHYROLL_STATIC_URL = "https://static.crunchyroll.com"
 CRUNCHYROLL_PLAY_URL = "https://cr-play-service.prd.crunchyrollsvc.com"
 CRUNCHYROLL_LICENSE_URL = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
-CRUNCHYROLL_UA = "Crunchyroll/3.53.1 Android/14 okhttp/4.12.0"
+CRUNCHYROLL_UA = "Crunchyroll/3.54.0 Android/14 okhttp/4.12.0"
 
 
 def iso_639_1_to_iso_639_2(code):

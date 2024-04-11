@@ -5,13 +5,13 @@ ROOT_DIR=$(readlink -f "$SCRIPT_DIR/..")
 
 varLookup(){
     name=$1
-    basicAuthFile=$(grep -r get${name^} $SOURCE |grep public |grep dt | grep final | awk -F ':' '{ print $1}')
+    basicAuthFile=$(grep -r get${name^} $SOURCE |grep public | grep final | awk -F ':' '{ print $1}')
     varName=$(grep get${name^} $basicAuthFile -A 4 | tail -1 | awk '{print $3}' | rev | cut -c 2- | rev)
     value=$(grep -E "put-object.*$varName" $basicAuthFile -B 4 | grep const | awk -F '"' '{ print $2}')
     echo $value
 }
 
-LATEST="3.53.1"
+LATEST="3.54.0"
 CURRENT=$(ls -v "$ROOT_DIR/decompiled_crunchyroll/" | tail -n1)
 echo "Last version available=$LATEST"
 echo "Current version=$CURRENT"
