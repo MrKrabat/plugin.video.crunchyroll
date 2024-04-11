@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------- #
 
 import logging
-import requests
+import requests # noqa
 import sys
 import ssl
 
@@ -208,7 +208,7 @@ class CloudScraper(Session):
         try:
             print(req)
         except ValueError as e:
-            print(f"Debug Error: {getattr(e, 'message', e)}")
+            print("Debug Error: {}".format(getattr(e, 'message', e)))
 
     # ------------------------------------------------------------------------------- #
     # Decode Brotli on older versions of urllib3 manually
@@ -220,10 +220,10 @@ class CloudScraper(Session):
                 resp._content = brotli.decompress(resp.content)
             else:
                 logging.warning(
-                    f'You\'re running urllib3 {requests.packages.urllib3.__version__}, Brotli content detected, '
+                    'You\'re running urllib3 %d, Brotli content detected, '
                     'Which requires manual decompression, '
                     'But option allow_brotli is set to False, '
-                    'We will not continue to decompress.'
+                    'We will not continue to decompress.' % requests.packages.urllib3.__version__
                 )
 
         return resp
@@ -296,7 +296,7 @@ class CloudScraper(Session):
                     _ = self._solveDepthCnt
                     self.simpleException(
                         CloudflareLoopProtection,
-                        f"!!Loop Protection!! We have tried to solve {_} time(s) in a row."
+                        "!!Loop Protection!! We have tried to solve %d time(s) in a row." % _
                     )
 
                 self._solveDepthCnt += 1
@@ -352,7 +352,7 @@ class CloudScraper(Session):
             resp = scraper.get(url, **kwargs)
             resp.raise_for_status()
         except Exception:
-            logging.error(f'"{url}" returned an error. Could not collect tokens.')
+            logging.error('"%s" returned an error. Could not collect tokens.' % url)
             raise
 
         domain = urlparse(resp.url).netloc
@@ -360,7 +360,7 @@ class CloudScraper(Session):
         cookie_domain = None
 
         for d in scraper.cookies.list_domains():
-            if d.startswith('.') and d in (f'.{domain}'):
+            if d.startswith('.') and d in (".%s" % domain):
                 cookie_domain = d
                 break
         else:
@@ -393,9 +393,10 @@ class CloudScraper(Session):
 
 if ssl.OPENSSL_VERSION_INFO < (1, 1, 1):
     print(
-        f"DEPRECATION: The OpenSSL being used by this python install ({ssl.OPENSSL_VERSION}) does not meet the minimum supported "
+        "DEPRECATION: The OpenSSL being used by this python install ({}) does not meet the minimum supported "
         "version (>= OpenSSL 1.1.1) in order to support TLS 1.3 required by Cloudflare, "
         "You may encounter an unexpected Captcha or cloudflare 1020 blocks."
+        .format(ssl.OPENSSL_VERSION)
     )
 
 # ------------------------------------------------------------------------------- #

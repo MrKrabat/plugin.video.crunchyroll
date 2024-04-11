@@ -73,7 +73,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.post(
-                f'{self.host}/user',
+                '%s/user' % self.host,
                 headers={'Accept': 'application/json'},
                 data={
                     'username': self.username,
@@ -105,7 +105,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.post(
-                f'{self.host}/captcha/{jobID}/report',
+                '%s/captcha/%d/report' % (self.host, jobID),
                 headers={'Accept': 'application/json'},
                 data={
                     'username': self.username,
@@ -142,7 +142,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.get(
-                f'{self.host}/captcha/{jobID}',
+                '%s/captcha/%d' % (self.host, jobID),
                 headers={'Accept': 'application/json'}
             ),
             check_success=_checkRequest,
@@ -208,7 +208,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.post(
-                f'{self.host}/captcha',
+                '%s/captcha' % self.host,
                 headers={'Accept': 'application/json'},
                 data=data,
                 allow_redirects=False
@@ -233,7 +233,7 @@ class captchaSolver(Captcha):
         for param in ['username', 'password']:
             if not captchaParams.get(param):
                 raise CaptchaParameter(
-                    f"DeathByCaptcha: Missing '{param}' parameter."
+                    "DeathByCaptcha: Missing '%s' parameter." % param
                 )
             setattr(self, param, captchaParams.get(param))
 
@@ -252,7 +252,7 @@ class captchaSolver(Captcha):
             self.proxy = None
 
         if captchaType not in self.captchaType:
-            raise CaptchaException(f'DeathByCaptcha: {captchaType} is not supported by this provider.')
+            raise CaptchaException('DeathByCaptcha: %s is not supported by this provider.' % captchaType)
 
         try:
             jobID = self.requestSolve(captchaType, url, siteKey)
@@ -263,11 +263,11 @@ class captchaSolver(Captcha):
                     self.reportJob(jobID)
             except polling2.TimeoutException:
                 raise CaptchaTimeout(
-                    f"DeathByCaptcha: Captcha solve took to long and also failed reporting the job id {jobID}."
+                    "DeathByCaptcha: Captcha solve took to long and also failed reporting the job id %d." % jobID
                 )
 
             raise CaptchaTimeout(
-                f"DeathByCaptcha: Captcha solve took to long to execute job id {jobID}, aborting."
+                "DeathByCaptcha: Captcha solve took to long to execute job id %d, aborting." % jobID
             )
 
 # ------------------------------------------------------------------------------- #

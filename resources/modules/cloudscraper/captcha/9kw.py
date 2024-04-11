@@ -41,7 +41,7 @@ class captchaSolver(Captcha):
     def checkErrorStatus(response):
         if response.status_code in [500, 502]:
             raise CaptchaServiceUnavailable(
-                f'9kw: Server Side Error {response.status_code}'
+                '9kw: Server Side Error %d' % response.status_code
             )
 
         error_codes = {
@@ -198,14 +198,14 @@ class captchaSolver(Captcha):
             self.session.proxies = captchaParams.get('proxies')
 
         if captchaType not in self.captchaType:
-            raise CaptchaException(f'9kw: {captchaType} is not supported by this provider.')
+            raise CaptchaException('9kw: %s is not supported by this provider.' % captchaType)
 
         try:
             jobID = self.requestSolve(captchaType, url, siteKey)
             return self.requestJob(jobID)
         except polling.TimeoutException:
             raise CaptchaTimeout(
-                f"9kw: solve took to long to execute 'captchaid' {jobID}, aborting."
+                "9kw: solve took to long to execute 'captchaid' %d, aborting." % jobID
             )
 
 

@@ -39,7 +39,7 @@ class captchaSolver(Captcha):
     @staticmethod
     def checkErrorStatus(response, fnct):
         if response.status_code in [500, 502]:
-            raise CaptchaServiceUnavailable(f'CapSolver: Server Side Error {response.status_code}')
+            raise CaptchaServiceUnavailable('CapSolver: Server Side Error %d' % response.status_code)
 
         try:
             rPayload = response.json()
@@ -48,7 +48,7 @@ class captchaSolver(Captcha):
 
         if rPayload.get('errorDescription', False) and 'Current system busy' not in rPayload['errorDescription']:
             raise CaptchaAPIError(
-                f"CapSolver -> {fnct} -> {rPayload.get('errorDescription')}"
+                "CapSolver -> %d -> %sw" % (fnct, rPayload.get('errorDescription'))
             )
 
     # ------------------------------------------------------------------------------- #
@@ -68,7 +68,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.post(
-                f'{self.host}/getTaskResult',
+                '%s/getTaskResult' % self.host,
                 json={
                     'clientKey': self.api_key,
                     'taskId': jobID
@@ -129,11 +129,11 @@ class captchaSolver(Captcha):
         if self.proxy:
             payload['task']['proxy'] = self.proxy
         else:
-            payload['task']['type'] = f"{self.captchaType[captchaType]}Proxyless"
+            payload['task']['type'] = "%sProxyless" % self.captchaType[captchaType]
 
         response = polling2.poll(
             lambda: self.session.post(
-                f'{self.host}/createTask',
+                '%s/createTask' % self.host,
                 json=payload,
                 allow_redirects=False,
                 timeout=30
@@ -177,7 +177,7 @@ class captchaSolver(Captcha):
             return self.requestJob(jobID)
         except polling2.TimeoutException:
             raise CaptchaTimeout(
-                f"CapSolver: Captcha solve (task ID: {jobID}) took to long."
+                "CapSolver: Captcha solve (task ID: %d) took to long." % jobID
             )
 
         raise CaptchaAPIError('CapSolver: Job Failure.')

@@ -21,9 +21,9 @@ import json as JSON
 from contextlib import closing
 from datetime import timedelta
 
-import requests
-import xbmc
-import xbmcvfs
+import requests # noqa
+import xbmc # noqa
+import xbmcvfs # noqa
 
 from . import utils
 from .model import AccountData, LoginError

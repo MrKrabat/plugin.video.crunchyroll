@@ -234,11 +234,11 @@ class Cloudflare():
         except Exception as e:
             self.cloudscraper.simpleException(
                 CloudflareIUAMError,
-                f"Unable to parse Cloudflare anti-bots page: {getattr(e, 'message', e)}"
+                "Unable to parse Cloudflare anti-bots page: %s" % getattr(e, 'message', e)
             )
 
         return {
-            'url': f"{hostParsed.scheme}://{hostParsed.netloc}{self.unescape(formPayload['challengeUUID'])}",
+            'url': "%s://%s%s" % (hostParsed.scheme, hostParsed.netloc, self.unescape(formPayload['challengeUUID'])),
             'data': payload
         }
 
@@ -319,7 +319,7 @@ class Cloudflare():
         hostParsed = urlparse(url)
 
         return {
-            'url': f"{hostParsed.scheme}://{hostParsed.netloc}{self.unescape(formPayload['challengeUUID'])}",
+            'url': "%s://%s%s" % (hostParsed.scheme, hostParsed.netloc, self.unescape(formPayload['challengeUUID'])),
             'data': dataPayload
         }
 
@@ -433,7 +433,7 @@ class Cloudflare():
                 cloudflare_kwargs,
                 'headers',
                 {
-                    'Origin': f'{urlParsed.scheme}://{urlParsed.netloc}',
+                    'Origin': '%s://%s' % (urlParsed.scheme, urlParsed.netloc),
                     'Referer': resp.url
                 }
             )

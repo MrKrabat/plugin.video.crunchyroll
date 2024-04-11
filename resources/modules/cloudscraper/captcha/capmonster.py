@@ -41,7 +41,7 @@ class captchaSolver(Captcha):
     def checkErrorStatus(response):
         if response.status_code in [500, 502]:
             raise CaptchaServiceUnavailable(
-                f'CapMonster: Server Side Error {response.status_code}'
+                'CapMonster: Server Side Error %d' % response.status_code
             )
 
         payload = response.json()
@@ -71,7 +71,7 @@ class captchaSolver(Captcha):
 
         response = polling2.poll(
             lambda: self.session.post(
-                f'{self.host}/getTaskResult',
+                '%s/getTaskResult' % self.host,
                 json={
                     'clientKey': self.clientKey,
                     'taskId': taskID
@@ -118,11 +118,11 @@ class captchaSolver(Captcha):
         if self.proxy:
             data['task'].update(self.proxy)
         else:
-            data['task']['type'] = f"{data['task']['type']}Proxyless"
+            data['task']['type'] = "%sProxyless" % data['task']['type']
 
         response = polling2.poll(
             lambda: self.session.post(
-                f'{self.host}/createTask',
+                '%s/createTask' % self.host,
                 json=data,
                 allow_redirects=False,
                 timeout=30
@@ -185,12 +185,12 @@ class captchaSolver(Captcha):
             except polling2.TimeoutException:
                 raise CaptchaTimeout(
                     "CapMonster: Captcha solve took to long and also failed "
-                    f"reporting the task with task id {taskID}."
+                    "reporting the task with task id %d." % taskID
                 )
 
             raise CaptchaTimeout(
                 "CapMonster: Captcha solve took to long to execute "
-                f"task id {taskID}, aborting."
+                "task id %d, aborting." % taskID
             )
 
 
