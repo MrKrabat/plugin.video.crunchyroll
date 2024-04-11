@@ -191,7 +191,8 @@ def show_resume_episodes(args, api: API):
         args=args,
         api=api,
         listables=get_listables_from_response(args, req.get('data')),
-        is_folder=False
+        is_folder=False,
+        options=view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
     # pagination
