@@ -191,7 +191,8 @@ def show_resume_episodes(args, api: API):
         args=args,
         api=api,
         listables=get_listables_from_response(args, req.get('data')),
-        is_folder=False
+        is_folder=False,
+        options=view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
     # pagination
@@ -472,6 +473,8 @@ def start_playback(args, api: API):
         time.sleep(1)
 
     utils.crunchy_log(args, "playback stopped", xbmc.LOGINFO)
+
+    video_player.clear_active_stream()
 
 
 def add_to_queue(args, api: API) -> bool:
