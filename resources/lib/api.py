@@ -28,7 +28,8 @@ import xbmcvfs
 from requests import HTTPError, Response
 
 from . import utils
-from .model import AccountData, Args, LoginError
+from .globals import G
+from .model import AccountData, LoginError
 from ..modules import cloudscraper
 
 
@@ -80,18 +81,16 @@ class API:
 
     def __init__(
             self,
-            args: Args = None,
             locale: str = "en-US"
     ) -> None:
         self.http = requests.Session()
         self.locale: str = locale
         self.account_data: AccountData = AccountData(dict())
         self.api_headers: Dict = default_request_headers()
-        self.args = args
         self.retry_counter = 0
 
     def start(self) -> bool:
-        session_restart = self.args.get_arg('session_restart', False)
+        session_restart = G.args.get_arg('session_restart', False)
 
         # restore account data from file
         session_data = self.load_from_storage()
@@ -113,8 +112,8 @@ class API:
 
     def create_session(self, refresh=False) -> None:
         # get login information
-        username = self.args.addon.getSetting("crunchyroll_username")
-        password = self.args.addon.getSetting("crunchyroll_password")
+        username = G.args.addon.getSetting("crunchyroll_username")
+        password = G.args.addon.getSetting("crunchyroll_password")
 
         headers = {"Authorization": API.AUTHORIZATION}
         data = {}
@@ -125,7 +124,7 @@ class API:
                 "password": password,
                 "grant_type": "password",
                 "scope": "offline_access",
-                "device_id": self.args.device_id,
+                "device_id": G.args.device_id,
                 "device_name": 'Kodi',
                 "device_type": 'MediaCenter'
             }
@@ -134,7 +133,7 @@ class API:
                 "refresh_token": self.account_data.refresh_token,
                 "grant_type": "refresh_token",
                 "scope": "offline_access",
-                "device_id": self.args.device_id,
+                "device_id": G.args.device_id,
                 "device_name": 'Kodi',
                 "device_type": 'MediaCenter'
             }
@@ -149,16 +148,16 @@ class API:
         # if refreshing and refresh token is expired, it will throw a 400
         # retry with a fresh login, but limit retries to prevent loop in case something else went wrong
         if r.status_code == 400:
-            utils.crunchy_log(self.args, "Invalid/Expired credentials, restarting session from scratch")
+            utils.crunchy_log("Invalid/Expired credentials, restarting session from scratch")
             self.retry_counter = self.retry_counter + 1
             self.delete_storage()
             if self.retry_counter > 2:
-                utils.crunchy_log(self.args, "Max retries exceeded. Aborting!", xbmc.LOGERROR)
+                utils.crunchy_log("Max retries exceeded. Aborting!", xbmc.LOGERROR)
                 raise LoginError("Failed to authenticate twice")
             return self.create_session()
 
         if r.status_code == 403:
-            utils.crunchy_log(self.args, "Possible cloudflare shenanigans")
+            utils.crunchy_log("Possible cloudflare shenanigans")
             scraper = cloudscraper.create_scraper(delay=10, browser={'custom': self.CRUNCHYROLL_UA})
             r = scraper.post(
                 url=API.TOKEN_ENDPOINT,
@@ -255,7 +254,7 @@ class API:
             if is_retry:
                 raise LoginError('Request to API failed twice due to authentication issues.')
 
-            utils.crunchy_log(self.args, "make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
+            utils.crunchy_log("make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
             self.account_data.expires = 0
             return self.make_request(method, url, headers, params, data, json_data, True)
 
@@ -278,10 +277,11 @@ class API:
 
         return get_json_from_response(r)
 
-    def get_storage_path(self) -> str:
+    @staticmethod
+    def get_storage_path() -> str:
         """Get cookie file path
         """
-        profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
+        profile_path = xbmcvfs.translatePath(G.args.addon.getAddonInfo("profile"))
 
         return profile_path
 
@@ -382,7 +382,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     try:
         r_json: Dict = r.json()
     except requests.exceptions.JSONDecodeError:
-        log_error_with_trace(None, "Failed to parse response data")
+        log_error_with_trace("Failed to parse response data")
         return None
 
     if "error" in r_json:

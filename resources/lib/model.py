@@ -32,6 +32,7 @@ from json import dumps
 import xbmcaddon
 
 from . import router
+from .globals import G
 
 
 class Args(object):
@@ -195,17 +196,17 @@ class ListableItem(Object):
         self.banner: str | None = None
 
     @abstractmethod
-    def get_info(self, args: Args) -> Dict:
+    def get_info(self) -> Dict:
         """ return a dict with info to set on the kodi ListItem (filtered) and access some data """
 
         pass
 
-    def to_item(self, args: Args) -> xbmcgui.ListItem:
+    def to_item(self) -> xbmcgui.ListItem:
         """ Convert ourselves to a Kodi ListItem"""
 
         from resources.lib.view import types
 
-        info = self.get_info(args)
+        info = self.get_info()
         # filter out items not known to kodi
         list_info = {key: info[key] for key in types if key in info}
 
@@ -228,7 +229,7 @@ class ListableItem(Object):
             "thumb": self.thumb or 'DefaultFolder.png',
             'poster': self.poster or self.thumb or 'DefaultFolder.png',
             'banner': self.thumb or 'DefaultFolder.png',
-            'fanart': self.fanart or xbmcvfs.translatePath(args.addon.getAddonInfo('fanart')),
+            'fanart': self.fanart or xbmcvfs.translatePath(G.args.addon.getAddonInfo('fanart')),
             'icon': self.thumb or 'DefaultFolder.png'
         })
 
@@ -255,7 +256,7 @@ class PlayableItem(ListableItem):
         self.playcount: int = 0
 
     @abstractmethod
-    def get_info(self, args: Args) -> Dict:
+    def get_info(self) -> Dict:
         """ return a dict with info to set on the kodi ListItem (filtered) and access some data """
 
         pass
@@ -303,7 +304,7 @@ class SeriesData(ListableItem):
         # @todo: not sure how to get that without checking all child seasons and their episodes
         pass
 
-    def get_info(self, args: Args) -> Dict:
+    def get_info(self) -> Dict:
         # in theory, we could also omit this method and just iterate over the objects properties and use them
         # to set data on the Kodi ListItem, but this way we are decoupled from their naming convention
         return {
@@ -361,7 +362,7 @@ class SeasonData(ListableItem):
         # @todo: not sure how to get that without checking all child episodes
         pass
 
-    def get_info(self, args: Args) -> Dict:
+    def get_info(self) -> Dict:
         return {
             'title': self.title,
             'tvshowtitle': self.tvshowtitle,
@@ -428,7 +429,7 @@ class EpisodeData(PlayableItem):
         if self.playhead is not None and self.duration is not None:
             self.playcount = 1 if (int(self.playhead / self.duration * 100)) > 90 else 0
 
-    def get_info(self, args: Args) -> Dict:
+    def get_info(self) -> Dict:
         return {
             'title': self.title,
             'tvshowtitle': self.tvshowtitle,
@@ -499,7 +500,7 @@ class MovieData(PlayableItem):
         if self.playhead is not None and self.duration is not None:
             self.playcount = 1 if (int(self.playhead / self.duration * 100)) > 90 else 0
 
-    def get_info(self, args: Args) -> Dict:
+    def get_info(self) -> Dict:
         return {
             'title': self.title,
             'tvshowtitle': self.tvshowtitle,
