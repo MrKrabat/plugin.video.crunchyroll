@@ -27,7 +27,7 @@ import xbmcplugin
 from resources.lib import utils
 from resources.lib.api import API
 from resources.lib.gui import SkipModalDialog, _show_modal_dialog
-from resources.lib.model import Object, Args, CrunchyrollError
+from resources.lib.model import Object, Args, CrunchyrollError, LoginError
 from resources.lib.videostream import VideoPlayerStreamData, VideoStream
 
 
@@ -88,11 +88,17 @@ class VideoPlayer(Object):
                 xbmcgui.Dialog().ok(self._args.addon_name, self._args.addon.getLocalizedString(30064))
                 return False
 
-        except (CrunchyrollError, requests.exceptions.RequestException):
+        except (CrunchyrollError, requests.exceptions.RequestException) as e:
             utils.log_error_with_trace(self._args, "Failed to prepare stream info data", False)
             xbmcplugin.setResolvedUrl(int(self._args.argv[1]), False, item)
-            xbmcgui.Dialog().ok(self._args.addon_name,
-                                self._args.addon.getLocalizedString(30064))
+
+            # check for TOO_MANY_ACTIVE_STREAMS
+            if 'TOO_MANY_ACTIVE_STREAMS' in str(e):
+                xbmcgui.Dialog().ok(self._args.addon_name,
+                                    self._args.addon.getLocalizedString(30080))
+            else:
+                xbmcgui.Dialog().ok(self._args.addon_name,
+                                    self._args.addon.getLocalizedString(30064))
             return False
 
         return True
@@ -303,6 +309,22 @@ class VideoPlayer(Object):
                 'content_id': self._args.get_arg('episode_id'),
             }
         ).start()
+
+    def clear_active_stream(self):
+        if not self._args.get_arg('episode_id') or not self._stream_data.token:
+            return
+
+        try:
+            self._api.make_request(
+                method="DELETE",
+                url=self._api.STREAMS_ENDPOINT_CLEAR_STREAM.format(self._args.get_arg('episode_id'), self._stream_data.token),
+            )
+        except (CrunchyrollError, LoginError, requests.exceptions.RequestException):
+            # catch timeout or any other possible exception
+            utils.crunchy_log(None, "Failed to clear active stream for episode: %s" % self._args.get_arg('episode_id'))
+            return
+
+        utils.crunchy_log(None, "Cleared active stream for episode: %s" % self._args.get_arg('episode_id'))
 
 
 def update_playhead(args: Args, api: API, content_id: str, playhead: int):
