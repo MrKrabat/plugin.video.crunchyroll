@@ -189,6 +189,7 @@ class ListableItem(Object):
         self.series_id: str | None = None  # @todo: this is not present in all subclasses, move that
         self.season_id: str | None = None  # @todo: this is not present in all subclasses, move that
         self.title: str | None = None
+        self.title_unformatted: str | None = None
         self.thumb: str | None = None
         self.fanart: str | None = None
         self.poster: str | None = None
@@ -281,6 +282,7 @@ class SeriesData(ListableItem):
 
         self.id = panel.get("id")
         self.title: str = panel.get("title")
+        self.title_unformatted: str = panel.get("title")
         self.tvshowtitle: str = panel.get("title")
         self.series_id: str | None = panel.get("id")
         self.season_id: str | None = None
@@ -338,6 +340,7 @@ class SeasonData(ListableItem):
 
         self.id = data.get("id")
         self.title: str = data.get("title")
+        self.title_unformatted: str = data.get("title")
         self.tvshowtitle: str = data.get("title")
         self.series_id: str | None = data.get("series_id")
         self.season_id: str | None = data.get("id")
@@ -401,6 +404,7 @@ class EpisodeData(PlayableItem):
         self.id = panel.get("id")
         self.title: str = utils.format_long_episode_title(meta.get("season_title"), meta.get("episode_number"),
                                                           panel.get("title"))
+        self.title_unformatted: str = panel.get("title")
         self.tvshowtitle: str = meta.get("series_title", "")
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)
@@ -469,6 +473,7 @@ class MovieData(PlayableItem):
 
         self.id = panel.get("id")
         self.title: str = meta.get("movie_listing_title", "")
+        self.title_unformatted: str = meta.get("movie_listing_title", "")
         self.tvshowtitle: str = meta.get("movie_listing_title", "")
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)

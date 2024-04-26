@@ -454,7 +454,8 @@ def view_episodes(args, api: API):
         args=args,
         api=api,
         listables=get_listables_from_response(args, req.get('items')),
-        is_folder=False
+        is_folder=False,
+        options=view.OPT_CTX_NO_SEASON_TITLE
     )
 
     view.end_of_directory(args, "episodes")
