@@ -21,15 +21,15 @@ msgstr ""
 
 msgctxt "#30210"
 msgid "Languages"
-msgstr ""
+msgstr "Idioma"
 
 msgctxt "#30220"
 msgid "Playback"
-msgstr ""
+msgstr "Reprodução"
 
 msgctxt "#30230"
 msgid "Other"
-msgstr ""
+msgstr "Outros"
 
 msgctxt "#30001"
 msgid "Username"
@@ -53,15 +53,15 @@ msgstr ""
 
 msgctxt "#30010"
 msgid "General"
-msgstr ""
+msgstr "Geral"
 
 msgctxt "#30011"
 msgid "Skip intro"
-msgstr ""
+msgstr "Pular abertura"
 
 msgctxt "#30012"
 msgid "Skip credits"
-msgstr ""
+msgstr "Pular créditos"
 
 msgctxt "#30015"
 msgid "Skip"
@@ -69,7 +69,7 @@ msgstr ""
 
 msgctxt "#30020"
 msgid "Subtitle Language"
-msgstr "Linguagem da legenda"
+msgstr "Idioma da legenda"
 
 msgctxt "#30021"
 msgid "English"
@@ -164,7 +164,7 @@ msgstr "Retomar"
 
 msgctxt "#30049"
 msgid "Crunchylists"
-msgstr ""
+msgstr "Crunchylistas"
 
 msgctxt "#30050"
 msgid "Anime"
@@ -237,15 +237,15 @@ msgstr "Se o vídeo não iniciar, aguarde 30 segundos e tente novamente."
 
 msgctxt "#30067"
 msgid "Add to queue"
-msgstr "Add to queue"
+msgstr "Adicionar à fila"
 
 msgctxt "#30068"
 msgid "Remove from queue"
-msgstr "Remove from queue"
+msgstr "Remover da fila"
 
 msgctxt "#30069"
 msgid "Alternative Subtitle Language"
-msgstr "Linguagem de Legendas Alternativa"
+msgstr "Idioma de Legendas Alternativa"
 
 msgctxt "#30070"
 msgid "None"
@@ -253,7 +253,7 @@ msgstr "Sem Legendas"
 
 msgctxt "#30071"
 msgid "Added to queue"
-msgstr "Added to queue"
+msgstr "Adicionado à fila"
 
 msgctxt "#30072"
 msgid "[COLOR orange]%s[/COLOR] (change profile)"
@@ -265,4 +265,4 @@ msgstr ""
 
 msgctxt "#30080"
 msgid "There are too many active streams. Please try again later."
-msgstr ""
+msgstr "Muitas streams ativas. Por favor, tente mais tarde"
