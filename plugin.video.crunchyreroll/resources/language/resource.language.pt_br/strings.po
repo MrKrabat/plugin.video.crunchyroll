@@ -267,3 +267,11 @@ msgstr "Você quer pular esse momento"
 msgctxt "#30087"
 msgid "(Re)install Widevine CDM..."
 msgstr "(Re)instalar Widevine CDM..."
+
+msgctxt "#30088"
+msgid "Cache management"
+msgstr "Gerenciamento de cache"
+
+msgctxt "#30089"
+msgid "Clear subtitles cache"
+msgstr "Limpar cache de legendas"

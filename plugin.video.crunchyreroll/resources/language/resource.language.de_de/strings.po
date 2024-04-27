@@ -268,3 +268,11 @@ msgstr "Möchten Sie diesen Moment überspringen?"
 msgctxt "#30087"
 msgid "(Re)install Widevine CDM..."
 msgstr "(Re)installieren Widevine CDM..."
+
+msgctxt "#30088"
+msgid "Cache management"
+msgstr "Cache-Verwaltung"
+
+msgctxt "#30089"
+msgid "Clear subtitles cache"
+msgstr "Untertitel-Cache leeren"

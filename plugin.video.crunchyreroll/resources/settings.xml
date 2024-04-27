@@ -137,7 +137,7 @@
                 <setting id="clear_subtitle_cache" type="action" label="30089">
                     <level>0</level>
                     <control type="button" format="action">
-                        <data>RunScript(plugin.video.crunchyreroll,clear_subtitle_cache)</data>
+                        <data>RunScript(plugin.video.crunchyreroll,clear_subtitles_cache)</data>
                     </control>
                 </setting>
             </group>

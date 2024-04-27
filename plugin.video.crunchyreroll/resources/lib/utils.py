@@ -32,6 +32,8 @@ CRUNCHYROLL_PLAY_URL = "https://cr-play-service.prd.crunchyrollsvc.com"
 CRUNCHYROLL_LICENSE_URL = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 CRUNCHYROLL_UA = "Crunchyroll/3.54.0 Android/14 okhttp/4.12.0"
 
+CACHE_PATH = "special://temp/crunchyroll_cache_subtitles/"
+
 
 def iso_639_1_to_iso_639_2(code):
     locales = {
@@ -150,7 +152,7 @@ def download_subtitle(url, output):
 
 
 def get_subtitles(episode_id, subtitles):
-    cache_folder = xbmcvfs.translatePath("special://temp/crunchyroll_cache_subtitles")
+    cache_folder = xbmcvfs.translatePath(CACHE_PATH)
     if not xbmcvfs.exists(cache_folder):
         xbmcvfs.mkdirs(cache_folder)
 
@@ -159,7 +161,7 @@ def get_subtitles(episode_id, subtitles):
         lang = sub['language'].split('-')[0]
         # We keep sub['language'] in the name as we might have for the same lang many different language
         filename = f"{episode_id}.{sub['language']}.{lang}.{sub['format']}"
-        file_path = xbmcvfs.translatePath(f"{cache_folder}/{filename}")
+        file_path = xbmcvfs.translatePath(f"{cache_folder}{filename}")
 
         if not xbmcvfs.exists(file_path):
             download_subtitle(sub['url'], file_path)
@@ -212,3 +214,7 @@ def sub_locale_from_id(locale_id):
         return locales[locale_id]
 
     return "eng"
+
+
+def get_cache_path():
+    return CACHE_PATH
