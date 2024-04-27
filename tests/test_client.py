@@ -72,10 +72,13 @@ class ClientTest(unittest.TestCase):
         episodes = client.get_season_episodes(seasons[0].id)
         client.get_stream_infos(episodes[0].id)
 
-    def test_get_one_episode_ova(self):
+    def test_get_one_episode_special_number(self):
         # My Hero Academia OVA2
         episode_id = "G0DUN1QQ0"
         client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        client.get_stream_infos(episode_id)
+        # One Piece SP13
+        episode_id = "GMKUXPGV1"
         client.get_stream_infos(episode_id)
 
     def test_playhead_manipulation(self):
