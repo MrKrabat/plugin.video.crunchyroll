@@ -23,7 +23,12 @@
         <disclaimer lang="de_DE">HINWEIS: Du MUSST PREMIUM Mitglied sein um dieses Plugin zu benutzen</disclaimer>
         <disclaimer lang="fr_FR">ATTENTION: Vous DEVEZ être un utilisateur PREMIUM pour pouvoir utiliser ce plugin</disclaimer>
         <news>
-            v1.0.4(2024.XX.XX)
+            v1.0.4(2024.04.27)
+            - Update settings to modern format
+            - Add a way to clean subtitles cache
+            - Change way to handle special episode number (#14)
+            - Remove references to setting resolution (#13)
+            - Update Basic Auth and User Agent
         </news>
         <license>GNU Affero General Public License, v3</license>
         <forum></forum>

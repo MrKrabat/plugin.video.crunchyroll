@@ -45,7 +45,7 @@ class CrunchyrollAuth(AuthBase):
         # These are extracted from the Android application
         self.auth_headers = {
             "User-Agent": utils.CRUNCHYROLL_UA,
-            "Authorization": "Basic bm12anNoZmtueW14eGtnN2ZiaDk6WllJVnJCV1VQYmNYRHRiRDIyVlNMYTZiNFdRb3Mzelg="
+            "Authorization": "Basic ejFrYWxhenhhaXFvNDhnZDgzbXg6LVdkamJidmJyNTE5QUxEMEtvUDBTQTgyemdTaHpoNkk="
         }
 
         # Make sure all above fields are set
