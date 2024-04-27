@@ -105,6 +105,8 @@ def lookup_episode(episodes, episode_id):
 
 def lookup_episode_number(episode):
     number = episode["episode_metadata"].get("episode", "1")
+    if number == "":
+        number = "1"
     return number
 
 
