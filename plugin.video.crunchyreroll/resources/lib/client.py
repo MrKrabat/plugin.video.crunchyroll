@@ -34,7 +34,6 @@ class CrunchyrollClient:
         self.prefered_subtitle = settings['prefered_subtitle']
         self.prefered_audio = settings['prefered_audio']
         self.page_size = settings['page_size']
-        self.resolution = settings['resolution']
         self.cms = self._get_cms_info()
 
     def _get_cms_info(self):
