@@ -45,6 +45,7 @@ release-upload:
 	curl -v -X POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28"  -H "Authorization: Bearer $${CRUNCHYROLL_GITHUB_TOKEN}" \
 	"$$(jq -r .upload_url release_${CRUNCHYROLL_VERSION}.json | awk -F '{' '{ print $$1}')?name=plugin.video.crunchyreroll-${CRUNCHYROLL_VERSION}.zip" \
 	-H "Content-Type: application/zip" --data-binary @archive/plugin.video.crunchyreroll-${CRUNCHYROLL_VERSION}.zip
+	rm release_${CRUNCHYROLL_VERSION}.json
 
 release: clean-release test $(ARCHIVE) release-upload
 
