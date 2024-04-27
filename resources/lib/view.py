@@ -307,7 +307,11 @@ def add_listables(
             cm.append((args.addon.getLocalizedString(30046), "Container.Update(%s)" % route))
 
         if options & OPT_NO_SEASON_TITLE and isinstance(listable, EpisodeData):
-            list_item.setInfo('title', utils.format_short_episode_title(listable.episode, listable.title_unformatted))
+            list_item.setInfo('video',
+                              {
+                                  'title': utils.format_short_episode_title(listable.episode,
+                                                                            listable.title_unformatted)
+                              })
 
         if len(cm) > 0:
             list_item.addContextMenuItems(cm)
