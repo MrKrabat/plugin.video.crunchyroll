@@ -186,7 +186,6 @@ def init_crunchyroll_client():
         "prefered_subtitle": local_from_id(addon.getSettingInt("subtitle_language")),
         "prefered_audio": addon.getSettingInt("prefered_audio"),
         "page_size": addon.getSettingInt("page_size"),
-        "resolution": int(addon.getSetting("resolution"))
     }
     return CrunchyrollClient(email, password, settings)
 
