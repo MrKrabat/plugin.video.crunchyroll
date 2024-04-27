@@ -105,11 +105,13 @@ def lookup_episode(episodes, episode_id):
 
 def lookup_episode_number(episode):
     number = episode["episode_metadata"].get("episode", "1")
-    if number == "":
-        number = "1"
-    if re.search("OVA", number):
-        number = "1"
     return number
+
+
+def number_to_int(number):
+    if not re.search('^([0-9]*[.])?[0-9]*$', number):
+        number = "1"
+    return int(float(number))
 
 
 def lookup_stream(episode, prefered_audio_id):

@@ -28,7 +28,7 @@ class Episode:
         self.id = item["id"]
         self.season_number_str = item["episode_metadata"].get("season_number", "1")
         self.number_str = utils.lookup_episode_number(item)
-        self.number = int(float(self.number_str))
+        self.number = utils.number_to_int(self.number_str)
         self.series_title = item["episode_metadata"]["series_title"]
         self.title = item["title"]
         self.label = f"{self.series_title} | {self.season_number_str}#{self.number_str} | {self.title}"
