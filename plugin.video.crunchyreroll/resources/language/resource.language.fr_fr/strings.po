@@ -262,3 +262,15 @@ msgstr "VO"
 msgctxt "#30086"
 msgid "Do you want to skip this moment"
 msgstr "Voulez vous passer ce moment"
+
+msgctxt "#30087"
+msgid "(Re)install Widevine CDM..."
+msgstr "(Re)installer Widevine CDM..."
+
+msgctxt "#30088"
+msgid "Cache management"
+msgstr "Gestion des caches"
+
+msgctxt "#30089"
+msgid "Clear subtitles cache"
+msgstr "Nettoyer le cache des sous-titres"

@@ -265,3 +265,14 @@ msgctxt "#30086"
 msgid "Do you want to skip this moment"
 msgstr "Do you want to skip this moment"
 
+msgctxt "#30087"
+msgid "(Re)install Widevine CDM..."
+msgstr "(Re)install Widevine CDM..."
+
+msgctxt "#30088"
+msgid "Cache management"
+msgstr "Cache management"
+
+msgctxt "#30089"
+msgid "Clear subtitles cache"
+msgstr "Clear subtitles cache"
