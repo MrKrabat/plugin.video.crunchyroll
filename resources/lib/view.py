@@ -30,7 +30,7 @@ import xbmcgui
 import xbmcplugin
 
 from typing import Callable, Optional, List, Dict, Any
-from . import router
+from . import router, utils
 from .globals import G
 
 # Fix for bug in old python version on windows
@@ -48,7 +48,7 @@ types = ["count", "size", "date", "genre", "country", "year", "episode", "season
          "lastplayed", "album", "artist", "votes", "path", "trailer", "dateadded", "mediatype", "dbid"]
 
 
-def end_of_directory(content_type=None):
+def end_of_directory(content_type=None, update_listing=False, cache_to_disc=True):
     # let xbmc know the items type in current directory
     if content_type is not None:
         xbmcplugin.setContent(int(G.args.argv[1]), content_type)
@@ -57,7 +57,7 @@ def end_of_directory(content_type=None):
     xbmcplugin.addSortMethod(int(G.args.argv[1]), xbmcplugin.SORT_METHOD_NONE)
 
     # let xbmc know the script is done adding items to the list
-    xbmcplugin.endOfDirectory(handle=int(G.args.argv[1]))
+    xbmcplugin.endOfDirectory(handle=int(G.args.argv[1]), updateListing=update_listing, cacheToDisc=cache_to_disc)
 
 
 def add_item(
@@ -131,6 +131,7 @@ OPT_MARK_ON_WATCHLIST = 1  # highlight title if item is on watchlist
 OPT_CTX_WATCHLIST = 2  # add context menu to add item to watchlist
 OPT_CTX_SEASONS = 4  # add context menu to jump to series
 OPT_CTX_EPISODES = 8  # add context menu to jump to episodes
+OPT_NO_SEASON_TITLE = 16  # only show title of episode (with numbering)
 
 
 # actually not sure if this works, as the requests lib is not async
@@ -297,6 +298,13 @@ def add_listables(
                          {'series_id': listable.series_id, 'season_id': listable.season_id}
                      ))
             cm.append((G.args.addon.getLocalizedString(30046), "Container.Update(%s)" % route))
+
+        if options & OPT_NO_SEASON_TITLE and isinstance(listable, EpisodeData):
+            list_item.setInfo('video',
+                              {
+                                  'title': utils.format_short_episode_title(listable.episode,
+                                                                            listable.title_unformatted)
+                              })
 
         if len(cm) > 0:
             list_item.addContextMenuItems(cm)

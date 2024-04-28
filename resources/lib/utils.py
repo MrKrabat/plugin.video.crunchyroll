@@ -17,7 +17,7 @@
 import json
 import re
 from json import dumps
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Optional
 
 import requests
 import xbmc
@@ -162,6 +162,18 @@ async def get_watchlist_status_from_api(ids: list) -> list:
     return [item.get('id') for item in req.get('data')]
 
 
+def get_img_from_static(image, image_type='normal') -> Optional[str]:
+    if image is None:
+        return None
+
+    path = G.api.STATIC_IMG_PROFILE
+
+    if image_type == "wallpaper":
+        path = G.api.STATIC_WALLPAPER_PROFILE
+
+    return path + image
+
+
 def get_img_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
     """ dive into API info structure and extract requested image from its struct """
 
@@ -255,15 +267,15 @@ def filter_seasons(item: Dict) -> bool:
     return False
 
 
-def format_long_episode_title(season_title: str, episode_number: str, title: str):
+def format_long_episode_title(season_title: str, episode_number: int, title: str):
     return season_title + " #" + str(episode_number) + " - " + title
 
 
-def format_short_episode_title(season_number: int, episode_number: str, title: str):
-    return (str(season_number) + "x" if season_number else "") + two_digits(episode_number) + ". " + title
+def format_short_episode_title(episode_number: int, title: str):
+    return two_digits(episode_number) + " - " + title
 
 
-def two_digits(n):
+def two_digits(n: int) -> str:
     if not n:
         return "00"
     if n < 10:

@@ -152,17 +152,18 @@ class Object(metaclass=Meta):
 
 
 class Cacheable(Object):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self):
+        pass
 
     @abstractmethod
     def get_cache_file_name(self) -> str:
         pass
 
-    def get_storage_path(self) -> str:
+    @staticmethod
+    def get_storage_path() -> str:
         """Get cookie file path
         """
-        profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
+        profile_path = xbmcvfs.translatePath(G.args.addon.getAddonInfo("profile"))
 
         return profile_path
 
@@ -209,8 +210,8 @@ class CMS(Object):
 
 
 class AccountData(Cacheable):
-    def __init__(self, data: dict, args):
-        super().__init__(args)
+    def __init__(self, data: dict):
+        super().__init__()
         self.access_token: str = data.get("access_token")
         self.refresh_token: str = data.get("refresh_token")
         self.expires: str = data.get("expires")
@@ -464,7 +465,7 @@ class EpisodeData(PlayableItem):
         self.duration: int = int(meta.get("duration_ms", 0) / 1000)
         self.playhead: int = data.get("playhead", 0)
         self.season: int = meta.get("season_number", 1)
-        self.episode: int = meta.get("episode", 1)
+        self.episode: int = meta.get("episode_number", 1)
         self.episode_id: str | None = panel.get("id")
         self.season_id: str | None = meta.get("season_id")
         self.series_id: str | None = meta.get("series_id")
@@ -593,9 +594,9 @@ class MovieData(PlayableItem):
 # @todo: rethink Cacheable inheritance, it's too easy to use the wrong class' properties
 class ProfileData(ListableItem, Cacheable):
 
-    def __init__(self, data: dict, args: Args):
-        super(ListableItem, self).__init__(self)
-        Cacheable.__init__(self, args)
+    def __init__(self, data: dict):
+        super(ListableItem, self).__init__()
+        Cacheable.__init__(self)
 
         self.profile_id: str = data.get("profile_id")
         self.username: str = data.get("username")
@@ -611,14 +612,14 @@ class ProfileData(ListableItem, Cacheable):
     def get_cache_file_name(self) -> str:
         return 'profile_data.json'
 
-    def get_info(self, args: Args) -> Dict:
+    def get_info(self) -> Dict:
         return {
             'profile_id': self.profile_id,
             'title': self.profile_name,
             "mode": "profiles_list_with_id",
         }
 
-    def to_item(self, args: Args) -> xbmcgui.ListItem:
+    def to_item(self) -> xbmcgui.ListItem:
         """ Convert ourselves to a Kodi ListItem"""
 
         from . import utils

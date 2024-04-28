@@ -27,9 +27,44 @@ import xbmcvfs
 from . import utils
 from . import view
 from .globals import G
-from .model import CrunchyrollError
+from .model import CrunchyrollError, ProfileData
 from .utils import get_listables_from_response
 from .videoplayer import VideoPlayer
+
+
+def show_profiles():
+    # api request
+    req = G.api.make_request(
+        method="GET",
+        url=G.api.PROFILES_LIST_ENDPOINT
+    )
+
+    # check for error
+    if not req or "error" in req:
+        view.add_item({"title": G.addon.getLocalizedString(30061)})
+        view.end_of_directory()
+        return False
+
+    profiles = req.get("profiles")
+    profile_list_items = list(map(lambda profile: ProfileData(profile).to_item(), profiles))
+    current_profile = 0
+
+    if bool(G.api.profile_data.profile_id):
+        current_profile = \
+            [i for i in range(len(profiles)) if profiles[i].get("profile_id") == G.api.profile_data.profile_id][0]
+
+    selected = xbmcgui.Dialog().select(
+        G.args.addon.getLocalizedString(30073),
+        profile_list_items,
+        preselect=current_profile,
+        useDetails=True
+    )
+
+    if selected == -1:
+        return True
+    else:
+        G.api.create_session(action="refresh_profile", profile_id=profiles[selected].get("profile_id"))
+        return True
 
 
 def show_queue():
@@ -443,7 +478,8 @@ def view_episodes():
     # episodes / episodes  (crunchy / xbmc)
     view.add_listables(
         listables=get_listables_from_response(req.get('items')),
-        is_folder=False
+        is_folder=False,
+        options=view.OPT_NO_SEASON_TITLE
     )
 
     view.end_of_directory("episodes")

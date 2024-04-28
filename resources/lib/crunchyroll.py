@@ -85,20 +85,23 @@ def main(argv):
     else:
         # login
         try:
-            success = G.api.start()
-            if success:
-                # list menu
-                xbmcplugin.setContent(int(G.args.argv[1]), "tvshows")
-                return check_mode()
-        except (LoginError, CrunchyrollError):
-            success = False
+            G.api.start()
 
-        if not success:
+            # request to select profile if not set already
+            if G.api.profile_data.profile_id is None:
+                controller.show_profiles()
+
+            # list menu
+            xbmcplugin.setContent(int(G.args.argv[1]), "tvshows")
+
+            return check_mode()
+        except (LoginError, CrunchyrollError):
             # login failed
             utils.crunchy_log("Login failed", xbmc.LOGERROR)
             view.add_item({"title": G.args.addon.getLocalizedString(30060)})
             view.end_of_directory()
             xbmcgui.Dialog().ok(G.args.addon_name, G.args.addon.getLocalizedString(30060))
+
             return False
 
 
@@ -168,6 +171,8 @@ def check_mode():
         controller.crunchylists_lists()
     elif mode == 'crunchylists_item':
         controller.crunchylists_item()
+    elif mode == 'profiles_list':
+        controller.show_profiles()
     else:
         # unknown mode
         utils.crunchy_log("Failed in check_mode '%s'" % str(mode), xbmc.LOGERROR)
@@ -197,11 +202,13 @@ def show_main_menu():
                    "mode": "anime"})
     view.add_item({"title": G.args.addon.getLocalizedString(30049),
                    "mode": "crunchylists_lists"})
+    view.add_item({"title": G.args.addon.getLocalizedString(30072) % str(G.api.profile_data.username),
+                   "mode": "profiles_list", "thumb": utils.get_img_from_static(G.api.profile_data.avatar)})
     # @TODO: i think there are no longer dramas. should we add music videos and movies?
     # view.add_item(args,
     #              {"title": G.args.addon.getLocalizedString(30051),
     #               "mode":  "drama"})
-    view.end_of_directory()
+    view.end_of_directory(update_listing=True, cache_to_disc=False)
 
 
 def show_main_category(genre):
