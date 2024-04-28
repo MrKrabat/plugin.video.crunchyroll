@@ -17,14 +17,14 @@
 import json
 import re
 from json import dumps
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Optional
 
 import requests
 import xbmc
 import xbmcgui
 
 from .globals import G
-from .model import CrunchyrollError, ListableItem, EpisodeData, MovieData, SeriesData, SeasonData, ProfileData
+from .model import CrunchyrollError, ListableItem, EpisodeData, MovieData, SeriesData, SeasonData
 
 
 # @todo we could change the return type and along with the listables return additional data that we preload
@@ -162,7 +162,10 @@ async def get_watchlist_status_from_api(ids: list) -> list:
     return [item.get('id') for item in req.get('data')]
 
 
-def get_img_from_static(image, image_type='normal'):
+def get_img_from_static(image, image_type='normal') -> Optional[str]:
+    if image is None:
+        return None
+
     path = G.api.STATIC_IMG_PROFILE
 
     if image_type == "wallpaper":
@@ -272,7 +275,7 @@ def format_short_episode_title(episode_number: int, title: str):
     return two_digits(episode_number) + " - " + title
 
 
-def two_digits(n):
+def two_digits(n: int) -> str:
     if not n:
         return "00"
     if n < 10:
