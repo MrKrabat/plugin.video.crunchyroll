@@ -27,6 +27,23 @@ ADDON = xbmcaddon.Addon(id=utils.ADDON_ID)
 # pylint: disable=W0613
 @Route.register
 def root(plugin, content_type="video"):
+    cr = utils.init_crunchyroll_client()
+    profiles = cr.get_multiprofile()
+    if len(profiles['profiles']) > 1:
+        return_profiles = []
+        for profile in profiles['profiles']:
+            params = {
+                'profile_id': profile['profile_id']
+            }
+            return_profiles.append(Listitem.from_dict(menu, params=params, label=profile['profile_name']))
+        return return_profiles
+    else:
+        return list(menu(plugin, profiles['profiles'][0]['profile_id']))
+
+@Route.register
+def menu(plugin, profile_id):
+    cr = utils.init_crunchyroll_client()
+    cr.auth.switch_profile(profile_id)
     if not ADDON.getSetting("crunchyroll_username"):
         ADDON.openSettings()
 

@@ -107,6 +107,25 @@ class CrunchyrollAuth(AuthBase):
         now = datetime.timestamp(datetime.now())
         return now > (last_update + expires_in*3/4)
 
+    def switch_profile(self, profile_id):
+        if self.data['profile_id'] != profile_id:
+            data = {
+                "refresh_token": self.data['refresh_token'],
+                "grant_type": "refresh_token_profile_id",
+                "scope": "offline_access",
+                "device_id": self.device_uuid["uuid"],
+                "device_type": self.device_type,
+                "device_name": self.device_name,
+                "profile_id": profile_id
+            }
+            url = f"{utils.CRUNCHYROLL_API_URL}/auth/v1/token"
+            resp = requests.post(url, headers=self.auth_headers, data=data, timeout=10)
+            resp.raise_for_status()
+            self._store_token(resp.json())
+
+    def switch_main_profile(self):
+        self.switch_profile(self.data['account_id'])
+
     def __call__(self, request):
         if not self.is_auth():
             self._authenticate()

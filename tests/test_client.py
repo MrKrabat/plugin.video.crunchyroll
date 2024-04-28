@@ -118,3 +118,9 @@ class ClientTest(unittest.TestCase):
     def test_get_seasonal_tags(self):
         client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
         client.get_seasonal_tags()
+
+    def test_switch_profile(self):
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        profiles = client.get_multiprofile()
+        client.auth.switch_profile(profiles['profiles'][1]['profile_id'])
+        client.auth.switch_profile(profiles['profiles'][0]['profile_id'])

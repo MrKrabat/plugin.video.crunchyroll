@@ -34,12 +34,6 @@ class CrunchyrollClient:
         self.prefered_subtitle = settings['prefered_subtitle']
         self.prefered_audio = settings['prefered_audio']
         self.page_size = settings['page_size']
-        self.cms = self._get_cms_info()
-
-    def _get_cms_info(self):
-        url = f"{utils.CRUNCHYROLL_API_URL}/index/v2"
-        response = self._get(url)
-        return response.json()['cms']
 
     # pylint: disable=W0102
     def _post(self, url, params={}, headers={}, data={}, json=False):
@@ -66,11 +60,10 @@ class CrunchyrollClient:
         return response
 
     # pylint: disable=W0102
-    def _get_cms(self, url, params={}, headers={}):
-        params["Policy"] = self.cms['policy']
-        params["Signature"] = self.cms['signature']
-        params["Key-Pair-Id"] = self.cms['key_pair_id']
-        response = self._get(url, params=params, headers=headers)
+    def _get_cached(self, url, params={}, headers={}):
+        headers['User-Agent'] = utils.CRUNCHYROLL_UA
+        response = urlquick.get(url, params=params, headers=headers, auth=self.auth, timeout=30)
+        response.raise_for_status()
         return response
 
     # pylint: disable=W0102
@@ -302,3 +295,13 @@ class CrunchyrollClient:
                 self._log(f"Unexpected status_code {err.response.status_code} for episode {episode_id}")
                 self._log(f"{err.response.reason} - {err.response.text}")
             return {}
+
+    def get_multiprofile(self):
+        url = f"{utils.CRUNCHYROLL_API_URL}/accounts/v1/me/multiprofile"
+        data = self._get(url).json()
+        return data
+
+    def get_profile(self, profile_id):
+        url = f"{utils.CRUNCHYROLL_API_URL}/accounts/v1/me/multiprofile/{profile_id}"
+        data = self._get_cached(url).json()
+        return data
