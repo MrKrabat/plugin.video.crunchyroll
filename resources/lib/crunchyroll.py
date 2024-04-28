@@ -89,20 +89,23 @@ def main(argv):
     else:
         # login
         try:
-            success = api.start()
-            if success:
-                # list menu
-                xbmcplugin.setContent(int(args.argv[1]), "tvshows")
-                return check_mode(args, api)
-        except (LoginError, CrunchyrollError):
-            success = False
+            api.start()
 
-        if not success:
+            # request to select profile if not set already
+            if api.profile_data.profile_id is None:
+                controller.show_profiles(args, api)
+
+            # list menu
+            xbmcplugin.setContent(int(args.argv[1]), "tvshows")
+
+            return check_mode(args, api)
+        except (LoginError, CrunchyrollError):
             # login failed
             utils.crunchy_log(args, "Login failed", xbmc.LOGERROR)
             view.add_item(args, {"title": args.addon.getLocalizedString(30060)})
             view.end_of_directory(args)
             xbmcgui.Dialog().ok(args.addon_name, args.addon.getLocalizedString(30060))
+
             return False
 
 
@@ -123,7 +126,7 @@ def check_mode(args, api: API):
         mode = None
 
     if not mode:
-        show_main_menu(args)
+        show_main_menu(args, api)
 
     elif mode == "queue":
         controller.show_queue(args, api)
@@ -172,14 +175,16 @@ def check_mode(args, api: API):
         controller.crunchylists_lists(args, api)
     elif mode == 'crunchylists_item':
         controller.crunchylists_item(args, api)
+    elif mode == 'profiles_list':
+        controller.show_profiles(args, api)    
     else:
         # unknown mode
         utils.crunchy_log(args, "Failed in check_mode '%s'" % str(mode), xbmc.LOGERROR)
         xbmcgui.Dialog().notification(args.addon_name, args.addon.getLocalizedString(30061), xbmcgui.NOTIFICATION_ERROR)
-        show_main_menu(args)
+        show_main_menu(args, api)
 
 
-def show_main_menu(args):
+def show_main_menu(args, api):
     """Show main menu
     """
     view.add_item(args,
@@ -203,11 +208,15 @@ def show_main_menu(args):
     view.add_item(args,
                   {"title": args.addon.getLocalizedString(30049),
                    "mode": "crunchylists_lists"})
+    view.add_item(args,
+                  {"title": args.addon.getLocalizedString(30072) % str(api.profile_data.username),
+                   "mode": "profiles_list", "thumb": utils.get_img_from_static(api.profile_data.avatar)})
     # @TODO: i think there are no longer dramas. should we add music videos and movies?
     # view.add_item(args,
     #              {"title": args.addon.getLocalizedString(30051),
     #               "mode":  "drama"})
-    view.end_of_directory(args)
+
+    view.end_of_directory(args, update_listing=True, cache_to_disc=False)
 
 
 def show_main_category(args, genre):

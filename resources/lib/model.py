@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import json
 import re
 import sys
 from abc import abstractmethod
@@ -149,6 +150,55 @@ class Object(metaclass=Meta):
         return dumps(self, indent=4, default=Object.default, ensure_ascii=False)
 
 
+class Cacheable(Object):
+    def __init__(self, args):
+        self.args = args
+
+    @abstractmethod
+    def get_cache_file_name(self) -> str:
+        pass
+
+    def get_storage_path(self) -> str:
+        """Get cookie file path
+        """
+        profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
+
+        return profile_path
+
+    def load_from_storage(self) -> dict:
+        storage_file = self.get_storage_path() + self.get_cache_file_name()
+
+        if not xbmcvfs.exists(storage_file):
+            return {}
+
+        with xbmcvfs.File(storage_file) as file:
+            data = json.load(file)
+
+        d = dict()
+        d.update(data)
+
+        return d
+
+    def delete_storage(self) -> None:
+        storage_file = self.get_storage_path() + self.get_cache_file_name()
+
+        if not xbmcvfs.exists(storage_file):
+            return None
+
+        xbmcvfs.delete(storage_file)
+
+    def write_to_storage(self) -> bool:
+        storage_file = self.get_storage_path() + self.get_cache_file_name()
+
+        # serialize (Object has a to_str serializer)
+        json_string = str(self)
+
+        with xbmcvfs.File(storage_file, 'w') as file:
+            result = file.write(json_string)
+
+        return result
+
+
 class CMS(Object):
     def __init__(self, data: dict):
         self.bucket: str = data.get("bucket")
@@ -157,8 +207,9 @@ class CMS(Object):
         self.key_pair_id: str = data.get("key_pair_id")
 
 
-class AccountData(Object):
-    def __init__(self, data: dict):
+class AccountData(Cacheable):
+    def __init__(self, data: dict, args):
+        super().__init__(args)
         self.access_token: str = data.get("access_token")
         self.refresh_token: str = data.get("refresh_token")
         self.expires: str = data.get("expires")
@@ -177,6 +228,9 @@ class AccountData(Object):
         self.default_subtitles_language: str = data.get("preferred_content_subtitle_language")
         self.default_audio_language: str = data.get("preferred_content_audio_language")
         self.username: str = data.get("username")
+
+    def get_cache_file_name(self) -> str:
+        return 'session_data.json'
 
 
 class ListableItem(Object):
@@ -528,6 +582,49 @@ class MovieData(PlayableItem):
             # internally used for routing
             "mode": "videoplay"
         }
+
+
+# @todo: rethink Cacheable inheritance, it's too easy to use the wrong class' properties
+class ProfileData(ListableItem, Cacheable):
+
+    def __init__(self, data: dict, args: Args):
+        super(ListableItem, self).__init__(self)
+        Cacheable.__init__(self, args)
+
+        self.profile_id: str = data.get("profile_id")
+        self.username: str = data.get("username")
+        self.profile_name: str = data.get("profile_name")
+
+        self.account_language: str = data.get("preferred_communication_language")
+        self.default_subtitles_language: str = data.get("preferred_content_subtitle_language")
+        self.default_audio_language: str = data.get("preferred_content_audio_language")
+
+        self.avatar: str = data.get("avatar")
+        self.wallpaper: str = data.get("wallpaper")
+
+    def get_cache_file_name(self) -> str:
+        return 'profile_data.json'
+
+    def get_info(self, args: Args) -> Dict:
+        return {
+            'profile_id': self.profile_id,
+            'title': self.profile_name,
+            "mode": "profiles_list_with_id",
+        }
+
+    def to_item(self, args: Args) -> xbmcgui.ListItem:
+        """ Convert ourselves to a Kodi ListItem"""
+
+        from . import utils
+
+        li = xbmcgui.ListItem(label=self.profile_name, label2=self.username)
+        li.setArt({
+            'thumb': utils.get_img_from_static(self.avatar),
+            'fanart': utils.get_img_from_static(self.wallpaper, "wallpaper"),
+            'poster': utils.get_img_from_static(self.wallpaper, "wallpaper")
+        })
+
+        return li
 
 
 class CrunchyrollError(Exception):
