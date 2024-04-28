@@ -31,7 +31,7 @@ import xbmcgui
 import xbmcplugin
 
 from typing import Callable, Optional, List, Dict, Any
-from . import router
+from . import router, utils
 
 # Fix for bug in old python version on windows
 # @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/44
@@ -132,6 +132,7 @@ OPT_MARK_ON_WATCHLIST = 1  # highlight title if item is on watchlist
 OPT_CTX_WATCHLIST = 2  # add context menu to add item to watchlist
 OPT_CTX_SEASONS = 4  # add context menu to jump to series
 OPT_CTX_EPISODES = 8  # add context menu to jump to episodes
+OPT_NO_SEASON_TITLE = 16  # only show title of episode (with numbering)
 
 
 # actually not sure if this works, as the requests lib is not async
@@ -304,6 +305,13 @@ def add_listables(
                          {'series_id': listable.series_id, 'season_id': listable.season_id}
                      ))
             cm.append((args.addon.getLocalizedString(30046), "Container.Update(%s)" % route))
+
+        if options & OPT_NO_SEASON_TITLE and isinstance(listable, EpisodeData):
+            list_item.setInfo('video',
+                              {
+                                  'title': utils.format_short_episode_title(listable.episode,
+                                                                            listable.title_unformatted)
+                              })
 
         if len(cm) > 0:
             list_item.addContextMenuItems(cm)
