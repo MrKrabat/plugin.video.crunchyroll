@@ -27,9 +27,44 @@ import xbmcvfs
 from . import utils
 from . import view
 from .api import API
-from .model import CrunchyrollError
+from .model import CrunchyrollError, ProfileData
 from .utils import get_listables_from_response
 from .videoplayer import VideoPlayer
+
+
+def show_profiles(args, api: API):
+    # api request
+    req = api.make_request(
+        method="GET",
+        url=api.PROFILES_LIST_ENDPOINT
+    )
+
+    # check for error
+    if not req or "error" in req:
+        view.add_item(args, {"title": args.addon.getLocalizedString(30061)})
+        view.end_of_directory(args)
+        return False
+
+    profiles = req.get("profiles")
+    profile_list_items = list(map(lambda profile: ProfileData(profile, args).to_item(args), profiles))
+    current_profile = 0
+
+    if bool(api.profile_data.profile_id):
+        current_profile = \
+            [i for i in range(len(profiles)) if profiles[i].get("profile_id") == api.profile_data.profile_id][0]
+
+    selected = xbmcgui.Dialog().select(
+        args.addon.getLocalizedString(30073),
+        profile_list_items,
+        preselect=current_profile,
+        useDetails=True
+    )
+
+    if selected == -1:
+        return True
+    else:
+        api.create_session(action="refresh_profile", profile_id=profiles[selected].get("profile_id"))
+        return True
 
 
 def show_queue(args, api: API):

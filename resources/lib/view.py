@@ -48,7 +48,7 @@ types = ["count", "size", "date", "genre", "country", "year", "episode", "season
          "lastplayed", "album", "artist", "votes", "path", "trailer", "dateadded", "mediatype", "dbid"]
 
 
-def end_of_directory(args, content_type=None):
+def end_of_directory(args, content_type=None, update_listing=False, cache_to_disc=True):
     # let xbmc know the items type in current directory
     if content_type is not None:
         xbmcplugin.setContent(int(args.argv[1]), content_type)
@@ -57,7 +57,7 @@ def end_of_directory(args, content_type=None):
     xbmcplugin.addSortMethod(int(args.argv[1]), xbmcplugin.SORT_METHOD_NONE)
 
     # let xbmc know the script is done adding items to the list
-    xbmcplugin.endOfDirectory(handle=int(args.argv[1]))
+    xbmcplugin.endOfDirectory(handle=int(args.argv[1]), updateListing=update_listing, cacheToDisc=cache_to_disc)
 
 
 def add_item(

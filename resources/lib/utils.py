@@ -29,7 +29,7 @@ except ImportError:
 
 from typing import Dict, Union, List
 
-from .model import Args, CrunchyrollError, ListableItem, EpisodeData, MovieData, SeriesData, SeasonData
+from .model import Args, CrunchyrollError, ListableItem, ProfileData, EpisodeData, MovieData, SeriesData, SeasonData
 from .api import API
 
 
@@ -177,6 +177,15 @@ async def get_watchlist_status_from_api(args: Args, api: API, ids: list) -> list
         return []
 
     return [item.get('id') for item in req.get('data')]
+
+
+def get_img_from_static(image, image_type='normal'):
+    path = API.STATIC_IMG_PROFILE
+
+    if image_type == "wallpaper":
+        path = API.STATIC_WALLPAPER_PROFILE
+
+    return path + image
 
 
 def get_img_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
