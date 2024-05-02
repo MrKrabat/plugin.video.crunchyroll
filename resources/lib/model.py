@@ -627,8 +627,10 @@ class ProfileData(ListableItem, Cacheable):
         li = xbmcgui.ListItem(label=self.profile_name, label2=self.username)
         li.setArt({
             'thumb': utils.get_img_from_static(self.avatar),
-            'fanart': utils.get_img_from_static(self.wallpaper, "wallpaper"),
-            'poster': utils.get_img_from_static(self.wallpaper, "wallpaper")
+            'fanart': utils.get_img_from_static(self.avatar),
+            'poster': utils.get_img_from_static(self.avatar),
+            #'fanart': utils.get_img_from_static(self.wallpaper, "wallpaper"),
+            #'poster': utils.get_img_from_static(self.wallpaper, "wallpaper")
         })
 
         return li

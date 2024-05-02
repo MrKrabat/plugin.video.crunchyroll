@@ -202,7 +202,7 @@ def show_main_menu():
                    "mode": "anime"})
     view.add_item({"title": G.args.addon.getLocalizedString(30049),
                    "mode": "crunchylists_lists"})
-    view.add_item({"title": G.args.addon.getLocalizedString(30072) % str(G.api.profile_data.username),
+    view.add_item({"title": G.args.addon.getLocalizedString(30072) % str(G.api.profile_data.profile_name),
                    "mode": "profiles_list", "thumb": utils.get_img_from_static(G.api.profile_data.avatar)})
     # @TODO: i think there are no longer dramas. should we add music videos and movies?
     # view.add_item(args,
