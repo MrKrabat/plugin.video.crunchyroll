@@ -56,6 +56,8 @@ class VideoPlayer(Object):
 
         self._handle_update_playhead()
         self._handle_skipping()
+        if not self._wait_for_playback_started(10):
+            utils.crunchy_log('Timeout reached, video did not start playback in 10 seconds', xbmc.LOGERROR)
 
     def is_playing(self) -> bool:
         """ Returns true if playback is running. Note that it also returns true when paused. """
@@ -319,6 +321,17 @@ class VideoPlayer(Object):
 
         utils.crunchy_log("Cleared active stream for episode: %s" % G.args.get_arg('episode_id'))
 
+    def _wait_for_playback_started(self, timeout: int = 30):
+        """ function that waits for the playback to start"""
+
+        timer = time.time() + timeout
+        while not self.is_playing():
+            xbmc.sleep(50)
+            # timeout to prevent infinite loop
+            if time.time() > timer:
+                return False
+
+        return True
 
 def update_playhead(content_id: str, playhead: int):
     """ Update playtime to Crunchyroll """
