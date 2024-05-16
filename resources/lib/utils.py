@@ -17,35 +17,20 @@
 import json
 import re
 from json import dumps
+from typing import Dict, Union, List, Optional
 
 import requests
 import xbmc
 import xbmcgui
 
-try:
-    from urlparse import parse_qs
-except ImportError:
-    from urllib.parse import parse_qs
-
-from typing import Dict, Union, List
-
-from .model import Args, CrunchyrollError, ListableItem, EpisodeData, MovieData, SeriesData, SeasonData
-from .api import API
-
-
-def parse(argv) -> Args:
-    """Decode arguments
-    """
-    if argv[2]:
-        return Args(argv, parse_qs(argv[2][1:]))
-    else:
-        return Args(argv, {})
+from .globals import G
+from .model import CrunchyrollError, ListableItem, EpisodeData, MovieData, SeriesData, SeasonData
 
 
 # @todo we could change the return type and along with the listables return additional data that we preload
 #       like info what is on watchlist, artwork, playhead, ...
 #       for that we should use async requests (asyncio)
-def get_listables_from_response(args: Args, data: List[dict]) -> List[ListableItem]:
+def get_listables_from_response(data: List[dict]) -> List[ListableItem]:
     """ takes an API response object, determines type of its contents and creates DTOs for further processing """
 
     listable_items = []
@@ -55,7 +40,6 @@ def get_listables_from_response(args: Args, data: List[dict]) -> List[ListableIt
         item_type = item.get('panel', {}).get('type') or item.get('type') or item.get('__class__')
         if not item_type:
             crunchy_log(
-                None,
                 "get_listables_from_response | failed to determine type for response item %s" % (
                     json.dumps(item, indent=4)),
                 xbmc.LOGERROR
@@ -66,7 +50,7 @@ def get_listables_from_response(args: Args, data: List[dict]) -> List[ListableIt
             listable_items.append(SeriesData(item))
         elif item_type == 'season':
             # filter series items based on language settings
-            if not filter_seasons(args, item):
+            if not filter_seasons(item):
                 continue
             listable_items.append(SeasonData(item))
         elif item_type == 'episode':
@@ -75,7 +59,6 @@ def get_listables_from_response(args: Args, data: List[dict]) -> List[ListableIt
             listable_items.append(MovieData(item))
         else:
             crunchy_log(
-                None,
                 "get_listables_from_response | unhandled index for metadata. %s" % (json.dumps(item, indent=4)),
                 xbmc.LOGERROR
             )
@@ -84,7 +67,7 @@ def get_listables_from_response(args: Args, data: List[dict]) -> List[ListableIt
     return listable_items
 
 
-async def get_cms_object_data_by_ids(args: Args, api: API, ids: list) -> dict:
+async def get_cms_object_data_by_ids(ids: list) -> dict:
     """ fetch info from api object endpoint for given ids. Useful to complement missing data """
 
     # filter out entries with no value
@@ -93,17 +76,17 @@ async def get_cms_object_data_by_ids(args: Args, api: API, ids: list) -> dict:
         return {}
 
     try:
-        req = api.make_request(
+        req = G.api.make_request(
             method='GET',
-            url=api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids_filtered)),
+            url=G.api.OBJECTS_BY_ID_LIST_ENDPOINT.format(','.join(ids_filtered)),
             params={
-                'locale': args.subtitle,
+                'locale': G.args.subtitle,
                 'ratings': 'true'
                 # "preferred_audio_language": ""
             }
         )
     except (CrunchyrollError, requests.exceptions.RequestException):
-        crunchy_log(args, "get_cms_object_data_by_ids: failed to load for: %s" % ",".join(ids_filtered))
+        crunchy_log("get_cms_object_data_by_ids: failed to load for: %s" % ",".join(ids_filtered))
         return {}
 
     if not req or 'error' in req:
@@ -127,17 +110,17 @@ def get_stream_id_from_item(item: Dict) -> Union[str, None]:
     return stream_id[1]
 
 
-async def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, list]) -> Dict:
+async def get_playheads_from_api(episode_ids: Union[str, list]) -> Dict:
     """ Retrieve playhead data from API for given episode / movie ids """
 
     if isinstance(episode_ids, str):
         episode_ids = [episode_ids]
 
-    response = api.make_request(
+    response = G.api.make_request(
         method='GET',
-        url=api.PLAYHEADS_ENDPOINT.format(api.account_data.account_id),
+        url=G.api.PLAYHEADS_ENDPOINT.format(G.api.account_data.account_id),
         params={
-            'locale': args.subtitle,
+            'locale': G.args.subtitle,
             'content_ids': ','.join(episode_ids)
         }
     )
@@ -157,26 +140,38 @@ async def get_playheads_from_api(args: Args, api: API, episode_ids: Union[str, l
     return out
 
 
-async def get_watchlist_status_from_api(args: Args, api: API, ids: list) -> list:
+async def get_watchlist_status_from_api(ids: list) -> list:
     """ retrieve watchlist status for given media ids """
 
-    req = api.make_request(
+    req = G.api.make_request(
         method="GET",
-        url=api.WATCHLIST_V2_ENDPOINT.format(api.account_data.account_id),
+        url=G.api.WATCHLIST_V2_ENDPOINT.format(G.api.account_data.account_id),
         params={
             "content_ids": ','.join(ids),
-            "locale": args.subtitle
+            "locale": G.args.subtitle
         }
     )
 
     if not req or req.get("error") is not None:
-        crunchy_log(args, "get_in_queue: Failed to retrieve data", xbmc.LOGERROR)
+        crunchy_log("get_in_queue: Failed to retrieve data", xbmc.LOGERROR)
         return []
 
     if not req.get('data'):
         return []
 
     return [item.get('id') for item in req.get('data')]
+
+
+def get_img_from_static(image, image_type='normal') -> Optional[str]:
+    if image is None:
+        return None
+
+    path = G.api.STATIC_IMG_PROFILE
+
+    if image_type == "wallpaper":
+        path = G.api.STATIC_WALLPAPER_PROFILE
+
+    return path + image
 
 
 def get_img_from_struct(item: Dict, image_type: str, depth: int = 2) -> Union[str, None]:
@@ -204,12 +199,12 @@ def log(message) -> None:
     xbmc.log(message, xbmc.LOGINFO)
 
 
-def crunchy_log(args, message, loglevel=xbmc.LOGINFO) -> None:
-    addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
+def crunchy_log(message, loglevel=xbmc.LOGINFO) -> None:
+    addon_name = G.args.addon_name if G.args is not None and hasattr(G.args, 'addon_name') else "Crunchyroll"
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), loglevel)
 
 
-def log_error_with_trace(args, message, show_notification: bool = True) -> None:
+def log_error_with_trace(message, show_notification: bool = True) -> None:
     import sys
     import traceback
 
@@ -226,7 +221,7 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
         stack_trace.append(
             "File : %s , Line : %d, Func.Name : %s, Message : %s" % (trace[0], trace[1], trace[2], trace[3]))
 
-    addon_name = args.addon_name if args is not None and hasattr(args, 'addon_name') else "Crunchyroll"
+    addon_name = G.args.addon_name if G.args is not None and hasattr(G.args, 'addon_name') else "Crunchyroll"
 
     xbmc.log("[PLUGIN] %s: %s" % (addon_name, str(message)), xbmc.LOGERROR)
     xbmc.log("[PLUGIN] %s: %s %s\n%s" % (addon_name, ex_type.__name__, ex_value, "\n".join(stack_trace)), xbmc.LOGERROR)
@@ -240,18 +235,18 @@ def log_error_with_trace(args, message, show_notification: bool = True) -> None:
         )
 
 
-def filter_seasons(args: Args, item: Dict) -> bool:
+def filter_seasons(item: Dict) -> bool:
     """ takes an API info struct and returns if it matches user language settings """
 
-    if args.addon.getSetting("filter_dubs_by_language") != "true":
+    if G.args.addon.getSetting("filter_dubs_by_language") != "true":
         return True
 
     # is it a dub in my main language?
-    if args.subtitle == item.get('audio_locale', ""):
+    if G.args.subtitle == item.get('audio_locale', ""):
         return True
 
     # is it a dub in my alternate language?
-    if args.subtitle_fallback and args.subtitle_fallback == item.get('audio_locale', ""):
+    if G.args.subtitle_fallback and G.args.subtitle_fallback == item.get('audio_locale', ""):
         return True
 
     # is it japanese audio, but there are subtitles in my main language?
@@ -263,24 +258,24 @@ def filter_seasons(args: Args, item: Dict) -> bool:
         if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
             return True
 
-        if args.subtitle in item.get("subtitle_locales", []):
+        if G.args.subtitle in item.get("subtitle_locales", []):
             return True
 
-        if args.subtitle_fallback and args.subtitle_fallback in item.get("subtitle_locales", []):
+        if G.args.subtitle_fallback and G.args.subtitle_fallback in item.get("subtitle_locales", []):
             return True
 
     return False
 
 
-def format_long_episode_title(season_title: str, episode_number: str, title: str):
+def format_long_episode_title(season_title: str, episode_number: int, title: str):
     return season_title + " #" + str(episode_number) + " - " + title
 
 
-def format_short_episode_title(season_number: int, episode_number: str, title: str):
-    return (str(season_number) + "x" if season_number else "") + two_digits(episode_number) + ". " + title
+def format_short_episode_title(episode_number: int, title: str):
+    return two_digits(episode_number) + " - " + title
 
 
-def two_digits(n):
+def two_digits(n: int) -> str:
     if not n:
         return "00"
     if n < 10:

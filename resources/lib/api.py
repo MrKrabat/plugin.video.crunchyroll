@@ -17,18 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 import time
 from datetime import timedelta, datetime
 from typing import Optional, Dict
 
 import requests
 import xbmc
-import xbmcvfs
 from requests import HTTPError, Response
 
 from . import utils
-from .model import AccountData, Args, LoginError
+from .globals import G
+from .model import AccountData, LoginError, ProfileData
 from ..modules import cloudscraper
 
 
@@ -78,25 +77,32 @@ class API:
     AUTHORIZATION = "Basic bm12anNoZmtueW14eGtnN2ZiaDk6WllJVnJCV1VQYmNYRHRiRDIyVlNMYTZiNFdRb3Mzelg="
     LICENSE_ENDPOINT = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 
+    PROFILES_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/multiprofile"
+    STATIC_IMG_PROFILE = "https://static.crunchyroll.com/assets/avatar/170x170/"
+    STATIC_WALLPAPER_PROFILE = "https://static.crunchyroll.com/assets/wallpaper/720x180/"
+
     def __init__(
             self,
-            args: Args = None,
             locale: str = "en-US"
     ) -> None:
         self.http = requests.Session()
         self.locale: str = locale
         self.account_data: AccountData = AccountData(dict())
+        self.profile_data: ProfileData = ProfileData(dict())
         self.api_headers: Dict = default_request_headers()
-        self.args = args
         self.retry_counter = 0
 
-    def start(self) -> bool:
-        session_restart = self.args.get_arg('session_restart', False)
+    def start(self) -> None:
+        session_restart = G.args.get_arg('session_restart', False)
 
-        # restore account data from file
-        session_data = self.load_from_storage()
-        if session_data and not session_restart:
-            self.account_data = AccountData(session_data)
+        # restore account data from file (if any)
+        account_data = self.account_data.load_from_storage()
+
+        # restore profile data from file (if any)
+        self.profile_data = ProfileData(self.profile_data.load_from_storage())
+
+        if account_data and not session_restart:
+            self.account_data = AccountData(account_data)
             account_auth = {"Authorization": f"{self.account_data.token_type} {self.account_data.access_token}"}
             self.api_headers.update(account_auth)
 
@@ -104,39 +110,46 @@ class API:
             if get_date() > str_to_date(self.account_data.expires):
                 session_restart = True
             else:
-                return True
+                return
 
         # session management
-        self.create_session(session_restart)
+        self.create_session(action="refresh" if session_restart else "access")
 
-        return True
-
-    def create_session(self, refresh=False) -> None:
+    def create_session(self, action: str = "login", profile_id: Optional[str] = None) -> None:
         # get login information
-        username = self.args.addon.getSetting("crunchyroll_username")
-        password = self.args.addon.getSetting("crunchyroll_password")
+        username = G.args.addon.getSetting("crunchyroll_username")
+        password = G.args.addon.getSetting("crunchyroll_password")
 
         headers = {"Authorization": API.AUTHORIZATION}
         data = {}
 
-        if not refresh:
+        if action == "login":
             data = {
                 "username": username,
                 "password": password,
                 "grant_type": "password",
                 "scope": "offline_access",
-                "device_id": self.args.device_id,
+                "device_id": G.args.device_id,
                 "device_name": 'Kodi',
                 "device_type": 'MediaCenter'
             }
-        elif refresh:
+        elif action == "refresh":
             data = {
                 "refresh_token": self.account_data.refresh_token,
                 "grant_type": "refresh_token",
                 "scope": "offline_access",
-                "device_id": self.args.device_id,
+                "device_id": G.args.device_id,
                 "device_name": 'Kodi',
                 "device_type": 'MediaCenter'
+            }
+        elif action == "refresh_profile":
+            data = {
+                "device_id": G.args.device_id,
+                "device_name": 'Kodi',
+                "device_type": "MediaCenter",
+                "grant_type": "refresh_token_profile_id",
+                "profile_id": profile_id,
+                "refresh_token": self.account_data.refresh_token
             }
 
         r = self.http.request(
@@ -149,16 +162,16 @@ class API:
         # if refreshing and refresh token is expired, it will throw a 400
         # retry with a fresh login, but limit retries to prevent loop in case something else went wrong
         if r.status_code == 400:
-            utils.crunchy_log(self.args, "Invalid/Expired credentials, restarting session from scratch")
+            utils.crunchy_log("Invalid/Expired credentials, restarting session from scratch")
             self.retry_counter = self.retry_counter + 1
-            self.delete_storage()
+            self.account_data.delete_storage()
             if self.retry_counter > 2:
-                utils.crunchy_log(self.args, "Max retries exceeded. Aborting!", xbmc.LOGERROR)
+                utils.crunchy_log("Max retries exceeded. Aborting!", xbmc.LOGERROR)
                 raise LoginError("Failed to authenticate twice")
             return self.create_session()
 
         if r.status_code == 403:
-            utils.crunchy_log(self.args, "Possible cloudflare shenanigans")
+            utils.crunchy_log("Possible cloudflare shenanigans")
             scraper = cloudscraper.create_scraper(delay=10, browser={'custom': self.CRUNCHYROLL_UA})
             r = scraper.post(
                 url=API.TOKEN_ENDPOINT,
@@ -195,11 +208,33 @@ class API:
         )
         account_data.update(r)
 
+        if action == "refresh_profile":
+            # fetch all profiles from API
+            r = self.make_request(
+                method="GET",
+                url=self.PROFILES_LIST_ENDPOINT,
+            )
+
+            # Extract current profile data as dict from ProfileData obj
+            profile_data = vars(self.profile_data)
+
+            # Update extracted profile data with fresh data from API for requested profile_id
+            profile_data.update(
+                next(profile for profile in r.get("profiles") if profile["profile_id"] == profile_id)
+            )
+
+            # update our ProfileData obj with updated data
+            self.profile_data = ProfileData(profile_data)
+
+            # cache to file
+            self.profile_data.write_to_storage()
+
         account_data["expires"] = date_to_str(
             get_date() + timedelta(seconds=float(account_data["expires_in"])))
-        self.account_data = AccountData(account_data)
 
-        self.write_to_storage(self.account_data)
+        self.account_data = AccountData(account_data)
+        self.account_data.write_to_storage()
+
         self.retry_counter = 0
 
     def close(self) -> None:
@@ -210,7 +245,8 @@ class API:
     def destroy(self) -> None:
         """Destroys session
         """
-        self.delete_storage()
+        self.account_data.delete_storage()
+        self.profile_data.delete_storage()
 
     def make_request(
             self,
@@ -230,7 +266,7 @@ class API:
             if expiration := self.account_data.expires:
                 current_time = get_date()
                 if current_time > str_to_date(expiration):
-                    self.create_session(refresh=True)
+                    self.create_session(action="refresh")
             params.update({
                 "Policy": self.account_data.cms.policy,
                 "Signature": self.account_data.cms.signature,
@@ -255,7 +291,7 @@ class API:
             if is_retry:
                 raise LoginError('Request to API failed twice due to authentication issues.')
 
-            utils.crunchy_log(self.args, "make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
+            utils.crunchy_log("make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
             self.account_data.expires = 0
             return self.make_request(method, url, headers, params, data, json_data, True)
 
@@ -277,46 +313,6 @@ class API:
         r = self.http.send(prepped)
 
         return get_json_from_response(r)
-
-    def get_storage_path(self) -> str:
-        """Get cookie file path
-        """
-        profile_path = xbmcvfs.translatePath(self.args.addon.getAddonInfo("profile"))
-
-        return profile_path
-
-    def load_from_storage(self) -> Optional[Dict]:
-        storage_file = self.get_storage_path() + "session_data.json"
-
-        if not xbmcvfs.exists(storage_file):
-            return None
-
-        with xbmcvfs.File(storage_file) as file:
-            data = json.load(file)
-
-        d = dict()
-        d.update(data)
-
-        return d
-
-    def delete_storage(self) -> None:
-        storage_file = self.get_storage_path() + "session_data.json"
-
-        if not xbmcvfs.exists(storage_file):
-            return None
-
-        xbmcvfs.delete(storage_file)
-
-    def write_to_storage(self, account: AccountData) -> bool:
-        storage_file = self.get_storage_path() + "session_data.json"
-
-        # serialize (Object has a to_str serializer)
-        json_string = str(account)
-
-        with xbmcvfs.File(storage_file, 'w') as file:
-            result = file.write(json_string)
-
-        return result
 
 
 def default_request_headers() -> Dict:
@@ -382,7 +378,7 @@ def get_json_from_response(r: Response) -> Optional[Dict]:
     try:
         r_json: Dict = r.json()
     except requests.exceptions.JSONDecodeError:
-        log_error_with_trace(None, "Failed to parse response data")
+        log_error_with_trace("Failed to parse response data")
         return None
 
     if "error" in r_json:
