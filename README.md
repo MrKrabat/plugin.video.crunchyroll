@@ -8,6 +8,7 @@ Git repo: https://github.com/MrKrabat/plugin.video.crunchyroll
 ***
 
 ### What this plugin currently can do:
+
 - [x] Supports all Crunchyroll regions
 - [x] Login with your account
 - [x] Search for anime
@@ -38,6 +39,7 @@ Git repo: https://github.com/MrKrabat/plugin.video.crunchyroll
 ***
 
 ### Supported Languages
+
 * English
 * German
 * Portuguese
@@ -47,6 +49,7 @@ Git repo: https://github.com/MrKrabat/plugin.video.crunchyroll
 ***
 
 ### Contributors
+
 * MrKrabat
 * smirgol
 * lumiru
@@ -64,7 +67,9 @@ Git repo: https://github.com/MrKrabat/plugin.video.crunchyroll
 * ...and all the forgotten heroes :)
 
 ***
+
 ### Disclaimer
+
 _This website and addon is not affiliated with Crunchyroll._
 
 _Kodi® (formerly known as XBMC™) is a registered trademark of the XBMC Foundation.

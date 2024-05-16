@@ -27,8 +27,6 @@ class SkipModalDialog(xbmcgui.WindowXMLDialog):
 
     def __init__(self, *args, **kwargs):
         self.seek_time = kwargs['seek_time']
-        self.args = kwargs['args']
-        self.api = kwargs['api']
         self.content_id = kwargs['content_id']
         self.label = kwargs['label']
         self.action_exit_keys_id = [ACTION_PREVIOUS_MENU,
@@ -38,13 +36,13 @@ class SkipModalDialog(xbmcgui.WindowXMLDialog):
         super().__init__(*args)
 
     def onInit(self):
-        self.getControl(1000).setLabel(self.label) # noqa
+        self.getControl(1000).setLabel(self.label)  # noqa
 
     def onClick(self, control_id):
         from resources.lib.videoplayer import update_playhead
         if control_id == 1000:
             xbmc.Player().seekTime(self.seek_time)
-            update_playhead(self.args, self.api, self.content_id, int(self.seek_time))
+            update_playhead(self.content_id, int(self.seek_time))
             self.close()
 
     def onAction(self, action):

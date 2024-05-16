@@ -258,6 +258,14 @@ msgctxt "#30071"
 msgid "Added to queue"
 msgstr "Añadido a la cola"
 
+msgctxt "#30072"
+msgid "[COLOR orange]%s[/COLOR] (change profile)"
+msgstr ""
+
+msgctxt "#30073"
+msgid "Choose your profile"
+msgstr ""
+
 msgctxt "#30080"
-msgid "There are to many active streams. Please try again later."
+msgid "There are too many active streams. Please try again later."
 msgstr ""
