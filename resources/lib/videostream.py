@@ -270,10 +270,7 @@ class VideoStream(Object):
         for cache_dir in dirs:
             mtime = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(cache_base_dir, cache_dir)))
             if mtime < expires:
-                crunchy_log(
-                    G.args,
-                    "Cache dir %s is older than 7 days - removing" % os.path.join(cache_base_dir, cache_dir)
-                )
+                crunchy_log("Cache dir %s is older than 7 days - removing" % os.path.join(cache_base_dir, cache_dir))
                 xbmcvfs.rmdir(os.path.join(cache_base_dir, cache_dir) + '/', force=True)
 
         return True
