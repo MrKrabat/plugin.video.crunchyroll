@@ -34,6 +34,8 @@ if __name__ == "__main__":
         xbmc.log(f"[Crunchyroll] Script {method}")
         if method == "clear_subtitles_cache":
             script.clear_subtitles_cache()
+        elif method == "clear_auth_cache":
+            script.clear_auth_cache()
     else:
         # start addon
         xbmc.log("[Crunchyroll] running plugin")

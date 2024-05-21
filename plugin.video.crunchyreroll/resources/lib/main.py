@@ -37,8 +37,8 @@ def root(plugin, content_type="video"):
             }
             return_profiles.append(Listitem.from_dict(menu, params=params, label=profile['profile_name']))
         return return_profiles
-    else:
-        return list(menu(plugin, profiles['profiles'][0]['profile_id']))
+    return list(menu(plugin, profiles['profiles'][0]['profile_id']))
+
 
 @Route.register
 def menu(plugin, profile_id):
@@ -277,12 +277,12 @@ def play_episode(plugin, episode_id):
     listitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
     listitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
     manifest_headers = {
-        'User-Agent': utils.CRUNCHYROLL_UA,
+        'User-Agent': cr.auth.user_agent,
         'Authorization': infos['auth']
     }
     listitem.setProperty('inputstream.adaptive.manifest_headers', urlencode(manifest_headers))
     license_headers = {
-        'User-Agent': utils.CRUNCHYROLL_UA,
+        'User-Agent': cr.auth.user_agent,
         'Content-Type': 'application/octet-stream',
         'Origin': 'https://static.crunchyroll.com',
         'Authorization': infos['auth'],

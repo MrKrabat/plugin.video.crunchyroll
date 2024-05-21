@@ -274,3 +274,19 @@ msgstr "Gestion des caches"
 msgctxt "#30089"
 msgid "Clear subtitles cache"
 msgstr "Nettoyer le cache des sous-titres"
+
+msgctxt "#30090"
+msgid "Basic Auth configuration"
+msgstr "Configuration du Basic Auth"
+
+msgctxt "#30091"
+msgid "Url to gather infos regarding basic auth"
+msgstr "Url pour récupérer les infos de basic auth"
+
+msgctxt "#30092"
+msgid "Url"
+msgstr "Url"
+
+msgctxt "#30093"
+msgid "Clear Basic Auth cache"
+msgstr "Nettoyer le cache du Basic Auth"

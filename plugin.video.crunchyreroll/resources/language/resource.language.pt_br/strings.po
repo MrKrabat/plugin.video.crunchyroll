@@ -275,3 +275,19 @@ msgstr "Gerenciamento de cache"
 msgctxt "#30089"
 msgid "Clear subtitles cache"
 msgstr "Limpar cache de legendas"
+
+msgctxt "#30090"
+msgid "Basic Auth configuration"
+msgstr "Configuração básica de autenticação"
+
+msgctxt "#30091"
+msgid "Url to gather infos regarding basic auth"
+msgstr "URL para coletar informações sobre autenticação básica"
+
+msgctxt "#30092"
+msgid "Url"
+msgstr "Url"
+
+msgctxt "#30093"
+msgid "Clear Basic Auth cache"
+msgstr "Limpar cache de autenticação básica"
