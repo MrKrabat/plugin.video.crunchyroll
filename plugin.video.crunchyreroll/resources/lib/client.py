@@ -37,7 +37,7 @@ class CrunchyrollClient:
 
     # pylint: disable=W0102
     def _post(self, url, params={}, headers={}, data={}, json=False):
-        headers['User-Agent'] = utils.CRUNCHYROLL_UA
+        headers['User-Agent'] = self.auth.user_agent
         if json:
             response = requests.post(url, params=params, headers=headers, auth=self.auth, json=data, timeout=30)
         else:
@@ -54,21 +54,21 @@ class CrunchyrollClient:
 
     # pylint: disable=W0102
     def _get(self, url, params={}, headers={}):
-        headers['User-Agent'] = utils.CRUNCHYROLL_UA
+        headers['User-Agent'] = self.auth.user_agent
         response = requests.get(url, params=params, headers=headers, auth=self.auth, timeout=30)
         response.raise_for_status()
         return response
 
     # pylint: disable=W0102
     def _get_cached(self, url, params={}, headers={}):
-        headers['User-Agent'] = utils.CRUNCHYROLL_UA
+        headers['User-Agent'] = self.auth.user_agent
         response = urlquick.get(url, params=params, headers=headers, auth=self.auth, timeout=30)
         response.raise_for_status()
         return response
 
     # pylint: disable=W0102
     def _get_no_auth(self, url, params={}, headers={}):
-        headers['User-Agent'] = utils.CRUNCHYROLL_UA
+        headers['User-Agent'] = self.auth.user_agent
         # Use urlquick to have a cached response
         response = urlquick.get(url, params=params, headers=headers, timeout=30)
         response.raise_for_status()

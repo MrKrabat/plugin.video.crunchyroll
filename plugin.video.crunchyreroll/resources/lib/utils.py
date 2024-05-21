@@ -22,6 +22,7 @@ import xbmc
 import xbmcvfs
 import xbmcaddon
 import requests
+import urlquick
 from .client import CrunchyrollClient
 
 ADDON_ID = "plugin.video.crunchyreroll"
@@ -33,6 +34,14 @@ CRUNCHYROLL_LICENSE_URL = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/li
 CRUNCHYROLL_UA = "Crunchyroll/3.55.3 Android/14 okhttp/4.12.0"
 
 CACHE_PATH = "special://temp/crunchyroll_cache_subtitles/"
+
+
+def get_basic_auth():
+    url = xbmcaddon.Addon(ADDON_ID).getSetting("auth_url")
+    resp = urlquick.get(url, timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
+    return data
 
 
 def iso_639_1_to_iso_639_2(code):

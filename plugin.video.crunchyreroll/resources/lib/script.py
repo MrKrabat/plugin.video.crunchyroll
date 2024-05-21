@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 import xbmc
 import xbmcvfs
+import xbmcaddon
+from requests.models import PreparedRequest
+from urlquick import Session, hash_url
 from . import utils
 
 
@@ -25,3 +28,13 @@ def clear_subtitles_cache():
         xbmc.log(f"[Crunchyroll] removing folder {cache_folder}")
         xbmcvfs.rmdir(cache_folder, True)  # pylint: disable=E1121
     xbmcvfs.mkdirs(cache_folder)
+
+
+def clear_auth_cache():
+    url = xbmcaddon.Addon(utils.ADDON_ID).getSetting("auth_url")
+    s = Session()
+    req = PreparedRequest()
+    req.prepare(url=url, method="GET")
+
+    hashed_url = hash_url(req)
+    s.cache_adapter.del_cache(hashed_url)

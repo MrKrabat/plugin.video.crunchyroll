@@ -27,6 +27,9 @@ from . import utils
 class CrunchyrollAuth(AuthBase):
 
     def __init__(self, email, password):
+        basic_auth_data = utils.get_basic_auth()
+        self.basic_auth = basic_auth_data['auth']
+        self.user_agent = basic_auth_data['user-agent']
         self.email = email
         self.password = password
         self.device_name = "Phone"
@@ -44,8 +47,8 @@ class CrunchyrollAuth(AuthBase):
 
         # These are extracted from the Android application
         self.auth_headers = {
-            "User-Agent": utils.CRUNCHYROLL_UA,
-            "Authorization": "Basic ejFrYWxhenhhaXFvNDhnZDgzbXg6LVdkamJidmJyNTE5QUxEMEtvUDBTQTgyemdTaHpoNkk="
+            "User-Agent": self.user_agent,
+            "Authorization": f"Basic {self.basic_auth}"
         }
 
         # Make sure all above fields are set

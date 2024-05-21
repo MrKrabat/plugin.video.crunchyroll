@@ -441,7 +441,8 @@ disable=raw-checker-failed,
         R0903,
         R0801,
         W0718,
-        E1101
+        E1101,
+        R0904
 # Due to false-positive
 
 # Enable the message, report, category or checker with the given id(s). You can
