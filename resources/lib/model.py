@@ -266,6 +266,10 @@ class ListableItem(Object):
         # filter out items not known to kodi
         list_info = {key: info[key] for key in types if key in info}
 
+        # only allow to overwrite the local playcount if we sync the playtime with the server
+        if G.args.addon.getSetting("sync_playtime") == "true" and hasattr(self, 'playcount'):
+            list_info["playcount"] = getattr(self, 'playcount')
+
         li = xbmcgui.ListItem()
         li.setLabel(self.title)
 
