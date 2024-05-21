@@ -92,7 +92,7 @@ def show_queue():
         options=view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
     )
 
-    view.end_of_directory("episodes")
+    view.end_of_directory("episodes", cache_to_disc=False)
     return True
 
 
@@ -196,7 +196,7 @@ def show_history():
             is_folder=True
         )
 
-    view.end_of_directory("episodes")
+    view.end_of_directory("episodes", cache_to_disc=False)
     return True
 
 
@@ -240,7 +240,7 @@ def show_resume_episodes():
             is_folder=True
         )
 
-    view.end_of_directory("episodes")
+    view.end_of_directory("episodes", cache_to_disc=False)
 
     return True
 
@@ -482,7 +482,7 @@ def view_episodes():
         options=view.OPT_NO_SEASON_TITLE
     )
 
-    view.end_of_directory("episodes")
+    view.end_of_directory("episodes", cache_to_disc=False)
     return True
 
 

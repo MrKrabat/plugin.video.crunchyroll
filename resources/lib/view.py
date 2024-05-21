@@ -41,7 +41,7 @@ if sys.platform == "win32" and sys.version_info >= (3, 8, 0):
 
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",
-         "tracknumber", "rating", "userrating", "watched", "playcount", "overlay", "cast", "castandrole", "director",
+         "tracknumber", "rating", "userrating", "watched", "overlay", "cast", "castandrole", "director",
          "mpaa", "plot", "plotoutline", "title", "originaltitle", "sorttitle", "duration", "studio", "tagline",
          "writer",
          "tvshowtitle", "premiered", "status", "set", "setoverview", "tag", "imdbnumber", "code", "aired", "credits",
@@ -327,8 +327,9 @@ def quote_value(value) -> str:
 
 
 # Those parameters will be bypassed to URL as additional query_parameters if found in build_url path_params
-# @todo: in theory it is no longer needed, test that
-whitelist_url_args = ["duration", "playhead"]
+# Don't Use this, because it will break the local playcount system.
+# For the local playcount to work, the url (with all args) needs to be identical in the list and the in the player.
+whitelist_url_args = []
 
 
 def build_url(path_params: dict, route_name: str = None) -> str:
@@ -361,13 +362,23 @@ def make_info_label(info) -> dict:
     """
     info_labels = {}
     # step 1 copy new information from info
-    for key, value in list(info.items()):
+    info_items = list(info.items())
+    for key, value in info_items:
         if value and key in types:
             info_labels[key] = value
 
     # step 2 copy old information from args, but don't overwrite
-    for key, value in list(G.args.args.items()):
+    arg_items = list(G.args.args.items())
+    for key, value in arg_items:
         if value and key in types and key not in info_labels:
             info_labels[key] = value
+
+    # only allow to overwrite the local playcount if we sync the playtime with the server
+    if G.args.addon.getSetting("sync_playtime") == "true":
+        if "playcount" in info_items:
+            info_labels["playcount"] = info_items["playcount"]
+        if "playcount" in arg_items and "playcount" not in info_labels:
+            info_labels["playcount"] = arg_items["playcount"]
+
 
     return info_labels
