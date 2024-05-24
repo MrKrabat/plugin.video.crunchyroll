@@ -1,4 +1,4 @@
-vX.X.X(2024.XX.XX)
+v2.0.0(2024.05.24)
 - Remove CMS endpoint usage
 - Add multiprofile capability in Auth module
 - Add reading multiprofile info in Client module
