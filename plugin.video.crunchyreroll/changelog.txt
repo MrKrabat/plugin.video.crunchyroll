@@ -1,3 +1,9 @@
+v2.0.1(2024-05-28)
+- Upate gitinore to ignore changelog file
+- Fix typo in Makefile
+- Improvement of release tooling
+- Support matrix
+
 v2.0.0(2024.05.24)
 - Remove CMS endpoint usage
 - Add multiprofile capability in Auth module
