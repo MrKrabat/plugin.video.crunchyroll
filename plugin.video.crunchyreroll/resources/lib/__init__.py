@@ -1,1 +1,2 @@
-# Dummy file to make this directory a package.
+# -*- coding: utf-8 -*-
+# ${LICENSE_HEADER}

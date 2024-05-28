@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# ${LICENSE_HEADER}
+
 import traceback
 from datetime import datetime
 from time import sleep
