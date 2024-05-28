@@ -37,8 +37,9 @@ changelog:
 	export CHANGELOG=$$(sed -e 's/^/            /' changelog) &&\
 	export VERSION=${VERSION} &&\
 	envsubst < ${SOURCE_FOLDER}/addon.xml > release/${SOURCE_FOLDER}/addon.xml
+	git add ${SOURCE_FOLDER}/changelog.txt && git commit -m "Update changelog" && git push
 
-copy: clean-release
+copy:
 	mkdir -p release/${SOURCE_FOLDER}/resources/lib/
 	cp ${SOURCE_FOLDER}/resources/lib/*.py release/${SOURCE_FOLDER}/resources/lib/
 	cp ${SOURCE_FOLDER}/resources/*.py release/${SOURCE_FOLDER}/resources/
@@ -58,7 +59,7 @@ license:
 	export LICENSE_HEADER=$$(envsubst < license_header) &&\
 	for file in $${FILES[@]}; do cat $$file | envsubst > tmp; mv tmp $$file; done
 
-$(ARCHIVE): changelog copy license
+$(ARCHIVE): clean-release changelog copy license
 	mkdir -p archive
 	cd release; zip -r ../archive/plugin.video.crunchyreroll-${VERSION}.zip *
 
