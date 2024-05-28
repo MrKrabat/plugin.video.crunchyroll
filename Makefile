@@ -28,7 +28,7 @@ clean-release:
 
 changelog:
 	export LAST_TAG=$$(git describe --tags --abbrev=0) &&\
-	export CHANGELOG=$$(git log "v1.0.4"..HEAD --pretty=format:"- %s") &&\
+	export CHANGELOG=$$(git log "$${LAST_TAG}"..HEAD --pretty=format:"- %s") &&\
 	export DATE=$$(date +%Y-%m-%d) &&\
 	echo -e "v${VERSION}($${DATE})\n$${CHANGELOG}\n" > changelog
 	cat changelog plugin.video.crunchyreroll/changelog.txt > tmp && mv tmp plugin.video.crunchyreroll/changelog.txt
