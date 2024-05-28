@@ -7,7 +7,7 @@ from requests.exceptions import HTTPError
 from addondev.support import Repo, initializer, logger
 logger.setLevel(logging.DEBUG)
 
-Repo.repo = "nexus"
+Repo.repo = "matrix"
 root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 source_path = os.path.join(root_path, 'plugin.video.crunchyreroll')
 initializer(source_path)

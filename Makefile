@@ -11,7 +11,7 @@ clean:
 	rm -rf "${KODI_INSTALL}/addons/plugin.video.crunchyreroll"
 
 test: lint
-	.venv/bin/pytest
+	.venv/bin/pytest tests
 
 cleanup:
 	FOLDERS=$$(find . -name __pycache__ -not -path "./.venv/*") &&\
