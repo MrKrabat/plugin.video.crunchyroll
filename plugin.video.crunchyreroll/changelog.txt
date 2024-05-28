@@ -1,3 +1,6 @@
+v2.0.2(2024-05-28)
+- Fix Makefile
+
 v2.0.1(2024-05-28)
 - Upate gitinore to ignore changelog file
 - Fix typo in Makefile
