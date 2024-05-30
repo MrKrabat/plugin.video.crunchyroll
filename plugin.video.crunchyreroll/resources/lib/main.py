@@ -33,7 +33,12 @@ def menu(plugin, profile_id):
     if not ADDON.getSetting("crunchyroll_username"):
         ADDON.openSettings()
 
-    yield Listitem.search(search)
+    # Hence, we keep the original search history for the main profile
+    if profile_id != cr.auth.data['account_id']:
+        yield Listitem.search(search, profile_id=profile_id)
+    else:
+        yield Listitem.search(search)
+
     yield Listitem.from_dict(watchlist, label=ADDON.getLocalizedString(30067))
     yield Listitem.from_dict(popular, label=ADDON.getLocalizedString(30052))
     yield Listitem.from_dict(newly_added, label=ADDON.getLocalizedString(30059))
@@ -45,7 +50,7 @@ def menu(plugin, profile_id):
 
 # pylint: disable=W0613
 @Route.register
-def search(plugin, search_query, start=0):
+def search(plugin, search_query, start=0, profile_id=None):
     cr = utils.init_crunchyroll_client()
     series, next_link = cr.search_anime(search_query, start)
     if series:
