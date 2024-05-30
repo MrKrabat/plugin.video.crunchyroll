@@ -1,3 +1,10 @@
+v2.0.3(2024-05-30)
+- Another error in the Makefile
+- Re-enable addon-checker with matrix version
+- Remove not needed tooling
+- Isolate search history per profile
+- Fix Makefile
+
 v2.0.2(2024-05-28)
 - Fix Makefile
 
