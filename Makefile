@@ -25,25 +25,33 @@ cleanup:
 lint: cleanup
 	.venv/bin/pylint $$(find -name *.py -not -path "./.venv/*")
 	.venv/bin/flake8
-#	.venv/bin/kodi-addon-checker --branch  nexus ${SOURCE_FOLDER}
+
+addon-checker: clean-release copy license
+	.venv/bin/kodi-addon-checker --branch  matrix release/${SOURCE_FOLDER}
 
 clean-release:
 	rm -rf release
 
-changelog:
+build-changelog:
 	export LAST_TAG=$$(git describe --tags --abbrev=0) &&\
 	export CHANGELOG=$$(git log "$${LAST_TAG}"..HEAD --pretty=format:"- %s") &&\
 	export DATE=$$(date +%Y-%m-%d) &&\
 	echo -e "v${VERSION}($${DATE})\n$${CHANGELOG}\n" > changelog
-	cat changelog plugin.video.crunchyreroll/changelog.txt > tmp && mv tmp plugin.video.crunchyreroll/changelog.txt
+
+copy: copy-addonxml copy-src
+
+copy-addonxml: build-changelog
 	mkdir -p release/${SOURCE_FOLDER}
 	export AUTHOR=${AUTHOR} &&\
 	export CHANGELOG=$$(sed -e 's/^/            /' changelog) &&\
 	export VERSION=${VERSION} &&\
 	envsubst < ${SOURCE_FOLDER}/addon.xml > release/${SOURCE_FOLDER}/addon.xml
+
+changelog: build-changelog
+	cat changelog plugin.video.crunchyreroll/changelog.txt > tmp && mv tmp plugin.video.crunchyreroll/changelog.txt
 	git add ${SOURCE_FOLDER}/changelog.txt && git commit -m "Update changelog" && git push
 
-copy:
+copy-src:
 	mkdir -p release/${SOURCE_FOLDER}/resources/lib/
 	cp ${SOURCE_FOLDER}/resources/lib/*.py release/${SOURCE_FOLDER}/resources/lib/
 	cp ${SOURCE_FOLDER}/resources/*.py release/${SOURCE_FOLDER}/resources/
@@ -63,7 +71,7 @@ license:
 	export LICENSE_HEADER=$$(envsubst < license_header) &&\
 	for file in $${FILES[@]}; do cat $$file | envsubst > tmp; mv tmp $$file; done
 
-$(ARCHIVE): clean-release changelog copy license
+$(ARCHIVE): clean-release changelog addonxml copy license
 	mkdir -p archive
 	cd release; zip -r ../archive/plugin.video.crunchyreroll-${VERSION}.zip *
 
