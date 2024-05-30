@@ -16,6 +16,12 @@ _Kodi® (formerly known as XBMC™) is a registered trademark of the XBMC Founda
 This page and addon are not affiliated with Kodi, Team Kodi, or the XBMC Foundation._
 ***
 
+# Installation and update
+A repository have been created to help you install the plugin and keep it up to date.  
+To install the repo, please download the file https://github.com/xtero/crunchyreroll-repo/raw/main/repository.crunchyreroll-1.0.0.zip  
+On Kodi, use the feature "Install from zip" to install the repo.  
+Once it's done, you can update your plugin from the repo.   
+
 # Contributors
 
 Maintainer: Xtero  
