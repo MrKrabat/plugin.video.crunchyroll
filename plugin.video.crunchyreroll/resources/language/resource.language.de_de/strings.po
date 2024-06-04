@@ -292,3 +292,7 @@ msgstr "Url"
 msgctxt "#30093"
 msgid "Clear Basic Auth cache"
 msgstr "Leeren Sie den Basic Auth-Cache"
+
+msgctxt "#30094"
+msgid "Automatically play next episode"
+msgstr "Nächste Episode automatisch abspielen"

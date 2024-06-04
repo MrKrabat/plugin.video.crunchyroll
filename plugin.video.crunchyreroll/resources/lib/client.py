@@ -291,3 +291,14 @@ class CrunchyrollClient:
         url = f"{utils.CRUNCHYROLL_API_URL}/accounts/v1/me/multiprofile/{profile_id}"
         data = self._get_cached(url).json()
         return data
+
+    def get_next_episode(self, episode_id):
+        url = f"{utils.CRUNCHYROLL_API_URL}/content/v2/discover/up_next/{episode_id}"
+        resp = self._get(url)
+        if resp.status_code == 200:
+            data = resp.json()
+            episode = data['data'][0]
+            episode_id = episode['panel']['id']
+            playhead = utils.lookup_playhead(self.get_playhead([episode_id])['data'], episode_id)
+            return Episode(episode['panel'], playhead)
+        return None

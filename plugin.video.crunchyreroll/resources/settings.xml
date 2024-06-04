@@ -111,6 +111,11 @@
                         <heading>30070</heading>
                     </control>
                 </setting>
+                <setting id="binge_watch" type="boolean" label="30094">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
             </group>
 
             <group id="inputstream_adaptive" label="">

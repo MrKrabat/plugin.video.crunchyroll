@@ -10,6 +10,7 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 from . import utils
+from . import main
 
 
 class CrunchyrollTask():
@@ -43,10 +44,11 @@ class CrunchyrollTask():
         self.debug("Running")
         player = xbmc.Player()
         try:
-            # E1128 due to mock
-            # pylint: disable=E1128
-            episode_id = player.getPlayingItem().getProperty('episode_id')
-            self._run(episode_id)
+            if player.isPlaying():
+                # E1128 due to mock
+                # pylint: disable=E1128
+                episode_id = player.getPlayingItem().getProperty('episode_id')
+                self._run(episode_id)
         except Exception as err:
             self.error(f"{err=}")
             self.error(f"{traceback.format_exc()}")
@@ -164,8 +166,12 @@ class CrunchyrollVideoHandler:
 
     def run(self):
         while not self.stop_event.is_set():
-            self.run_tasks()
-            self.seek_time = self.player.getTime()
+            try:
+                if self.player.isPlaying():
+                    self.run_tasks()
+                    self.seek_time = self.player.getTime()
+            except RuntimeError:
+                self.debug("I'm still trying to get playtime info although there is nothing playing :(")
             sleep(1)
 
     def stop(self):
@@ -231,6 +237,24 @@ class CrunchyrollPlayer(xbmc.Player):
         if self.stop_event:
             xbmc.log("[CrunchyrollPlayer] stopping thread", xbmc.LOGDEBUG)
             self.stop_event.set()
+            self.stop_event = None
+
+    # pylint: disable=C0103
+    def onPlayBackEnded(self):
+        addon = xbmcaddon.Addon(id=utils.ADDON_ID)
+        if addon.getSettingBool("binge_watch"):
+            playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+            episode_id = playlist[-1].getProperty('episode_id')
+            client = utils.init_crunchyroll_client()
+            next_episode = client.get_next_episode(episode_id)
+            if next_episode:
+                item = main.play_episode(None, next_episode.id)
+                url = item.path
+                self.play(url, item.listitem)
+        if self.stop_event:
+            xbmc.log("[CrunchyrollPlayer] stopping thread", xbmc.LOGDEBUG)
+            self.stop_event.set()
+            self.stop_event = None
 
 
 def run():

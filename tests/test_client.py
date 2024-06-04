@@ -124,3 +124,14 @@ class ClientTest(unittest.TestCase):
         profiles = client.get_multiprofile()
         client.auth.switch_profile(profiles['profiles'][1]['profile_id'])
         client.auth.switch_profile(profiles['profiles'][0]['profile_id'])
+
+    def test_next_episode(self):
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        # Gundam The Witch from Mercury
+        first_episode = "GMKUX2G9E"
+        last_episode = "GX9UQZ497"
+        next_episode = client.get_next_episode(first_episode)
+        assert next_episode is not None
+        assert next_episode.id == "GVWU0E4N1"
+        next_episode = client.get_next_episode(last_episode)
+        assert next_episode is None
