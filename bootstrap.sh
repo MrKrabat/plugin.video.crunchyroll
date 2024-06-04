@@ -51,3 +51,4 @@ $VENV_PATH/bin/pip install -r requirements.txt
 PYTHON_VERSION=$($VENV_PATH/bin/python -V | awk '{ print $2}' | awk -F '.' '{ print $1"."$2}')
 sed -i 's|id="xbmc.python" version="2.25.0"|id="xbmc.python" version="3.0.0"|' $VENV_PATH/lib/python$PYTHON_VERSION/site-packages/addondev/data/xbmc.python/addon.xml
 sed -i 's|backwards-compatibility abi="2.1.0"|backwards-compatibility abi="3.0.0"|' $VENV_PATH/lib/python$PYTHON_VERSION/site-packages/addondev/data/xbmc.python/addon.xml
+sed -i 's|from collections import Mapping, OrderedDict|from collections import OrderedDict\nfrom collections.abc import Mapping|' $VENV_PATH/lib/python$PYTHON_VERSION/site-packages/addondev/support.py
