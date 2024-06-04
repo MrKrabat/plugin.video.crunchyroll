@@ -6,7 +6,7 @@ from requests.exceptions import HTTPError
 import xbmc
 import urlquick
 from . import auth, utils
-from .model import Series, Season, Episode, Category
+from .model import Series, Season, Episode, Category, User
 
 
 class CrunchyrollClient:
@@ -285,7 +285,10 @@ class CrunchyrollClient:
     def get_multiprofile(self):
         url = f"{utils.CRUNCHYROLL_API_URL}/accounts/v1/me/multiprofile"
         data = self._get(url).json()
-        return data
+        res = []
+        for user in data['profiles']:
+            res.append(User(user))
+        return res
 
     def get_profile(self, profile_id):
         url = f"{utils.CRUNCHYROLL_API_URL}/accounts/v1/me/multiprofile/{profile_id}"

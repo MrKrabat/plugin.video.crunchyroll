@@ -122,8 +122,8 @@ class ClientTest(unittest.TestCase):
     def test_switch_profile(self):
         client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
         profiles = client.get_multiprofile()
-        client.auth.switch_profile(profiles['profiles'][1]['profile_id'])
-        client.auth.switch_profile(profiles['profiles'][0]['profile_id'])
+        client.auth.switch_profile(profiles[1].id)
+        client.auth.switch_profile(profiles[0].id)
 
     def test_next_episode(self):
         client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)

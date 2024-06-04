@@ -15,15 +15,16 @@ ADDON = xbmcaddon.Addon(id=utils.ADDON_ID)
 def root(plugin, content_type="video"):
     cr = utils.init_crunchyroll_client()
     profiles = cr.get_multiprofile()
-    if len(profiles['profiles']) > 1:
+    if len(profiles) > 1:
         return_profiles = []
-        for profile in profiles['profiles']:
+        for profile in profiles:
+            infos = profile.to_dict()
             params = {
-                'profile_id': profile['profile_id']
+                'profile_id': profile.id
             }
-            return_profiles.append(Listitem.from_dict(menu, params=params, label=profile['profile_name']))
+            return_profiles.append(Listitem.from_dict(menu, params=params, **infos))
         return return_profiles
-    return list(menu(plugin, profiles['profiles'][0]['profile_id']))
+    return list(menu(plugin, profiles[0].id))
 
 
 @Route.register
