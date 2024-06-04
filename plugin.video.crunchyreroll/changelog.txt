@@ -1,3 +1,8 @@
+v2.1.0(2024-06-04)
+- Add the possiblity to automatically play next episode of a serie
+- Patch installation of addondev to be compatible with python3.3 and upper
+- Update the README.md with new kodi repository
+
 v2.0.3(2024-05-30)
 - Another error in the Makefile
 - Re-enable addon-checker with matrix version
