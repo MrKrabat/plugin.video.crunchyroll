@@ -21,21 +21,8 @@ class CrunchyrollTask():
     def debug(self, msg):
         xbmc.log(f"[CrunchyrollTask][Task {self.name}] {msg}", xbmc.LOGDEBUG)
 
-    def __init__(self, client, name, interval=1):
-        self.interval = interval
-        self.lastrun = int(datetime.now().timestamp())
-        self.client = client
-        self.name = name
-
-    def should_run(self):
-        now = int(datetime.now().timestamp())
-        next_run = self.lastrun + self.interval
-        should_run = now > next_run
-        self.debug(f"Is now[{now}] > next_run[{next_run}] ? {should_run}")
-        return should_run
-
-    def update_lastrun(self):
-        self.lastrun = int(datetime.now().timestamp())
+    def __init__(self):
+        self.name = type(self).__name__
 
     def _run(self, episode_id):
         pass
@@ -55,31 +42,30 @@ class CrunchyrollTask():
 
 
 class UpdatePlayhead(CrunchyrollTask):
-    def __init__(self, client):
-        super().__init__(client, "UpdatePlayhead", 10)
-
     def _run(self, episode_id):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
         sync_playtime = addon.getSettingBool("sync_playtime")
         if sync_playtime:
             player = xbmc.Player()
             playhead = player.getTime()
-            self.client.update_playhead(episode_id, int(playhead))
+            client = utils.init_crunchyroll_client()
+            client.update_playhead(episode_id, int(playhead))
 
 
 class SkipEvent(CrunchyrollTask):
-    def __init__(self, client, event_id, localization):
-        super().__init__(client, type(self).__name__, 1)
+    def __init__(self, event_id, localization):
         self.event_id = event_id
         self.localization = localization
         self.check_skip = True
+        super().__init__()
 
     def _run(self, episode_id):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
         if addon.getSettingBool(f"skip_{self.event_id}") and self.check_skip:
             player = xbmc.Player()
             playhead = int(player.getTime())
-            skip_events = self.client.get_episode_skip_events(episode_id)
+            client = utils.init_crunchyroll_client()
+            skip_events = client.get_episode_skip_events(episode_id)
             # We may not have skip event
             if self.event_id in list(skip_events.keys()):
                 skip_event = skip_events[self.event_id]
@@ -96,43 +82,43 @@ class SkipEvent(CrunchyrollTask):
 
 
 class SkipIntro(SkipEvent):
-    def __init__(self, client):
+    def __init__(self):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
         localization = {
             "question":  addon.getLocalizedString(30076),
             "event": addon.getLocalizedString(30080)
         }
-        super().__init__(client, "intro", localization)
+        super().__init__("intro", localization)
 
 
 class SkipCredits(SkipEvent):
-    def __init__(self, client):
+    def __init__(self):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
         localization = {
             "question":  addon.getLocalizedString(30077),
             "event": addon.getLocalizedString(30081)
         }
-        super().__init__(client, "credits", localization)
+        super().__init__("credits", localization)
 
 
 class SkipRecap(SkipEvent):
-    def __init__(self, client):
+    def __init__(self):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
         localization = {
             "question":  addon.getLocalizedString(30078),
             "event": addon.getLocalizedString(30082)
         }
-        super().__init__(client, "recap", localization)
+        super().__init__("recap", localization)
 
 
 class SkipPreview(SkipEvent):
-    def __init__(self, client):
+    def __init__(self):
         addon = xbmcaddon.Addon(id=utils.ADDON_ID)
         localization = {
             "question":  addon.getLocalizedString(30079),
             "event": addon.getLocalizedString(30083)
         }
-        super().__init__(client, "preview", localization)
+        super().__init__("preview", localization)
 
 
 class CrunchyrollVideoHandler:
@@ -147,7 +133,6 @@ class CrunchyrollVideoHandler:
         self.seek_time = 0
         self.player = player
         self.stop_event = event
-        self.client = utils.init_crunchyroll_client()
         self.episode_id = None
         self.init()
         self.run()
@@ -158,17 +143,17 @@ class CrunchyrollVideoHandler:
         # pylint: disable=E1128
         self.episode_id = self.player.getPlayingItem().getProperty('episode_id')
         self.set_subtitles()
-        self.register_task(UpdatePlayhead(self.client))
-        self.register_task(SkipIntro(self.client))
-        self.register_task(SkipCredits(self.client))
-        self.register_task(SkipPreview(self.client))
-        self.register_task(SkipRecap(self.client))
+        self._register_task(UpdatePlayhead(), 10)
+        self._register_task(SkipIntro(), 1)
+        self._register_task(SkipCredits(), 1)
+        self._register_task(SkipPreview(), 1)
+        self._register_task(SkipRecap(), 1)
 
     def run(self):
         while not self.stop_event.is_set():
             try:
                 if self.player.isPlaying():
-                    self.run_tasks()
+                    self._run_tasks()
                     self.seek_time = self.player.getTime()
             except RuntimeError:
                 self.debug("I'm still trying to get playtime info although there is nothing playing :(")
@@ -201,21 +186,32 @@ class CrunchyrollVideoHandler:
             sync_playtime = addon.getSettingBool("sync_playtime")
             if sync_playtime:
                 playhead = self.seek_time
-                self.client.update_playhead(self.episode_id, int(playhead))
+                client = utils.init_crunchyroll_client()
+                client.update_playhead(self.episode_id, int(playhead))
         except Exception as err:
             self.error(f"{err=}")
             self.error(f"{traceback.format_exc()}")
 
-    def register_task(self, task):
-        self.debug(f"Registering task {task.name}")
-        self.tasks.append(task)
+    def should_run_task(self, task_info):
+        now = int(datetime.now().timestamp())
+        next_run = task_info['lastrun'] + task_info['interval']
+        should_run = now > next_run
+        return should_run
 
-    def run_tasks(self):
+    def _register_task(self, task, interval):
+        self.debug(f"Registering task {task.name}")
+        self.tasks.append({
+            "task": task,
+            "interval": interval,
+            "lastrun": int(datetime.now().timestamp())
+        })
+
+    def _run_tasks(self):
         self.debug("Checking tasks to run")
-        for task in self.tasks:
-            if task.should_run():
-                task.update_lastrun()
-                task.run()
+        for task_info in self.tasks:
+            if self.should_run_task(task_info):
+                task_info['lastrun'] = int(datetime.now().timestamp())
+                task_info['task'].run()
 
 
 class CrunchyrollPlayer(xbmc.Player):
