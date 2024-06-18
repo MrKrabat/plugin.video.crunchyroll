@@ -9,8 +9,7 @@ import re
 import xbmc
 import xbmcgui
 import xbmcaddon
-from . import utils
-from . import main
+from . import utils, clientutils, main
 
 
 class CrunchyrollTask():
@@ -48,7 +47,7 @@ class UpdatePlayhead(CrunchyrollTask):
         if sync_playtime:
             player = xbmc.Player()
             playhead = player.getTime()
-            client = utils.init_crunchyroll_client()
+            client = clientutils.init_crunchyroll_client()
             client.update_playhead(episode_id, int(playhead))
 
 
@@ -64,7 +63,7 @@ class SkipEvent(CrunchyrollTask):
         if addon.getSettingBool(f"skip_{self.event_id}") and self.check_skip:
             player = xbmc.Player()
             playhead = int(player.getTime())
-            client = utils.init_crunchyroll_client()
+            client = clientutils.init_crunchyroll_client()
             skip_events = client.get_episode_skip_events(episode_id)
             # We may not have skip event
             if self.event_id in list(skip_events.keys()):
@@ -186,7 +185,7 @@ class CrunchyrollVideoHandler:
             sync_playtime = addon.getSettingBool("sync_playtime")
             if sync_playtime:
                 playhead = self.seek_time
-                client = utils.init_crunchyroll_client()
+                client = clientutils.init_crunchyroll_client()
                 client.update_playhead(self.episode_id, int(playhead))
         except Exception as err:
             self.error(f"{err=}")
@@ -241,7 +240,7 @@ class CrunchyrollPlayer(xbmc.Player):
         if addon.getSettingBool("binge_watch"):
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             episode_id = playlist[-1].getProperty('episode_id')
-            client = utils.init_crunchyroll_client()
+            client = clientutils.init_crunchyroll_client()
             next_episode = client.get_next_episode(episode_id)
             if next_episode:
                 item = main.play_episode(None, next_episode.id)

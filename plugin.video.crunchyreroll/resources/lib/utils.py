@@ -175,18 +175,6 @@ def get_subtitles(episode_id, subtitles):
     return return_subtitles
 
 
-def init_crunchyroll_client():
-    addon = xbmcaddon.Addon(id=ADDON_ID)
-    email = addon.getSetting("crunchyroll_username")
-    password = addon.getSetting("crunchyroll_password")
-    settings = {
-        "prefered_subtitle": local_from_id(addon.getSettingInt("subtitle_language")),
-        "prefered_audio": addon.getSettingInt("prefered_audio"),
-        "page_size": addon.getSettingInt("page_size"),
-    }
-    return CrunchyrollClient(email, password, settings)
-
-
 def sub_locale_from_id(locale_id):
     locales = [
         "eng",

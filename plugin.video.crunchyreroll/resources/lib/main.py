@@ -5,7 +5,7 @@
 from urllib.parse import urlencode
 from codequick import Route, Resolver, Listitem, run # noqa = F401
 import xbmcaddon
-from . import utils
+from . import utils, clientutils
 
 ADDON = xbmcaddon.Addon(id=utils.ADDON_ID)
 
@@ -13,7 +13,7 @@ ADDON = xbmcaddon.Addon(id=utils.ADDON_ID)
 # pylint: disable=W0613
 @Route.register
 def root(plugin, content_type="video"):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     profiles = cr.get_multiprofile()
     if len(profiles) > 1:
         return_profiles = []
@@ -29,7 +29,7 @@ def root(plugin, content_type="video"):
 
 @Route.register
 def menu(plugin, profile_id):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     cr.auth.switch_profile(profile_id)
     if not ADDON.getSetting("crunchyroll_username"):
         ADDON.openSettings()
@@ -52,7 +52,7 @@ def menu(plugin, profile_id):
 # pylint: disable=W0613
 @Route.register
 def search(plugin, search_query, start=0, profile_id=None):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     series, next_link = cr.search_anime(search_query, start)
     if series:
         result = []
@@ -69,7 +69,7 @@ def search(plugin, search_query, start=0, profile_id=None):
 # pylint: disable=W0613
 @Route.register
 def watchlist(plugin, start=0):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     episodes, next_link = cr.get_watchlist(start)
     if episodes:
         result = []
@@ -86,7 +86,7 @@ def watchlist(plugin, start=0):
 # pylint: disable=W0613,W0102
 @Route.register
 def popular(plugin, start=0, categories_list=[]):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     series, next_link = cr.get_popular(start=start, categories=categories_list)
     for serie in series:
         infos = serie.to_dict()
@@ -99,7 +99,7 @@ def popular(plugin, start=0, categories_list=[]):
 # pylint: disable=W0613,W0102
 @Route.register
 def newly_added(plugin, start=0, categories_list=[]):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     series, next_link = cr.get_newly_added(start=start, categories=categories_list)
     for serie in series:
         infos = serie.to_dict()
@@ -112,7 +112,7 @@ def newly_added(plugin, start=0, categories_list=[]):
 # pylint: disable=W0613
 @Route.register
 def show_series(plugin, series_id):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     seasons = cr.get_series_seasons(series_id)
     for season in seasons:
         infos = season.to_dict()
@@ -123,7 +123,7 @@ def show_series(plugin, series_id):
 # pylint: disable=W0613
 @Route.register
 def show_season(plugin, season_id):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     episodes = cr.get_season_episodes(season_id)
     for episode in episodes:
         infos = episode.to_dict()
@@ -134,7 +134,7 @@ def show_season(plugin, season_id):
 # pylint: disable=W0613
 @Route.register
 def alpha(plugin):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     index = cr.get_alpha()
     for item in index:
         yield Listitem.from_dict(alpha_one, params={'start': item['start'], 'number': item['number']}, label=item['prefix'])
@@ -143,7 +143,7 @@ def alpha(plugin):
 # pylint: disable=W0613
 @Route.register
 def alpha_one(plugin, start, number):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     # We don't care about next_link, but it's returned anyway by browse method
     # pylint: disable=W0612
     series, next_link = cr.browse('alphabetical', start, number)
@@ -156,7 +156,7 @@ def alpha_one(plugin, start, number):
 # pylint: disable=W0613
 @Route.register
 def categories(plugin):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     categories_list = cr.get_categories()
     for category in categories_list:
         infos = category.to_dict()
@@ -167,7 +167,7 @@ def categories(plugin):
 # pylint: disable=W0613
 @Route.register
 def sub_category(plugin, category_id):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     yield Listitem.from_dict(popular, params={"categories": [category_id]}, label=ADDON.getLocalizedString(30052))
     yield Listitem.from_dict(newly_added, params={"categories": [category_id]}, label=ADDON.getLocalizedString(30059))
     sub_categories_list = cr.get_sub_categories(category_id)
@@ -180,7 +180,7 @@ def sub_category(plugin, category_id):
 # pylint: disable=W0613
 @Route.register
 def browse_sub_category(plugin, categories_list, start=0):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     series, next_link = cr.browse(start=start, categories=categories_list)
     for serie in series:
         infos = serie.to_dict()
@@ -193,7 +193,7 @@ def browse_sub_category(plugin, categories_list, start=0):
 # pylint: disable=W0613
 @Route.register
 def simulcast(plugin, start=0, season=None):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     if not season:
         seasonal_tags = cr.get_seasonal_tags()
         season = seasonal_tags[0]['id']
@@ -217,7 +217,7 @@ def my_lists(plugin):
 # pylint: disable=W0613
 @Route.register
 def crunchylists(plugin):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     lists = cr.get_crunchylists()
     for item in lists:
         yield Listitem.from_dict(crunchylist, params={'list_id': item['list_id']}, label=item['title'])
@@ -226,7 +226,7 @@ def crunchylists(plugin):
 # pylint: disable=W0613
 @Route.register
 def crunchylist(plugin, list_id):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     series = cr.get_crunchylist(list_id)
     for serie in series:
         infos = serie.to_dict()
@@ -237,7 +237,7 @@ def crunchylist(plugin, list_id):
 # pylint: disable=W0613
 @Route.register
 def history(plugin, page=1):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     episodes, next_link = cr.get_history(page)
     for episode in episodes:
         infos = episode.to_dict()
@@ -250,7 +250,7 @@ def history(plugin, page=1):
 # pylint: disable=W0613
 @Resolver.register
 def play_episode(plugin, episode_id):
-    cr = utils.init_crunchyroll_client()
+    cr = clientutils.init_crunchyroll_client()
     from inputstreamhelper import Helper  # pylint: disable=import-outside-toplevel
     helper = Helper("mpd", drm='com.widevine.alpha')
     helper.check_inputstream()
