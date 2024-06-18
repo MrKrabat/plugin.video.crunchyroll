@@ -68,11 +68,12 @@ class CrunchyrollClient:
             "start": start
         }
         data = self._get_localized(url, params=params).json()
-        playheads = self.get_playhead([item['panel']['id'] for item in data['data']])
+        ids = list(map(lambda item: item['panel']['id'], data['data']))
+        data = self.get_objects(ids)
+        playheads = self.get_playhead(ids)
         if len(data['data']) > 0:
             res = []
             for item in data['data']:
-                item = item['panel']
                 playhead = utils.lookup_playhead(playheads['data'], item['id'])
                 res.append(Episode(item, playhead))
 

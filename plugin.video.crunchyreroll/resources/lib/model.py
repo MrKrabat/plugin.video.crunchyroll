@@ -2,7 +2,6 @@
 # ${LICENSE_HEADER}
 
 # pylint: disable=E0401
-import codequick
 from . import utils
 
 
@@ -38,8 +37,7 @@ class Episode:
                 "plot": self.description,
                 "episode": self.number,
                 "tvshowtitle": self.item["episode_metadata"]["series_title"],
-                "season": self.item["episode_metadata"]["season_number"],
-                "originaltitle": self.id
+                "season": self.item["episode_metadata"]["season_number"]
             },
             "properties": {
                 "totaltime": self.duration
@@ -55,7 +53,7 @@ class Episode:
         if self.playhead["fully_watched"]:
             res["info"]["playcount"] = 1
         else:
-            if int((self.playhead["playhead"] / self.duration) * 100) < 10:
+            if int((self.playhead["playhead"] / self.duration) * 100) < 1:
                 res["info"]["playcount"] = 0
             else:
                 res["properties"]["resumetime"] = self.playhead["playhead"]
