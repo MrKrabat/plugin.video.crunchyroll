@@ -12,6 +12,7 @@ class Episode:
         self.playhead = playhead
         self.id = item["id"]
         self.season_number_str = item["episode_metadata"].get("season_number", "1")
+        self.season_number = utils.number_to_int(self.season_number_str)
         self.number_str = utils.lookup_episode_number(item)
         self.number = utils.number_to_int(self.number_str)
         self.series_title = item["episode_metadata"]["series_title"]
@@ -36,8 +37,8 @@ class Episode:
                 "duration": self.duration,
                 "plot": self.description,
                 "episode": self.number,
+                "season": self.season_number,
                 "tvshowtitle": self.item["episode_metadata"]["series_title"],
-                "season": self.item["episode_metadata"]["season_number"]
             },
             "properties": {
                 "totaltime": self.duration
