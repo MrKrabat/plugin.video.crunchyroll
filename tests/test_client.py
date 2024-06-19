@@ -24,10 +24,9 @@ if 'CRUNCHYROLL_PASSWORD' not in os.environ:
     sys.exit(1)
 PASSWORD = os.environ['CRUNCHYROLL_PASSWORD']
 SETTINGS = {
-    "prefered_audio": 0,
+    "prefered_audio": "fr-FR",
     "prefered_subtitle": "fr-FR",
-    "page_size": 20,
-    "resolution": 720
+    "page_size": 20
 }
 
 
