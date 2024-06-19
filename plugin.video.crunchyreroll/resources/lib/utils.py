@@ -9,7 +9,6 @@ import xbmcvfs
 import xbmcaddon
 import requests
 import urlquick
-from .client import CrunchyrollClient
 
 ADDON_ID = "plugin.video.crunchyreroll"
 # The idea is to be able mock it for future tests
@@ -111,18 +110,16 @@ def number_to_int(number):
     return int(float(number))
 
 
-def lookup_stream(episode, prefered_audio_id):
+def lookup_stream(episode, prefered_audio):
     stream_id = None
     actual_audio = None
     if "versions" in episode['episode_metadata'] and episode['episode_metadata']['versions']:
-        if prefered_audio_id == 0:
+        if prefered_audio == "original":
             for version in episode['episode_metadata']['versions']:
                 if version['original']:
                     stream_id = version['guid']
                     actual_audio = version['audio_locale']
         else:
-            prefered_audio = local_from_id(prefered_audio_id - 1)
-            xbmc.log(prefered_audio)
             # If we find prefered_audio, it's return this value
             for version in episode['episode_metadata']['versions']:
                 if version['audio_locale'] == prefered_audio:

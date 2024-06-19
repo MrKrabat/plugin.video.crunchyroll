@@ -41,7 +41,8 @@ class CrunchyrollClient:
 
         if localized:
             headers['locale'] = self.prefered_subtitle
-            headers['preferred_audio_language'] = self.prefered_audio
+            if self.prefered_audio != "original":
+                headers['preferred_audio_language'] = self.prefered_audio
 
         if cached:
             response = urlquick.get(url, params=params, headers=headers, auth=self.auth, timeout=30)
