@@ -1,3 +1,20 @@
+v2.2.0(2024-06-19)
+- Fix missing subtitles when playing next episode (binge watch mode)
+- Change settings on test_client.py
+- Add many tests on routes
+- Add stringinfication of model classes
+- Better management of prefered_audio
+- Break circular dependency
+- Rewrite monitor to untagle classes
+- More resilient way to handle season number
+- Refactor client _get method
+- Minor improvements
+- Proper handling of profile images and categories images
+- Update changelog
+- Add the possiblity to automatically play next episode of a serie
+- Patch installation of addondev to be compatible with python3.3 and upper
+- Update the README.md with new kodi repository
+
 v2.1.0(2024-06-04)
 - Add the possiblity to automatically play next episode of a serie
 - Patch installation of addondev to be compatible with python3.3 and upper
