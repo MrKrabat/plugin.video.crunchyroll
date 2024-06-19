@@ -245,6 +245,8 @@ class CrunchyrollPlayer(xbmc.Player):
             if next_episode:
                 item = main.play_episode(None, next_episode.id)
                 url = item.path
+                if item.subtitles:
+                    item.listitem.setSubtitles(item.subtitles)
                 self.play(url, item.listitem)
         if self.stop_event:
             xbmc.log("[CrunchyrollPlayer] stopping thread", xbmc.LOGDEBUG)
