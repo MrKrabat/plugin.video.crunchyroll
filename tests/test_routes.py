@@ -12,8 +12,25 @@ root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 source_path = os.path.join(root_path, 'plugin.video.crunchyreroll')
 initializer(source_path)
 
-# pylint: disable=C0413,W0611
+# Need to be imported after modules modifications
+# pylint: disable=E0401,C0413,W0611
+from resources.lib.client import CrunchyrollClient # noqa = E402
 from . import mock  # noqa: F401, E402
+
+if 'CRUNCHYROLL_EMAIL' not in os.environ:
+    print("You need to defined CRUNCHYROLL_EMAIL to run tests", file=sys.stderr)
+    sys.exit(1)
+EMAIL = os.environ['CRUNCHYROLL_EMAIL']
+
+if 'CRUNCHYROLL_PASSWORD' not in os.environ:
+    print("You need to defined CRUNCHYROLL_PASSWORD to run tests", file=sys.stderr)
+    sys.exit(1)
+PASSWORD = os.environ['CRUNCHYROLL_PASSWORD']
+SETTINGS = {
+    "prefered_audio": "fr-FR",
+    "prefered_subtitle": "fr-FR",
+    "page_size": 20
+}
 
 
 def serialize_data(title, kwargs):
@@ -28,7 +45,7 @@ def serialize_data(title, kwargs):
 
 
 # pylint: disable=W0102
-def exec_route(url, args=[""]):
+def _exec_route(url, args=[""]):
     dummy_handle = 1
     sys.argv = [url, dummy_handle, *args]
     main_path = os.path.join(source_path, "main.py")
@@ -38,77 +55,126 @@ def exec_route(url, args=[""]):
         exec(code, {'__name__': '__main__'}, {'process_errors': False})
 
 
+# pylint: disable=W0102
+def exec_route(url):
+    _exec_route(url)
+
+
+def exec_route_with_params(url, title, params):
+    pickle_query = serialize_data(title, params)
+    query = f"?{pickle_query}"
+    args = [query]
+    _exec_route(url, args)
+
+
 class RouteTest(unittest.TestCase):
 
-    def test_root(self):
+    def test_route_root(self):
         url = "plugin://plugin.video.crunchyreroll/"
         exec_route(url)
 
-    def test_search(self):
-        pickle_query = serialize_data("My hero", {
-            "search_query": "my hero"
-        })
-        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/search"
-        query = f"?{pickle_query}"
-        args = [query]
-        exec_route(url, args)
+    def test_route_menu(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/menu"
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        profile_id = client.auth.data['profile_id']
+        exec_route_with_params(url, "Menu", {"profile_id": profile_id})
 
-    def test_search_empty(self):
-        pickle_query = serialize_data("empty", {
-            "search_query": "empty"
-        })
+    def test_route_search(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/search"
-        query = f"?{pickle_query}"
-        args = [query]
-        exec_route(url, args)
+        exec_route_with_params(url, "Search", {"search_query": "my hero"})
 
-    def test_watchlist(self):
+    def test_route_search_empty(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/search"
+        exec_route_with_params(url, "Search Empty", {"search_query": "empty"})
+
+    def test_route_watchlist(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/watchlist"
         exec_route(url)
 
-    def test_watchlist_page_2(self):
-        pickle_query = serialize_data("Watchlist", {
-            "start": 20
-        })
-        query = f"?{pickle_query}"
+    def test_route_watchlist_page_2(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/watchlist"
-        args = [query]
-        exec_route(url, args)
+        exec_route_with_params(url, "Watchlist", {"start": 20})
 
-    def test_popular(self):
+    def test_route_popular(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/popular"
         exec_route(url)
 
-    def test_newly_added(self):
+    def test_route_newly_added(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/newly_added"
         exec_route(url)
 
-    def test_show_series(self):
+    def test_route_show_series(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/show_series"
         # GG5H5XQX4 is for Frieren
-        pickle_query = serialize_data("Series", {
-            "series_id": "GG5H5XQX4"
-        })
-        query = f"?{pickle_query}"
-        args = [query]
-        exec_route(url, args)
+        exec_route_with_params(url, "Series", {"series_id": "GG5H5XQX4"})
 
-    def test_show_season(self):
+    def test_route_show_season(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/show_season"
         # GYE5CQMQ5 is for the first Frieren season
-        pickle_query = serialize_data("Season", {
-            "season_id": "GYE5CQMQ5"
-        })
-        query = f"?{pickle_query}"
-        args = [query]
-        exec_route(url, args)
+        exec_route_with_params(url, "Season", {"season_id": "GYE5CQMQ5"})
 
-    def test_play_episode(self):
+    def test_route_alpha(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/alpha"
+        exec_route(url)
+
+    def test_route_alpha_one(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/alpha_one"
+        # Retriving series by alphabetic order is basically retriving a slice of the catalog that match the letter
+        # In this scenario, we are testing prefix A
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        index = client.get_alpha()
+        item = index[1]
+        assert item['prefix'] == 'A'
+        exec_route_with_params(url, item['prefix'], {"number": item['number'], "start": item['start']})
+
+    def test_route_categories(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/categories"
+        exec_route(url)
+
+    def test_route_sub_category(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/sub_category"
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        categories_list = client.get_categories()
+        category = categories_list[0]
+        exec_route_with_params(url, category.to_dict()['label'], category.to_dict()['params'])
+
+    def test_route_browse_sub_category(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/browse_sub_category"
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        categories_list = client.get_categories()
+        category = categories_list[0]
+        sub_categories_list = client.get_sub_categories(category.id)
+        sub_category = sub_categories_list[0]
+        exec_route_with_params(url, category.to_dict()['label'], sub_category.to_dict()['params'])
+
+    def test_route_simulcast(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/simulcast"
+        exec_route(url)
+
+    def test_route_my_lists(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/my_lists"
+        exec_route(url)
+
+    def test_route_crunchylists(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/crunchylists"
+        exec_route(url)
+
+    def test_route_crunchylist(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/crunchylist"
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        lists = client.get_crunchylists()
+        item = lists[0]
+        exec_route_with_params(url, item['title'], {'list_id': item['list_id']})
+
+    def test_route_history(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/history"
+        exec_route(url)
+
+    def test_route_history_page_2(self):
+        url = "plugin://plugin.video.crunchyreroll/resources/lib/main/history"
+        exec_route_with_params(url, "Page 2", {"page": 2})
+
+    def test_route_play_episode(self):
         url = "plugin://plugin.video.crunchyreroll/resources/lib/main/play_episode"
         # G0DUND0K2 if for the first episode of Frieren
-        pickle_query = serialize_data("Episode", {
-            "episode_id": "G0DUND0K2"
-        })
-        query = f"?{pickle_query}"
-        args = [query]
-        exec_route(url, args)
+        exec_route_with_params(url, "Episode", {"episode_id": "G0DUND0K2"})
