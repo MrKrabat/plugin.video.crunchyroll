@@ -2,22 +2,31 @@
 # ${LICENSE_HEADER}
 
 # pylint: disable=E0401
+import json
 from . import utils
 
 
-class Episode:
+class CrunchryrollModelBase:
+
+    def to_dict(self):
+        return {}
+
+    def __str__(self):
+        return json.dumps(self.to_dict(), indent=4)
+
+
+class Episode(CrunchryrollModelBase):
 
     def __init__(self, item, playhead):
         self.item = item
         self.playhead = playhead
         self.id = item["id"]
-        self.season_number_str = item["episode_metadata"].get("season_number", "1")
-        self.season_number = utils.number_to_int(self.season_number_str)
+        self.season_number = item["episode_metadata"].get("season_number", 1)
         self.number_str = utils.lookup_episode_number(item)
         self.number = utils.number_to_int(self.number_str)
         self.series_title = item["episode_metadata"]["series_title"]
         self.title = item["title"]
-        self.label = f"{self.series_title} | {self.season_number_str}#{self.number_str} | {self.title}"
+        self.label = f"{self.series_title} | {self.season_number}#{self.number_str} | {self.title}"
         self.thumbnail = item["images"]["thumbnail"][0][0]["source"]
         self.landscape = item["images"]["thumbnail"][0][-1]["source"]
         self.duration = item["episode_metadata"]["duration_ms"] / 1000
@@ -62,7 +71,7 @@ class Episode:
         return res
 
 
-class Season:
+class Season(CrunchryrollModelBase):
 
     def __init__(self, item):
         self.item = item
@@ -81,7 +90,7 @@ class Season:
         return res
 
 
-class Series:
+class Series(CrunchryrollModelBase):
 
     def __init__(self, item):
         self.item = item
@@ -106,27 +115,35 @@ class Series:
         return res
 
 
-class Category:
+class Category(CrunchryrollModelBase):
     def __init__(self, item, parent_id=None):
         self.item = item
         self.id = item["id"]
         self.title = item["localization"]["title"]
         self.description = item["localization"]["description"]
-        self.fanart = item["images"]["low"][-1]['source']
-        self.background = item['images']['background'][-1]['source']
+        self.fanart = None
+        self.background = None
+        if item.get('images', None):
+            if item['images'].get('low', None):
+                self.fanart = item["images"]["low"][-1]['source']
+            if item['images'].get('background', None):
+                self.background = item['images']['background'][-1]['source']
         self.parent_id = parent_id
 
     def to_dict(self):
         res = {
             "label": self.title,
-            "art": {
-                "thumb": self.fanart,
-                'fanart': self.background
-            },
+            "art": {}
         }
+        if self.fanart:
+            res["art"]["thumb"] = self.fanart
+
+        if self.background:
+            res["art"]["fanart"] = self.background
+
         if self.parent_id:
             res["params"] = {
-                "categories": [self.parent_id, self.id]
+                "categories_list": [self.parent_id, self.id]
             }
         else:
             res["params"] = {
@@ -135,7 +152,7 @@ class Category:
         return res
 
 
-class User:
+class User(CrunchryrollModelBase):
     def __init__(self, user):
         self.id = user['profile_id']
         self.avatar = user.get('avatar', '0006-cr-white-black.png')
