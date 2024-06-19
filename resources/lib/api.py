@@ -65,7 +65,7 @@ class API:
     SEASONAL_TAGS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/discover/seasonal_tags"
     CATEGORIES_ENDPOINT = "https://beta-api.crunchyroll.com/content/v1/tenant_categories"
 
-    AUTHORIZATION = "Basic bm12anNoZmtueW14eGtnN2ZiaDk6WllJVnJCV1VQYmNYRHRiRDIyVlNMYTZiNFdRb3Mzelg="
+    AUTHORIZATION = "Basic XF1cW5menZ6eXlucF84ZXVtNTA6MlY3eHZpQlI5QkJxSjI4OXN3M2Z2dkFVNlRoMVZRMEw="
     LICENSE_ENDPOINT = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 
     def __init__(
