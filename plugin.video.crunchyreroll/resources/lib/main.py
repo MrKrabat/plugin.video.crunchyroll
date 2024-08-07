@@ -289,4 +289,10 @@ def play_episode(plugin, episode_id):
     }
     listitem.setProperty('inputstream.adaptive.license_key', '|'.join(list(license_config.values())))
 
+    next_episode = cr.get_next_episode(episode_id)
+    if next_episode and xbmcaddon.Addon(id=utils.ADDON_ID).getSettingBool("binge_watch"):
+        infos = next_episode.to_dict()
+        loopback_item = Listitem.from_dict(play_episode, **infos)
+        return [item, loopback_item]
+
     return item

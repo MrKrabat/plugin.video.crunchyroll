@@ -9,7 +9,7 @@ import re
 import xbmc
 import xbmcgui
 import xbmcaddon
-from . import utils, clientutils, main
+from . import utils, clientutils
 
 
 class CrunchyrollTask():
@@ -236,18 +236,6 @@ class CrunchyrollPlayer(xbmc.Player):
 
     # pylint: disable=C0103
     def onPlayBackEnded(self):
-        addon = xbmcaddon.Addon(id=utils.ADDON_ID)
-        if addon.getSettingBool("binge_watch"):
-            playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-            episode_id = playlist[-1].getProperty('episode_id')
-            client = clientutils.init_crunchyroll_client()
-            next_episode = client.get_next_episode(episode_id)
-            if next_episode:
-                item = main.play_episode(None, next_episode.id)
-                url = item.path
-                if item.subtitles:
-                    item.listitem.setSubtitles(item.subtitles)
-                self.play(url, item.listitem)
         if self.stop_event:
             xbmc.log("[CrunchyrollPlayer] stopping thread", xbmc.LOGDEBUG)
             self.stop_event.set()

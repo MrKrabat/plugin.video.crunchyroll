@@ -9,7 +9,7 @@ install: clean
 	cp -r ${SOURCE_FOLDER} "${KODI_INSTALL}/addons/plugin.video.crunchyreroll"
 	export AUTHOR=${AUTHOR} &&\
 	export CHANGELOG="            In Development" &&\
-	export VERSION=0.0.0-dev &&\
+	export VERSION=99.99.99-dev &&\
 	envsubst < ${SOURCE_FOLDER}/addon.xml > ${KODI_INSTALL}/addons/plugin.video.crunchyreroll/addon.xml
 
 clean:
