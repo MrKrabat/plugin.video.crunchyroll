@@ -117,7 +117,10 @@ class CrunchyrollAuth(AuthBase):
 
     def __call__(self, request):
         if not self.is_auth():
+            profile_id = self.data.get('profile_id', None)
             self._authenticate()
+            if profile_id and self.data['profile_id'] != profile_id:
+                self.switch_profile(profile_id)
         elif self.need_refresh():
             self._refresh()
 

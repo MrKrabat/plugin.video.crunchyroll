@@ -134,3 +134,12 @@ class ClientTest(unittest.TestCase):
         assert next_episode.id == "GVWU0E4N1"
         next_episode = client.get_next_episode(last_episode)
         assert next_episode is None
+
+    def test_reauth_non_primary(self):
+        client = CrunchyrollClient(EMAIL, PASSWORD, SETTINGS)
+        profiles = client.get_multiprofile()
+        profile_id = profiles[1].id
+        client.auth.switch_profile(profile_id)
+        client.auth.data['expires_in'] = -1
+        client.get_watchlist()
+        assert profile_id == client.auth.data['profile_id']
