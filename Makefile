@@ -82,6 +82,7 @@ release-upload:
 	"$$(jq -r .upload_url release_${VERSION}.json | awk -F '{' '{ print $$1}')?name=plugin.video.crunchyreroll-${VERSION}.zip" \
 	-H "Content-Type: application/zip" --data-binary @archive/plugin.video.crunchyreroll-${VERSION}.zip
 	rm release_${VERSION}.json
+	git pull
 
 check:
 	if [ -z "${VERSION}" ]; then exit 1; fi
