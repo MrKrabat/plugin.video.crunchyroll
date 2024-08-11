@@ -132,6 +132,7 @@ OPT_CTX_WATCHLIST = 2  # add context menu to add item to watchlist
 OPT_CTX_SEASONS = 4  # add context menu to jump to series
 OPT_CTX_EPISODES = 8  # add context menu to jump to episodes
 OPT_NO_SEASON_TITLE = 16  # only show title of episode (with numbering)
+OPT_SORT_EPISODES_EXPERIMENTAL = 32  # sort un-viewed queue items to top
 
 
 # actually not sure if this works, as the requests lib is not async
@@ -260,6 +261,10 @@ def add_listables(
     crunchy_log("add_listables: Starting to retrieve data async")
     complement_data = asyncio.run(complement_listables(listables))
     crunchy_log("add_listables: Finished to retrieve data async")
+
+    if options and options & OPT_SORT_EPISODES_EXPERIMENTAL:  # needs check for episodes
+        from .utils import sort_episodes
+        listables = sort_episodes(listables)
 
     # add listable items to kodi
     for listable in listables:
