@@ -131,6 +131,11 @@ def search_anime():
         view.end_of_directory()
         return False
 
+    if not req.get('items') or len(req.get('items')) == 0:
+        view.add_item({"title": G.args.addon.getLocalizedString(30090)})
+        view.end_of_directory()
+        return False
+
     type_data = req.get('items')[0]  # @todo: for now we support only the first type, which should be series
 
     view.add_listables(
