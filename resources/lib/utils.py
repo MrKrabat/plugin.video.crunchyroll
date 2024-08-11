@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import re
+from datetime import datetime
 from json import dumps
 from typing import Dict, Union, List, Optional
 
@@ -289,3 +290,31 @@ def highlight_list_item_title(list_item: xbmcgui.ListItem):
         Used to highlight that item is already on watchlist
     """
     list_item.setInfo('video', {'title': '[COLOR orange]' + list_item.getLabel() + '[/COLOR]'})
+
+
+def convert_text_to_date(date_str) -> datetime:
+    return datetime.strptime(date_str, "%Y-%m-%d")
+
+
+def sort_episodes(listables: List[ListableItem]) -> List[ListableItem]:
+    """ Sort episodes list to move all unwatched episodes to top """
+
+    watched = []
+    unwatched = []
+
+    # split in watched and unwatched
+    for listable in listables:
+        if not isinstance(listable, EpisodeData) and not isinstance(listable, MovieData):
+            crunchy_log('Error sorting episodes. Not an episode nor movie')
+            continue
+
+        if listable.playcount == 1:
+            watched.append(listable)
+        else:
+            unwatched.append(listable)
+
+    # sort both lists by aired:
+    watched.sort(key=lambda obj: convert_text_to_date(obj.aired), reverse=True)
+    unwatched.sort(key=lambda obj: convert_text_to_date(obj.aired), reverse=True)
+
+    return unwatched + watched

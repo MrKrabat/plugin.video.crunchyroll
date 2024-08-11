@@ -89,7 +89,7 @@ def show_queue():
     view.add_listables(
         listables=get_listables_from_response(req.get('items')),
         is_folder=False,
-        options=view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES
+        options=view.OPT_CTX_SEASONS | view.OPT_CTX_EPISODES  # | view.OPT_SORT_EPISODES_EXPERIMENTAL
     )
 
     view.end_of_directory("episodes", cache_to_disc=False)
