@@ -265,3 +265,7 @@ msgstr "Choisissez votre profil"
 msgctxt "#30080"
 msgid "There are too many active streams. Please try again later."
 msgstr ""
+
+msgctxt "#30090"
+msgid "No search results"
+msgstr ""
