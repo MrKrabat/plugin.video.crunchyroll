@@ -123,8 +123,32 @@ msgid "Filter available dubs"
 msgstr "Filtrar los idiomas de audio disponibles"
 
 msgctxt "#30039"
-msgid "In an anime seasons view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
-msgstr "En una vista de temporadas de anime, sólo se muestran los idiomas de audio en japonés, su idioma Crunchyroll o cualquiera de los idiomas de subtítulos configurados."
+msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "En una vista de temporada o serie de anime, sólo se muestran los idiomas de audio en japonés, su idioma Crunchyroll o cualquiera de los idiomas de subtítulos configurados."
+
+msgctxt "#30138"
+msgid "Show dubs in your language"
+msgstr ""
+
+msgctxt "#30139"
+msgid "In an anime seasons or series view, display dubs in your CR language"
+msgstr ""
+
+msgctxt "#30140"
+msgid "Show dubs in your alternative language"
+msgstr ""
+
+msgctxt "#30141"
+msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+msgstr ""
+
+msgctxt "#30142"
+msgid "Show subtitled entries"
+msgstr ""
+
+msgctxt "#30143"
+msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
+msgstr ""
 
 
 # Crunchyroll Menue

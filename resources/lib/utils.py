@@ -48,6 +48,8 @@ def get_listables_from_response(data: List[dict]) -> List[ListableItem]:
             continue
 
         if item_type == 'series':
+            if not filter_series(item):
+                continue
             listable_items.append(SeriesData(item))
         elif item_type == 'season':
             # filter series items based on language settings
@@ -235,6 +237,41 @@ def log_error_with_trace(message, show_notification: bool = True) -> None:
             5
         )
 
+def filter_series(seriesItem: Dict) -> bool:
+    """ takes an API info struct and returns if it matches user language settings """
+
+    if G.args.addon.getSetting("filter_dubs_by_language") != "true":
+        return True
+
+    panel = seriesItem.get('panel') or seriesItem
+    item = panel.get("series_metadata") or panel
+
+    # is it a dub in my main language?
+    if G.args.addon.getSetting("show_dubs_by_language") == "true":
+        if G.args.subtitle in item.get('audio_locales', []):
+            return True
+
+    # is it a dub in my alternate language?
+    if G.args.addon.getSetting("show_dubs_by_language_fallback") == "true" and G.args.subtitle_fallback and G.args.subtitle_fallback in item.get('audio_locales', []):
+        return True
+
+    if G.args.addon.getSetting("show_subs_by_language") == "true":
+        # is it japanese audio, but there are subtitles in my main language?
+        #
+        # edge case for chinese only anime where there is no japanese dub
+        # @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/51
+        if "ja-JP" in item.get("audio_locales", []) or "zh-CN" in item.get("audio_locales", []):
+            # fix for missing subtitles in data
+            if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
+                return True
+
+            if G.args.subtitle in item.get("subtitle_locales", []):
+                return True
+
+            if G.args.subtitle_fallback and G.args.subtitle_fallback in item.get("subtitle_locales", []):
+                return True
+
+    return False
 
 def filter_seasons(item: Dict) -> bool:
     """ takes an API info struct and returns if it matches user language settings """
@@ -243,27 +280,29 @@ def filter_seasons(item: Dict) -> bool:
         return True
 
     # is it a dub in my main language?
-    if G.args.subtitle == item.get('audio_locale', ""):
-        return True
+    if G.args.addon.getSetting("show_dubs_by_language") == "true":
+        if G.args.subtitle == item.get('audio_locale', ""):
+            return True
 
     # is it a dub in my alternate language?
-    if G.args.subtitle_fallback and G.args.subtitle_fallback == item.get('audio_locale', ""):
+    if G.args.addon.getSetting("show_dubs_by_language_fallback") == "true" and G.args.subtitle_fallback and G.args.subtitle_fallback == item.get('audio_locale', ""):
         return True
 
-    # is it japanese audio, but there are subtitles in my main language?
-    #
-    # edge case for chinese only anime where there is no japanese dub
-    # @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/51
-    if item.get("audio_locale") == "ja-JP" or item.get("audio_locale") == "zh-CN":
-        # fix for missing subtitles in data
-        if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
-            return True
+    if G.args.addon.getSetting("show_subs_by_language") == "true":
+        # is it japanese audio, but there are subtitles in my main language?
+        #
+        # edge case for chinese only anime where there is no japanese dub
+        # @see: https://github.com/smirgol/plugin.video.crunchyroll/issues/51
+        if item.get("audio_locale") == "ja-JP" or item.get("audio_locale") == "zh-CN":
+            # fix for missing subtitles in data
+            if item.get("subtitle_locales", []) == [] and item.get('is_subbed', False) is True:
+                return True
 
-        if G.args.subtitle in item.get("subtitle_locales", []):
-            return True
+            if G.args.subtitle in item.get("subtitle_locales", []):
+                return True
 
-        if G.args.subtitle_fallback and G.args.subtitle_fallback in item.get("subtitle_locales", []):
-            return True
+            if G.args.subtitle_fallback and G.args.subtitle_fallback in item.get("subtitle_locales", []):
+                return True
 
     return False
 

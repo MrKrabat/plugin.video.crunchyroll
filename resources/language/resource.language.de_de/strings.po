@@ -118,13 +118,38 @@ msgctxt "#30032"
 msgid "Hindi"
 msgstr ""
 
+
 msgctxt "#30038"
 msgid "Filter available dubs"
 msgstr "Verfügbare Dubs filtern"
 
 msgctxt "#30039"
-msgid "In an anime seasons view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
-msgstr "Zeige in der Season-Übersicht eines Anime nur Dubs in Japanisch, deiner CR Sprache oder in einer der von Dir konfigurierten Untertitel-Sprachen"
+msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "Zeige in der Season- oder Serien-Übersicht eines Anime nur Dubs in Japanisch, deiner CR Sprache oder in einer der von Dir konfigurierten Untertitel-Sprachen."
+
+msgctxt "#30138"
+msgid "Show dubs in your language"
+msgstr "Zeige Dubs in deiner Sprache"
+
+msgctxt "#30139"
+msgid "In an anime seasons or series view, display dubs in your CR language"
+msgstr "Zeige in der Season- und Serien-Übersicht eines Anime Dubs in deiner Crunchyroll Sprache."
+
+msgctxt "#30140"
+msgid "Show dubs in your alternative language"
+msgstr "Zeige Dubs in deiner alternativen Sprache"
+
+msgctxt "#30141"
+msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+msgstr "Zeige in der Season- und Serien-Übersicht eines Anime Dubs in deiner alternativen Untertitel Sprache."
+
+msgctxt "#30142"
+msgid "Show subtitled entries"
+msgstr "Zeige Einträge mit Untertitel"
+
+msgctxt "#30143"
+msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
+msgstr "Zeige in der Season- und Serien-Übersicht eines Anime japanische Dubs mit Untertiteln in deiner konfigurierten Untertitel Sprache"
 
 
 # Crunchyroll Menue
