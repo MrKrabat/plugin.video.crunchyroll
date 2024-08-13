@@ -4,15 +4,15 @@ msgstr ""
 "Project-Id-Version: Kodi Addons\n"
 "Report-Msgid-Bugs-To: alanwww1@kodi.org\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2018-12-25 20:38+0100\n"
+"PO-Revision-Date: 2024-01-04 13:11+0100\n"
+"Last-Translator: \n"
 "Language-Team: Nux007\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr_FR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Last-Translator: \n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 3.4.1\n"
 
 # Crunchyroll Settings
 msgctxt "#30001"
@@ -79,7 +79,14 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russe"
 
-# Crunchyroll Menue
+msgctxt "#30032"
+msgid "Tamil"
+msgstr "Tamil"
+
+msgctxt "#30033"
+msgid "Hindi"
+msgstr "Hindi"
+
 msgctxt "#30040"
 msgid "Queue"
 msgstr "File d'attente"
@@ -102,11 +109,11 @@ msgstr "Page suivante"
 
 msgctxt "#30045"
 msgid "Goto series"
-msgstr "Aller à séries"
+msgstr "Aller aux séries"
 
 msgctxt "#30046"
 msgid "Goto season"
-msgstr "Aller à saisons"
+msgstr "Aller aux saisons"
 
 msgctxt "#30050"
 msgid "Anime"
@@ -148,7 +155,6 @@ msgctxt "#30059"
 msgid "Newest"
 msgstr "Nouveautés"
 
-# Crunchyroll Messages
 msgctxt "#30060"
 msgid "Login failed"
 msgstr "Erreur de connexion"
@@ -159,15 +165,15 @@ msgstr "Une erreur est survenue"
 
 msgctxt "#30062"
 msgid "You need to be logged in"
-msgstr "Vus devez être connecté"
+msgstr "Vous devez être connecté"
 
 msgctxt "#30063"
 msgid "You need to be a premium member"
-msgstr "Voius devez être un membre premium"
+msgstr "Vous devez être un membre premium"
 
 msgctxt "#30064"
 msgid "Failed to play video"
-msgstr "Erreur de lecture vidéo"
+msgstr "Erreur de lecture de la vidéo"
 
 msgctxt "#30065"
 msgid "Do you want to continue watching at %s%%?"
@@ -176,3 +182,115 @@ msgstr "Voulez vous continuer à regarder depuis %s%% ?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Si la vidéo ne démarre pas, attendez 30 secondes et recommencez."
+
+msgctxt "#30067"
+msgid "Watchlist"
+msgstr "Watchlist"
+
+msgctxt "#30068"
+msgid "Crunchylist"
+msgstr "Crunchylist"
+
+msgctxt "#30069"
+msgid "My lists"
+msgstr "Mes listes"
+
+msgctxt "#30070"
+msgid "Paging size"
+msgstr "Taille de pagination"
+
+msgctxt "#30071"
+msgid "Resolution"
+msgstr "Résolution"
+
+msgctxt "#30072"
+msgid "Identification"
+msgstr "Identification"
+
+msgctxt "#30073"
+msgid "Localization"
+msgstr "Localisation"
+
+msgctxt "#30074"
+msgid "Plugin options"
+msgstr "Options du plugin"
+
+msgctxt "#30075"
+msgid "Skipping options (when possible)"
+msgstr "Options d'évitement (quand c'est possible)"
+
+msgctxt "#30076"
+msgid "Skip intro"
+msgstr "Passer le générique de début"
+
+msgctxt "#30077"
+msgid "Skip ending"
+msgstr "Passer le générique de fin"
+
+msgctxt "#30078"
+msgid "Skip recap of past episodes"
+msgstr "Passer le récapitulatif des épisodes précédent"
+
+msgctxt "#30079"
+msgid "Skip preview of the next episode"
+msgstr "Passer la preview du futur épisode"
+
+msgctxt "#30080"
+msgid "Intro skipped"
+msgstr "Intro passé"
+
+msgctxt "#30081"
+msgid "Ending skipped"
+msgstr "Générique de fin passé"
+
+msgctxt "#30082"
+msgid "Recap skipped"
+msgstr "Recap passé"
+
+msgctxt "#30083"
+msgid "Preview skipped"
+msgstr "Preview passé"
+
+msgctxt "#30084"
+msgid "Audio track"
+msgstr "Piste audio"
+
+msgctxt "#30085"
+msgid "Original"
+msgstr "VO"
+
+msgctxt "#30086"
+msgid "Do you want to skip this moment"
+msgstr "Voulez vous passer ce moment"
+
+msgctxt "#30087"
+msgid "(Re)install Widevine CDM..."
+msgstr "(Re)installer Widevine CDM..."
+
+msgctxt "#30088"
+msgid "Cache management"
+msgstr "Gestion des caches"
+
+msgctxt "#30089"
+msgid "Clear subtitles cache"
+msgstr "Nettoyer le cache des sous-titres"
+
+msgctxt "#30090"
+msgid "Basic Auth configuration"
+msgstr "Configuration du Basic Auth"
+
+msgctxt "#30091"
+msgid "Url to gather infos regarding basic auth"
+msgstr "Url pour récupérer les infos de basic auth"
+
+msgctxt "#30092"
+msgid "Url"
+msgstr "Url"
+
+msgctxt "#30093"
+msgid "Clear Basic Auth cache"
+msgstr "Nettoyer le cache du Basic Auth"
+
+msgctxt "#30094"
+msgid "Automatically play next episode"
+msgstr "Jouer automatiquement l'épisode suivant"

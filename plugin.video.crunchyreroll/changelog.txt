@@ -1,0 +1,184 @@
+v2.2.2(2024-08-08)
+- Fix reauth on non primary profile
+- Update Makefile to avoid messing up changelog
+
+v2.2.1(2024-08-07)
+- Chained episodes are played properly, fix issue #19
+- Update changelog
+- Fix missing subtitles when playing next episode (binge watch mode)
+- Change settings on test_client.py
+- Add many tests on routes
+- Add stringinfication of model classes
+- Better management of prefered_audio
+- Break circular dependency
+- Rewrite monitor to untagle classes
+- More resilient way to handle season number
+- Refactor client _get method
+- Minor improvements
+- Proper handling of profile images and categories images
+- Update changelog
+- Add the possiblity to automatically play next episode of a serie
+- Patch installation of addondev to be compatible with python3.3 and upper
+- Update the README.md with new kodi repository
+
+v2.2.0(2024-06-19)
+- Fix missing subtitles when playing next episode (binge watch mode)
+- Change settings on test_client.py
+- Add many tests on routes
+- Add stringinfication of model classes
+- Better management of prefered_audio
+- Break circular dependency
+- Rewrite monitor to untagle classes
+- More resilient way to handle season number
+- Refactor client _get method
+- Minor improvements
+- Proper handling of profile images and categories images
+- Update changelog
+- Add the possiblity to automatically play next episode of a serie
+- Patch installation of addondev to be compatible with python3.3 and upper
+- Update the README.md with new kodi repository
+
+v2.1.0(2024-06-04)
+- Add the possiblity to automatically play next episode of a serie
+- Patch installation of addondev to be compatible with python3.3 and upper
+- Update the README.md with new kodi repository
+
+v2.0.3(2024-05-30)
+- Another error in the Makefile
+- Re-enable addon-checker with matrix version
+- Remove not needed tooling
+- Isolate search history per profile
+- Fix Makefile
+
+v2.0.2(2024-05-28)
+- Fix Makefile
+
+v2.0.1(2024-05-28)
+- Upate gitinore to ignore changelog file
+- Fix typo in Makefile
+- Improvement of release tooling
+- Support matrix
+
+v2.0.0(2024.05.24)
+- Remove CMS endpoint usage
+- Add multiprofile capability in Auth module
+- Add reading multiprofile info in Client module
+- Externalise basic auth info
+
+v1.0.4(2024.04.27)
+- Update settings to modern format
+- Add a way to clean subtitles cache
+- Change way to handle special episode number (#14)
+- Remove references to setting resolution (#13)
+- Update Basic Auth and User Agent
+
+v1.0.3(2024.04.11)
+- Update Basic Auth
+
+v1.0.2(2024.04.09)
+- Fix audio handling (#12)
+- Fix subtitle showing when actual audio does not match prefered subtitle (#5)
+- Fix event without data
+- Remove useless setting resolution (handled by inputstream.adaptive)
+- Add Tamil and Hindi as selectionable prefered language and prefered audio (#11)
+- Update Basic Auth
+- Fix issue with episode number not integer (#9)
+
+v1.0.1(2024.03.19)
+- better management of audio preference (Fix issue #3)
+- code cleanup
+- popup for skipping event instead of just skipping
+- thread is use at monitor level to manage an episode
+- Fix skipping event always enabled (Fix issue #4)
+- If playtime sync is enabled, when we stop playing video, the playtime is synced
+
+v1.0.0(2024.02.29)
+- Renaming the plugin
+- Forwarding to settings at first run
+- When we try to play the first stream, now a modal propose to install Widevine
+
+v4.2.1 (2024.02.20)
+- Fix issue with monitor (might crash when it try to getTime although file is not playing anymore)
+- Using variable for license url
+- Add Tamil and Hindi language
+- Fix encoding issue at download for soft subtitles
+
+v4.2.0 (2024.02.11)
+- Move to new endpoint for stream (with DRM management)
+- Fix issue with episode without versions
+- Add soft subtitles
+
+v4.1.4 (2024.02.07)
+- Fix issue with Watchlist menu (wasn't loading)
+- Adding tests on others routes
+- Support skipping intro, endings, credits and recap
+- reorganizing settings
+
+v4.1.3 (2024.01.22)
+- Adding tests on routes (not all)
+- using api v2 for watchlist
+- Fix if a search gives empty result
+
+v4.1.2 (2024.01.16)
+- Fix typos
+- Use crunchyroll android 4.37.0 for UserAgent and Basic Auth
+
+v4.1.1 (2024.01.10)
+- Fix typo
+
+v4.1.0 (2024.01.10)
+- renew Basic Auth credentials and User Agent (from the app in version 3.46.2)
+
+v4.0.3 (2024.01.08)
+- Add tests
+- Handle API exception on monitor side to avoid crash
+
+v4.0.3 (2024.01.04)
+Features:
+- Adding the possiblity to browse Crunchylists
+- Adding the possiblity to browse history
+Settings:
+- Adding a setting for pagination size
+- Adding a setting for prefered stream resolution
+Others:
+- Almost complete migration to v2 api (only a little remaining on stream selection)
+- Fix value es-LA to es-419
+Dependencies:
+- add script.module.m3u8
+
+v4.0.2 (2024.01.03)
+Re-add Categories and Simulcast browsing
+Migrating to v2 api in progress
+Synchronisation of playhead using a service
+
+v4.0.1 (2023.12.29)
+-Fix the way a stream is selected
+Now, in first case, it tries to use prefered lang for subtitles
+Otherwise, it will try to fallback on english
+In ultimate case, it will use no subtitle at all
+-Add alphabetical search for anime
+
+v4.0.0 (2023.12.28)
+- New implementation with Beta-Api
+- A lot of regression in term of features
+Dependencies:
+- add script.module.requests and script.module.codequick
+
+v3.3.0 (2023.03.08)
+- Update for Kodi 20 Nexus
+
+v3.2.0 (2020.09.01)
+- Update for Kodi 19 Matrix
+
+v3.1.1 (2018.09.29)
+- Remove video quality selection
+
+v3.1.0 (2018.06.16)
+- Added context menu
+- Improvements
+- Fix playback
+- Small fixes
+- Compatibility with latest Kodi 18
+
+v3.0.0 (2018.02.xx)
+- Addon rewriten from scratch

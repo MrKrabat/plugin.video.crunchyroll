@@ -4,18 +4,17 @@ msgstr ""
 "Project-Id-Version: Kodi Addons\n"
 "Report-Msgid-Bugs-To: alanwww1@kodi.org\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2024-01-04 13:12+0100\n"
+"Last-Translator: \n"
 "Language-Team: LANGUAGE\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
+"X-Generator: Poedit 3.4.1\n"
 
 # Crunchyroll Settings
-
 msgctxt "#30001"
 msgid "Username"
 msgstr ""
@@ -80,9 +79,15 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr ""
 
+msgctxt "#30032"
+msgid "Tamil"
+msgstr "Tamil"
+
+msgctxt "#30033"
+msgid "Hindi"
+msgstr "Hindi"
 
 # Crunchyroll Menue
-
 msgctxt "#30040"
 msgid "Queue"
 msgstr ""
@@ -151,9 +156,7 @@ msgctxt "#30059"
 msgid "Newest"
 msgstr ""
 
-
 # Crunchyroll Messages
-
 msgctxt "#30060"
 msgid "Login failed"
 msgstr ""
@@ -181,3 +184,115 @@ msgstr ""
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr ""
+
+msgctxt "#30067"
+msgid "Watchlist"
+msgstr "Watchlist"
+
+msgctxt "#30068"
+msgid "Crunchylist"
+msgstr "Crunchylist"
+
+msgctxt "#30069"
+msgid "My lists"
+msgstr "My lists"
+
+msgctxt "#30070"
+msgid "Paging size"
+msgstr "Paging size"
+
+msgctxt "#30071"
+msgid "Resolution"
+msgstr "Resolution"
+
+msgctxt "#30072"
+msgid "Identification"
+msgstr "Identification"
+
+msgctxt "#30073"
+msgid "Localization"
+msgstr "Localization"
+
+msgctxt "#30074"
+msgid "Plugin options"
+msgstr "Plugin options"
+
+msgctxt "#30075"
+msgid "Skipping options (when possible)"
+msgstr "Skipping options (when possible)"
+
+msgctxt "#30076"
+msgid "Skip intro"
+msgstr "Skip intro"
+
+msgctxt "#30077"
+msgid "Skip ending"
+msgstr "Skip ending"
+
+msgctxt "#30078"
+msgid "Skip recap of past episodes"
+msgstr "Skip recap of past episodes"
+
+msgctxt "#30079"
+msgid "Skip preview of the next episode"
+msgstr "Skip preview of the next episode"
+
+msgctxt "#30080"
+msgid "Intro skipped"
+msgstr "Intro skipped"
+
+msgctxt "#30081"
+msgid "Ending skipped"
+msgstr "Ending skipped"
+
+msgctxt "#30082"
+msgid "Recap skipped"
+msgstr "Recap skipped"
+
+msgctxt "#30083"
+msgid "Preview skipped"
+msgstr "Preview skipped"
+
+msgctxt "#30084"
+msgid "Audio track"
+msgstr "Audio track"
+
+msgctxt "#30085"
+msgid "Original"
+msgstr "Original"
+
+msgctxt "#30086"
+msgid "Do you want to skip this moment"
+msgstr "Do you want to skip this moment"
+
+msgctxt "#30087"
+msgid "(Re)install Widevine CDM..."
+msgstr "(Re)install Widevine CDM..."
+
+msgctxt "#30088"
+msgid "Cache management"
+msgstr "Cache management"
+
+msgctxt "#30089"
+msgid "Clear subtitles cache"
+msgstr "Clear subtitles cache"
+
+msgctxt "#30090"
+msgid "Basic Auth configuration"
+msgstr "Basic Auth configuration"
+
+msgctxt "#30091"
+msgid "Url to gather infos regarding basic auth"
+msgstr "Url to gather infos regarding basic auth"
+
+msgctxt "#30092"
+msgid "Url"
+msgstr "Url"
+
+msgctxt "#30093"
+msgid "Clear Basic Auth cache"
+msgstr "Clear Basic Auth cache"
+
+msgctxt "#30094"
+msgid "Automatically play next episode"
+msgstr "Automatically play next episode"

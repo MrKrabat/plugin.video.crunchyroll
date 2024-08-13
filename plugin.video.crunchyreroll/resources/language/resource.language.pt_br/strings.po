@@ -1,18 +1,17 @@
-﻿# Arquivo de linguagem do Kodi Media Center
 msgid ""
 msgstr ""
 "Project-Id-Version: Kodi Addons\n"
 "Report-Msgid-Bugs-To: alanwww1@kodi.org\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2019-04-08 20:50-0300\n"
+"PO-Revision-Date: 2024-01-04 13:12+0100\n"
+"Last-Translator: \n"
 "Language-Team: vlfr1997\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr_FR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"Last-Translator: \n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 3.4.1\n"
 
 # Crunchyroll Settings
 msgctxt "#30001"
@@ -78,6 +77,14 @@ msgstr "Italiano"
 msgctxt "#30031"
 msgid "Russian"
 msgstr "Russo"
+
+msgctxt "#30032"
+msgid "Tamil"
+msgstr "Tamil"
+
+msgctxt "#30033"
+msgid "Hindi"
+msgstr "Hindi"
 
 # Crunchyroll Menue
 msgctxt "#30040"
@@ -176,3 +183,115 @@ msgstr "Você quer continuar assistindo de %s%%?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Se o vídeo não iniciar, aguarde 30 segundos e tente novamente."
+
+msgctxt "#30067"
+msgid "Watchlist"
+msgstr "Watchlist"
+
+msgctxt "#30068"
+msgid "Crunchylist"
+msgstr "Crunchylist"
+
+msgctxt "#30069"
+msgid "My lists"
+msgstr "Minhas listas"
+
+msgctxt "#30070"
+msgid "Paging size"
+msgstr "Tamanho da paginação"
+
+msgctxt "#30071"
+msgid "Resolution"
+msgstr "Resolução"
+
+msgctxt "#30072"
+msgid "Identification"
+msgstr "Identificação"
+
+msgctxt "#30073"
+msgid "Localization"
+msgstr "Localização"
+
+msgctxt "#30074"
+msgid "Plugin options"
+msgstr "Opções de plug-in"
+
+msgctxt "#30075"
+msgid "Skipping options (when possible)"
+msgstr "Ignorando opções (quando possível)"
+
+msgctxt "#30076"
+msgid "Skip intro"
+msgstr "Pular introdução"
+
+msgctxt "#30077"
+msgid "Skip ending"
+msgstr "Pular final"
+
+msgctxt "#30078"
+msgid "Skip recap of past episodes"
+msgstr "Pular recapitulação de episódios anteriores"
+
+msgctxt "#30079"
+msgid "Skip preview of the next episode"
+msgstr "Pular prévia do próximo episódio"
+
+msgctxt "#30080"
+msgid "Intro skipped"
+msgstr "Introdução ignorada"
+
+msgctxt "#30081"
+msgid "Ending skipped"
+msgstr "Final ignorado"
+
+msgctxt "#30082"
+msgid "Recap skipped"
+msgstr "Recapitulação ignorada"
+
+msgctxt "#30083"
+msgid "Preview skipped"
+msgstr "Pré-visualização ignorada"
+
+msgctxt "#30084"
+msgid "Audio track"
+msgstr "Faixa de áudio"
+
+msgctxt "#30085"
+msgid "Original"
+msgstr "Original"
+
+msgctxt "#30086"
+msgid "Do you want to skip this moment"
+msgstr "Você quer pular esse momento"
+
+msgctxt "#30087"
+msgid "(Re)install Widevine CDM..."
+msgstr "(Re)instalar Widevine CDM..."
+
+msgctxt "#30088"
+msgid "Cache management"
+msgstr "Gerenciamento de cache"
+
+msgctxt "#30089"
+msgid "Clear subtitles cache"
+msgstr "Limpar cache de legendas"
+
+msgctxt "#30090"
+msgid "Basic Auth configuration"
+msgstr "Configuração básica de autenticação"
+
+msgctxt "#30091"
+msgid "Url to gather infos regarding basic auth"
+msgstr "URL para coletar informações sobre autenticação básica"
+
+msgctxt "#30092"
+msgid "Url"
+msgstr "Url"
+
+msgctxt "#30093"
+msgid "Clear Basic Auth cache"
+msgstr "Limpar cache de autenticação básica"
+
+msgctxt "#30094"
+msgid "Automatically play next episode"
+msgstr "Reproduza o próximo episódio automaticamente"
