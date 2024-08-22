@@ -266,6 +266,7 @@ class API:
             if expiration := self.account_data.expires:
                 current_time = get_date()
                 if current_time > str_to_date(expiration):
+                    utils.crunchy_log("make_request_proposal: session renewal due to expired token", xbmc.LOGINFO)
                     self.create_session(action="refresh")
             params.update({
                 "Policy": self.account_data.cms.policy,
@@ -292,7 +293,7 @@ class API:
                 raise LoginError('Request to API failed twice due to authentication issues.')
 
             utils.crunchy_log("make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
-            self.account_data.expires = 0
+            self.account_data.expires = date_to_str(get_date() - timedelta(seconds=1))
             return self.make_request(method, url, headers, params, data, json_data, True)
 
         return get_json_from_response(r)
