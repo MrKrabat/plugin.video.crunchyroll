@@ -69,7 +69,7 @@ msgstr "Passer"
 
 msgctxt "#30020"
 msgid "Subtitle Language"
-msgstr "Language des sous titres"
+msgstr "Langue des sous-titres"
 
 msgctxt "#30021"
 msgid "English"
@@ -115,40 +115,40 @@ msgstr "Russe"
 
 msgctxt "#30032"
 msgid "Hindi"
-msgstr ""
+msgstr "Hindi"
 
 
 msgctxt "#30038"
 msgid "Filter available dubs"
-msgstr "Filtrer les langues audio disponibles"
+msgstr "Filtrer les doublages disponibles"
 
 msgctxt "#30039"
 msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
-msgstr "Dans la vue d'une saison ou d'une série d'anime, n'affichez que les langues audio en japonais, votre langue Crunchyroll ou l'une des langues de sous-titres que vous avez configurées."
+msgstr "Dans la vue d'une saison ou d'une série d'anime, n'affichez que les doublages en japonais, votre langue Crunchyroll ou l'une des langues de sous-titres que vous avez configurée."
 
 msgctxt "#30138"
 msgid "Show dubs in your language"
-msgstr ""
+msgstr "Afficher les doublages dans votre langue"
 
 msgctxt "#30139"
 msgid "In an anime seasons or series view, display dubs in your CR language"
-msgstr ""
+msgstr "Dans la vue des saisons ou d'une série, afficher les doublages dans votre langue configurée."
 
 msgctxt "#30140"
 msgid "Show dubs in your alternative language"
-msgstr ""
+msgstr "Afficher les doublages dans votre langue alternative"
 
 msgctxt "#30141"
 msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
-msgstr ""
+msgstr "Dans la vue des saisons ou d'une série, afficher les doublages de votre langue alternative configurée."
 
 msgctxt "#30142"
 msgid "Show subtitled entries"
-msgstr ""
+msgstr "Afficher les versions sous-titrées"
 
 msgctxt "#30143"
 msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
-msgstr ""
+msgstr "Dans la vue des saisons ou d'une série, afficher les versions originales avec des sous-titres dans vos langues configurées."
 
 
 # Crunchyroll Menue
