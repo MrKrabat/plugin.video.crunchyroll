@@ -16,18 +16,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+
 import xbmc
 import xbmcaddon
 
-
 # plugin constants
-_addon   = xbmcaddon.Addon(id=sys.argv[0][9:-1])
-_plugin  = _addon.getAddonInfo("name")
+_addon = xbmcaddon.Addon(id=sys.argv[0][9:-1])
+_plugin = _addon.getAddonInfo("name")
 _version = _addon.getAddonInfo("version")
 
 xbmc.log("[PLUGIN] %s: version %s initialized" % (_plugin, _version))
 
 if __name__ == "__main__":
     from resources.lib import crunchyroll
+
     # start addon
     crunchyroll.main(sys.argv)

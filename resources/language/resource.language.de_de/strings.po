@@ -17,8 +17,8 @@ msgstr ""
 # Crunchyroll Settings
 
 msgctxt "#30001"
-msgid "Username"
-msgstr "Benutzername"
+msgid "Email"
+msgstr "E-Mail"
 
 msgctxt "#30002"
 msgid "Password"
@@ -31,6 +31,10 @@ msgstr "Synchronisiere den Fortschritt der Spielzeit"
 msgctxt "#30004"
 msgid "Configure InputStream Adaptive"
 msgstr "InputStream Adaptive konfigurieren"
+
+msgctxt "#30005"
+msgid "Soft Subtitles"
+msgstr ""
 
 msgctxt "#30020"
 msgid "Subtitle Language"
@@ -181,3 +185,25 @@ msgstr "Möchtest du das Video bei %s%% fortsetzen?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Wenn das Video nicht abspielt, warte bitte 30 Sekunden, damit der Fallback einsetzen kann."
+
+msgctxt "#30067"
+msgid "Add to queue"
+msgstr "Zu Playlist hinzufügen"
+
+msgctxt "#30068"
+msgid "Remove from queue"
+msgstr "Von Playlist entfernen"
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Alternative Untertitel Sprache"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Keine"
+
+msgctxt "#30071"
+msgid "Added to queue"
+msgstr "Zur Playlist hinzugefügt"
+
+
