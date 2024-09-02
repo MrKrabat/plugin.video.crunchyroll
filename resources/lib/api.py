@@ -41,7 +41,7 @@ class API:
     # DEVICE = "com.crunchyroll.windows.desktop"
     # TIMEOUT = 30
 
-    CRUNCHYROLL_UA = "Crunchyroll/3.59.0 Android/14 okhttp/4.12.0"
+    CRUNCHYROLL_UA = "Crunchyroll/3.63.1 Android/14 okhttp/4.12.0"
 
     INDEX_ENDPOINT = "https://beta-api.crunchyroll.com/index/v2"
     PROFILE_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/profile"
@@ -74,7 +74,7 @@ class API:
     CRUNCHYLISTS_LISTS_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists"
     CRUNCHYLISTS_VIEW_ENDPOINT = "https://beta-api.crunchyroll.com/content/v2/{}/custom-lists/{}"
 
-    AUTHORIZATION = "Basic d2piMV90YThta3Y3X2t4aHF6djc6MnlSWlg0Y0psX28yMzRqa2FNaXRTbXNLUVlGaUpQXzU="
+    AUTHORIZATION = "Basic eHd4cXhxcmtueWZtZjZ0bHB1dGg6a1ZlQnVUa2JOTGpCbGRMdzhKQk5DTTRSZmlTR3VWa1I="
     LICENSE_ENDPOINT = "https://cr-license-proxy.prd.crunchyrollsvc.com/v1/license/widevine"
 
     PROFILES_LIST_ENDPOINT = "https://beta-api.crunchyroll.com/accounts/v1/me/multiprofile"
@@ -266,6 +266,7 @@ class API:
             if expiration := self.account_data.expires:
                 current_time = get_date()
                 if current_time > str_to_date(expiration):
+                    utils.crunchy_log("make_request_proposal: session renewal due to expired token", xbmc.LOGINFO)
                     self.create_session(action="refresh")
             params.update({
                 "Policy": self.account_data.cms.policy,
@@ -292,7 +293,7 @@ class API:
                 raise LoginError('Request to API failed twice due to authentication issues.')
 
             utils.crunchy_log("make_request_proposal: request failed due to auth error", xbmc.LOGERROR)
-            self.account_data.expires = 0
+            self.account_data.expires = date_to_str(get_date() - timedelta(seconds=1))
             return self.make_request(method, url, headers, params, data, json_data, True)
 
         return get_json_from_response(r)

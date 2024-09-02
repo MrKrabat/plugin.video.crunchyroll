@@ -123,8 +123,33 @@ msgid "Filter available dubs"
 msgstr "Filter available dubs"
 
 msgctxt "#30039"
-msgid "In an anime seasons view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
-msgstr "In an anime seasons view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+
+msgctxt "#30138"
+msgid "Show dubs in your language"
+msgstr "Show dubs in your language"
+
+msgctxt "#30139"
+msgid "In an anime seasons or series view, display dubs in your CR language"
+msgstr "In an anime seasons or series view, display dubs in your CR language"
+
+
+msgctxt "#30140"
+msgid "Show dubs in your alternative language"
+msgstr "Show dubs in your alternative language"
+
+msgctxt "#30141"
+msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+msgstr "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+
+msgctxt "#30142"
+msgid "Show subtitled entries"
+msgstr "Show subtitled entries"
+
+msgctxt "#30143"
+msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
+msgstr "In an anime seasons or series view, display dubs in Japanese with with subtitles in your configured subtitle languages."
 
 
 # Crunchyroll Menue
@@ -269,3 +294,7 @@ msgstr ""
 msgctxt "#30080"
 msgid "There are too many active streams. Please try again later."
 msgstr ""
+
+msgctxt "#30090"
+msgid "No search results"
+msgstr "No search results"
