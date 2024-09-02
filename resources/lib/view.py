@@ -41,7 +41,7 @@ if sys.platform == "win32" and sys.version_info >= (3, 8, 0):
 
 # keys allowed in setInfo
 types = ["count", "size", "date", "genre", "country", "year", "episode", "season", "sortepisode", "top250", "setid",
-         "tracknumber", "rating", "userrating", "watched", "playcount", "overlay", "cast", "castandrole", "director",
+         "tracknumber", "rating", "userrating", "watched", "overlay", "cast", "castandrole", "director",
          "mpaa", "plot", "plotoutline", "title", "originaltitle", "sorttitle", "duration", "studio", "tagline",
          "writer",
          "tvshowtitle", "premiered", "status", "set", "setoverview", "tag", "imdbnumber", "code", "aired", "credits",
@@ -132,6 +132,7 @@ OPT_CTX_WATCHLIST = 2  # add context menu to add item to watchlist
 OPT_CTX_SEASONS = 4  # add context menu to jump to series
 OPT_CTX_EPISODES = 8  # add context menu to jump to episodes
 OPT_NO_SEASON_TITLE = 16  # only show title of episode (with numbering)
+OPT_SORT_EPISODES_EXPERIMENTAL = 32  # sort un-viewed queue items to top
 
 
 # actually not sure if this works, as the requests lib is not async
@@ -261,6 +262,10 @@ def add_listables(
     complement_data = asyncio.run(complement_listables(listables))
     crunchy_log("add_listables: Finished to retrieve data async")
 
+    if options and options & OPT_SORT_EPISODES_EXPERIMENTAL:  # needs check for episodes
+        from .utils import sort_episodes
+        listables = sort_episodes(listables)
+
     # add listable items to kodi
     for listable in listables:
         # get url
@@ -327,8 +332,9 @@ def quote_value(value) -> str:
 
 
 # Those parameters will be bypassed to URL as additional query_parameters if found in build_url path_params
-# @todo: in theory it is no longer needed, test that
-whitelist_url_args = ["duration", "playhead"]
+# Don't Use this, because it will break the local playcount system.
+# For the local playcount to work, the url (with all args) needs to be identical in the list and the in the player.
+whitelist_url_args = []
 
 
 def build_url(path_params: dict, route_name: str = None) -> str:
@@ -361,13 +367,23 @@ def make_info_label(info) -> dict:
     """
     info_labels = {}
     # step 1 copy new information from info
-    for key, value in list(info.items()):
+    info_items = list(info.items())
+    for key, value in info_items:
         if value and key in types:
             info_labels[key] = value
 
     # step 2 copy old information from args, but don't overwrite
-    for key, value in list(G.args.args.items()):
+    arg_items = list(G.args.args.items())
+    for key, value in arg_items:
         if value and key in types and key not in info_labels:
             info_labels[key] = value
+
+    # only allow to overwrite the local playcount if we sync the playtime with the server
+    if G.args.addon.getSetting("sync_playtime") == "true":
+        if "playcount" in info_items:
+            info_labels["playcount"] = info_items["playcount"]
+        if "playcount" in arg_items and "playcount" not in info_labels:
+            info_labels["playcount"] = arg_items["playcount"]
+
 
     return info_labels

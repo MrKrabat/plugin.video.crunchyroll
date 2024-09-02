@@ -99,6 +99,30 @@
                     <default>true</default>
                     <control type="toggle"/>
                 </setting>
+                <setting id="show_dubs_by_language" parent="filter_dubs_by_language" type="boolean" label="30138" help="30139">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="enable" setting="filter_dubs_by_language">true</dependency>
+                    </dependencies>
+                </setting>
+                <setting id="show_dubs_by_language_fallback" parent="filter_dubs_by_language" type="boolean" label="30140" help="30141">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="enable" setting="filter_dubs_by_language">true</dependency>
+                    </dependencies>
+                </setting>
+                <setting id="show_subs_by_language" parent="filter_dubs_by_language" type="boolean" label="30142" help="30143">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="enable" setting="filter_dubs_by_language">true</dependency>
+                    </dependencies>
+                </setting>             
             </group>
         </category>
         <category id="playback_options" label="30220" help="">
