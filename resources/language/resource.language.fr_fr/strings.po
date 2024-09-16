@@ -15,9 +15,25 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 
 # Crunchyroll Settings
+msgctxt "#30200"
+msgid "Login"
+msgstr "Se connecter"
+
+msgctxt "#30210"
+msgid "Languages"
+msgstr "Lanagages"
+
+msgctxt "#30220"
+msgid "Playback"
+msgstr "Lecture"
+
+msgctxt "#30230"
+msgid "Other"
+msgstr "Autre"
+
 msgctxt "#30001"
-msgid "Username"
-msgstr "Utilisateur"
+msgid "Email"
+msgstr "Email"
 
 msgctxt "#30002"
 msgid "Password"
@@ -31,17 +47,35 @@ msgctxt "#30004"
 msgid "Configure InputStream Adaptive"
 msgstr "Configurer InputStream Adaptive"
 
+msgctxt "#30005"
+msgid "Soft Subtitles"
+msgstr ""
+
+msgctxt "#30010"
+msgid "General"
+msgstr "Général"
+
+msgctxt "#30011"
+msgid "Skip intro"
+msgstr "Passer l'introduction"
+
+msgctxt "#30012"
+msgid "Skip credits"
+msgstr "Passer les crédits"
+
+msgctxt "#30015"
+msgid "Skip"
+msgstr "Passer"
+
 msgctxt "#30020"
 msgid "Subtitle Language"
-msgstr "Language des sous titres"
+msgstr "Langue des sous-titres"
 
 msgctxt "#30021"
-msgid "English (US)"
-msgstr "Anglais (US)"
+msgid "English"
+msgstr "Anglais"
 
-msgctxt "#30022"
-msgid "English (UK)"
-msgstr "Anglais (UK)"
+# 30022 free
 
 msgctxt "#30023"
 msgid "Spanish"
@@ -79,6 +113,44 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russe"
 
+msgctxt "#30032"
+msgid "Hindi"
+msgstr "Hindi"
+
+
+msgctxt "#30038"
+msgid "Filter available dubs"
+msgstr "Filtrer les doublages disponibles"
+
+msgctxt "#30039"
+msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "Dans la vue d'une saison ou d'une série d'anime, n'affichez que les doublages en japonais, votre langue Crunchyroll ou l'une des langues de sous-titres que vous avez configurée."
+
+msgctxt "#30138"
+msgid "Show dubs in your language"
+msgstr "Afficher les doublages dans votre langue"
+
+msgctxt "#30139"
+msgid "In an anime seasons or series view, display dubs in your CR language"
+msgstr "Dans la vue des saisons ou d'une série, afficher les doublages dans votre langue configurée."
+
+msgctxt "#30140"
+msgid "Show dubs in your alternative language"
+msgstr "Afficher les doublages dans votre langue alternative"
+
+msgctxt "#30141"
+msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+msgstr "Dans la vue des saisons ou d'une série, afficher les doublages de votre langue alternative configurée."
+
+msgctxt "#30142"
+msgid "Show subtitled entries"
+msgstr "Afficher les versions sous-titrées"
+
+msgctxt "#30143"
+msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
+msgstr "Dans la vue des saisons ou d'une série, afficher les versions originales avec des sous-titres dans vos langues configurées."
+
+
 # Crunchyroll Menue
 msgctxt "#30040"
 msgid "Queue"
@@ -107,6 +179,16 @@ msgstr "Aller à séries"
 msgctxt "#30046"
 msgid "Goto season"
 msgstr "Aller à saisons"
+
+msgctxt "#30047"
+msgid "Resume"
+msgstr "Reprendre"
+
+# 30048 free
+
+msgctxt "#30049"
+msgid "Crunchylists"
+msgstr ""
 
 msgctxt "#30050"
 msgid "Anime"
@@ -176,3 +258,39 @@ msgstr "Voulez vous continuer à regarder depuis %s%% ?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Si la vidéo ne démarre pas, attendez 30 secondes et recommencez."
+
+msgctxt "#30067"
+msgid "Add to queue"
+msgstr "Ajouter à la file d'attente"
+
+msgctxt "#30068"
+msgid "Remove from queue"
+msgstr "Supprimer de la file d'attente"
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Langage de sous-titres alternatif"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Aucun"
+
+msgctxt "#30071"
+msgid "Added to queue"
+msgstr "Ajouté à la file d'attente"
+
+msgctxt "#30072"
+msgid "[COLOR orange]%s[/COLOR] (change profile)"
+msgstr "[COLOR orange]%s[/COLOR] (changer le profil)"
+
+msgctxt "#30073"
+msgid "Choose your profile"
+msgstr "Choisissez votre profil"
+
+msgctxt "#30080"
+msgid "There are too many active streams. Please try again later."
+msgstr ""
+
+msgctxt "#30090"
+msgid "No search results"
+msgstr ""

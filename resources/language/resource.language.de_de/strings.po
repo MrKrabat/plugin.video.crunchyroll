@@ -10,17 +10,33 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
+"Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 
 # Crunchyroll Settings
 
-msgctxt "#30001"
-msgid "Username"
-msgstr "Benutzername"
+msgctxt "#30200"
+msgid "Login"
+msgstr "Login"
 
-msgctxt "#30002"
+msgctxt "#30210"
+msgid "Languages"
+msgstr "Sprachen"
+
+msgctxt "#30220"
+msgid "Playback"
+msgstr "Wiedergabe"
+
+msgctxt "#30230"
+msgid "Other"
+msgstr "Sonstiges"
+
+msgctxt "#30101"
+msgid "Email"
+msgstr "E-Mail"
+
+msgctxt "#30102"
 msgid "Password"
 msgstr "Passwort"
 
@@ -32,17 +48,35 @@ msgctxt "#30004"
 msgid "Configure InputStream Adaptive"
 msgstr "InputStream Adaptive konfigurieren"
 
+msgctxt "#30005"
+msgid "Soft Subtitles"
+msgstr ""
+
+msgctxt "#30010"
+msgid "General"
+msgstr "Allgemein"
+
+msgctxt "#30011"
+msgid "Skip intro"
+msgstr "Intro überspringen"
+
+msgctxt "#30012"
+msgid "Skip credits"
+msgstr "Abspann überspringen"
+
+msgctxt "#30015"
+msgid "Skip"
+msgstr "Überspringen"
+
 msgctxt "#30020"
 msgid "Subtitle Language"
 msgstr "Untertitel Sprache"
 
 msgctxt "#30021"
-msgid "English (US)"
-msgstr "Englisch (US)"
+msgid "English"
+msgstr "Englisch"
 
-msgctxt "#30022"
-msgid "English (UK)"
-msgstr "Englisch (UK)"
+# 30022 free
 
 msgctxt "#30023"
 msgid "Spanish"
@@ -80,6 +114,43 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russisch"
 
+msgctxt "#30032"
+msgid "Hindi"
+msgstr ""
+
+
+msgctxt "#30038"
+msgid "Filter available dubs"
+msgstr "Verfügbare Dubs filtern"
+
+msgctxt "#30039"
+msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "Zeige in der Season- oder Serien-Übersicht eines Anime nur Dubs in Japanisch, deiner CR Sprache oder in einer der von Dir konfigurierten Untertitel-Sprachen."
+
+msgctxt "#30138"
+msgid "Show dubs in your language"
+msgstr "Zeige Dubs in deiner Sprache"
+
+msgctxt "#30139"
+msgid "In an anime seasons or series view, display dubs in your CR language"
+msgstr "Zeige in der Season- und Serien-Übersicht eines Anime Dubs in deiner Crunchyroll Sprache."
+
+msgctxt "#30140"
+msgid "Show dubs in your alternative language"
+msgstr "Zeige Dubs in deiner alternativen Sprache"
+
+msgctxt "#30141"
+msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+msgstr "Zeige in der Season- und Serien-Übersicht eines Anime Dubs in deiner alternativen Untertitel Sprache."
+
+msgctxt "#30142"
+msgid "Show subtitled entries"
+msgstr "Zeige Einträge mit Untertitel"
+
+msgctxt "#30143"
+msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
+msgstr "Zeige in der Season- und Serien-Übersicht eines Anime japanische Dubs mit Untertiteln in deiner konfigurierten Untertitel Sprache"
+
 
 # Crunchyroll Menue
 
@@ -110,6 +181,14 @@ msgstr "Zur Serie"
 msgctxt "#30046"
 msgid "Goto season"
 msgstr "Zur Season"
+
+msgctxt "#30047"
+msgid "Resume"
+msgstr "Fortsetzen"
+
+msgctxt "#30049"
+msgid "Crunchylists"
+msgstr "Crunchylists"
 
 msgctxt "#30050"
 msgid "Anime"
@@ -181,3 +260,39 @@ msgstr "Möchtest du das Video bei %s%% fortsetzen?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Wenn das Video nicht abspielt, warte bitte 30 Sekunden, damit der Fallback einsetzen kann."
+
+msgctxt "#30067"
+msgid "Add to queue"
+msgstr "Zu Playlist hinzufügen"
+
+msgctxt "#30068"
+msgid "Remove from queue"
+msgstr "Von Playlist entfernen"
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Alternative Untertitel Sprache"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Keine"
+
+msgctxt "#30071"
+msgid "Added to queue"
+msgstr "Zur Playlist hinzugefügt"
+
+msgctxt "#30072"
+msgid "[COLOR orange]%s[/COLOR] (change profile)"
+msgstr "[COLOR orange]%s[/COLOR] (Profil wechseln)"
+
+msgctxt "#30073"
+msgid "Choose your profile"
+msgstr "Profil auswählen"
+
+msgctxt "#30080"
+msgid "There are too many active streams. Please try again later."
+msgstr "Es sind zu viele Streams aktiv. Bitte probiere es später noch einmal."
+
+msgctxt "#30090"
+msgid "No search results"
+msgstr "Keine Suchergebnisse"

@@ -10,108 +10,108 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
+"Language: es-ES\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 
 # Crunchyroll Settings
 msgctxt "#30200"
 msgid "Login"
-msgstr ""
+msgstr "Conectarse"
 
 msgctxt "#30210"
 msgid "Languages"
-msgstr ""
+msgstr "Lenguajes"
 
 msgctxt "#30220"
 msgid "Playback"
-msgstr ""
+msgstr "Reproducir"
 
 msgctxt "#30230"
 msgid "Other"
-msgstr ""
+msgstr "Otro"
 
 msgctxt "#30001"
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 msgctxt "#30002"
 msgid "Password"
-msgstr ""
+msgstr "Contraseña"
 
 msgctxt "#30003"
 msgid "Synchronize play time progress"
-msgstr ""
+msgstr "Sincronizar progreso de reproducción"
 
 msgctxt "#30004"
 msgid "Configure InputStream Adaptive"
-msgstr ""
+msgstr "Configurar InputStream Adaptive"
 
 msgctxt "#30005"
 msgid "Soft Subtitles"
-msgstr ""
+msgstr "Subtítulos"
 
 msgctxt "#30010"
 msgid "General"
-msgstr ""
+msgstr "General"
 
 msgctxt "#30011"
 msgid "Skip intro"
-msgstr ""
+msgstr "Saltar introducción"
 
 msgctxt "#30012"
 msgid "Skip credits"
-msgstr ""
+msgstr "Saltar créditos"
 
 msgctxt "#30015"
 msgid "Skip"
-msgstr ""
+msgstr "Saltar"
 
 msgctxt "#30020"
 msgid "Subtitle Language"
-msgstr ""
+msgstr "Lenguaje de los subtítulos"
 
 msgctxt "#30021"
 msgid "English"
-msgstr ""
+msgstr "Inglés"
 
 # 30022 free
 
 msgctxt "#30023"
 msgid "Spanish"
-msgstr ""
+msgstr "Español"
 
 msgctxt "#30024"
 msgid "Spanish (Spain)"
-msgstr ""
+msgstr "Español (España)"
 
 msgctxt "#30025"
 msgid "Portuguese (Brazil)"
-msgstr ""
+msgstr "Portugués (Brasil)"
 
 msgctxt "#30026"
 msgid "Portuguese (Portugal)"
-msgstr ""
+msgstr "Portugués (Portugal)"
 
 msgctxt "#30027"
 msgid "French (France)"
-msgstr ""
+msgstr "Francés (Francia)"
 
 msgctxt "#30028"
 msgid "German"
-msgstr ""
+msgstr "Alemán"
 
 msgctxt "#30029"
 msgid "Arabic"
-msgstr ""
+msgstr "Árabe"
 
 msgctxt "#30030"
 msgid "Italian"
-msgstr ""
+msgstr "Italiano"
 
 msgctxt "#30031"
 msgid "Russian"
-msgstr ""
+msgstr "Ruso"
 
 msgctxt "#30032"
 msgid "Hindi"
@@ -120,71 +120,70 @@ msgstr ""
 
 msgctxt "#30038"
 msgid "Filter available dubs"
-msgstr "Filter available dubs"
+msgstr "Filtrar los idiomas de audio disponibles"
 
 msgctxt "#30039"
 msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
-msgstr "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "En una vista de temporada o serie de anime, sólo se muestran los idiomas de audio en japonés, su idioma Crunchyroll o cualquiera de los idiomas de subtítulos configurados."
 
 msgctxt "#30138"
 msgid "Show dubs in your language"
-msgstr "Show dubs in your language"
+msgstr ""
 
 msgctxt "#30139"
 msgid "In an anime seasons or series view, display dubs in your CR language"
-msgstr "In an anime seasons or series view, display dubs in your CR language"
-
+msgstr ""
 
 msgctxt "#30140"
 msgid "Show dubs in your alternative language"
-msgstr "Show dubs in your alternative language"
+msgstr ""
 
 msgctxt "#30141"
 msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
-msgstr "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+msgstr ""
 
 msgctxt "#30142"
 msgid "Show subtitled entries"
-msgstr "Show subtitled entries"
+msgstr ""
 
 msgctxt "#30143"
 msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
-msgstr "In an anime seasons or series view, display dubs in Japanese with with subtitles in your configured subtitle languages."
+msgstr ""
 
 
 # Crunchyroll Menue
 
 msgctxt "#30040"
 msgid "Queue"
-msgstr ""
+msgstr "Cola"
 
 msgctxt "#30041"
 msgid "Search"
-msgstr ""
+msgstr "Buscar"
 
 msgctxt "#30042"
 msgid "History"
-msgstr ""
+msgstr "Historial"
 
 msgctxt "#30043"
 msgid "Random"
-msgstr ""
+msgstr "Aleatorio"
 
 msgctxt "#30044"
 msgid "Next page"
-msgstr ""
+msgstr "Página siguiente"
 
 msgctxt "#30045"
 msgid "Goto series"
-msgstr ""
+msgstr "Ir a series"
 
 msgctxt "#30046"
 msgid "Goto season"
-msgstr ""
+msgstr "Ir a temporada"
 
 msgctxt "#30047"
 msgid "Resume"
-msgstr ""
+msgstr "Reanudar"
 
 # 30048 free
 
@@ -194,94 +193,94 @@ msgstr ""
 
 msgctxt "#30050"
 msgid "Anime"
-msgstr ""
+msgstr "Anime"
 
 msgctxt "#30051"
 msgid "Drama"
-msgstr ""
+msgstr "Drama"
 
 msgctxt "#30052"
 msgid "Popular"
-msgstr ""
+msgstr "Popular"
 
 msgctxt "#30053"
 msgid "Simulcasts"
-msgstr ""
+msgstr "Simulcasts"
 
 msgctxt "#30054"
 msgid "Updated"
-msgstr ""
+msgstr "Actualizado"
 
 msgctxt "#30055"
 msgid "Alphabetical"
-msgstr ""
+msgstr "Alfabético"
 
 msgctxt "#30056"
 msgid "Genres"
-msgstr ""
+msgstr "Géneros"
 
 msgctxt "#30057"
 msgid "Seasons"
-msgstr ""
+msgstr "Temporadas"
 
 msgctxt "#30058"
 msgid "Featured"
-msgstr ""
+msgstr "Destacado"
 
 msgctxt "#30059"
 msgid "Newest"
-msgstr ""
+msgstr "Lo más nuevo"
 
 
 # Crunchyroll Messages
 
 msgctxt "#30060"
 msgid "Login failed"
-msgstr ""
+msgstr "Error de conexión"
 
 msgctxt "#30061"
 msgid "An error occurred"
-msgstr ""
+msgstr "Ha ocurrido un error"
 
 msgctxt "#30062"
 msgid "You need to be logged in"
-msgstr ""
+msgstr "Necesitas estar conectado"
 
 msgctxt "#30063"
 msgid "You need to be a premium member"
-msgstr ""
+msgstr "Necesitas ser un miembro premium"
 
 msgctxt "#30064"
 msgid "Failed to play video"
-msgstr ""
+msgstr "La reproducción del vídeo falló"
 
 msgctxt "#30065"
 msgid "Do you want to continue watching at %s%%?"
-msgstr ""
+msgstr "¿Desea continuar viendo a partir de %s%% ?"
 
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
-msgstr ""
+msgstr "Si el vídeo no se reproduce por favor espere 30 segundos e inténtelo de nuevo"
 
 msgctxt "#30067"
 msgid "Add to queue"
-msgstr ""
+msgstr "Añadir a la cola"
 
 msgctxt "#30068"
 msgid "Remove from queue"
-msgstr ""
+msgstr "Eliminar de la cola"
 
 msgctxt "#30069"
 msgid "Alternative Subtitle Language"
-msgstr ""
+msgstr "Lenguaje alternativo para los subtítulos"
 
 msgctxt "#30070"
 msgid "None"
-msgstr ""
+msgstr "Ninguno"
 
 msgctxt "#30071"
 msgid "Added to queue"
-msgstr "Added to queue"
+msgstr "Añadido a la cola"
 
 msgctxt "#30072"
 msgid "[COLOR orange]%s[/COLOR] (change profile)"
@@ -297,4 +296,4 @@ msgstr ""
 
 msgctxt "#30090"
 msgid "No search results"
-msgstr "No search results"
+msgstr ""

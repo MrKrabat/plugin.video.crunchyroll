@@ -9,15 +9,31 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr_FR\n"
+"Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Last-Translator: \n"
 "X-Generator: Poedit 2.0.6\n"
 
 # Crunchyroll Settings
+msgctxt "#30200"
+msgid "Login"
+msgstr ""
+
+msgctxt "#30210"
+msgid "Languages"
+msgstr "Idioma"
+
+msgctxt "#30220"
+msgid "Playback"
+msgstr "Reprodução"
+
+msgctxt "#30230"
+msgid "Other"
+msgstr "Outros"
+
 msgctxt "#30001"
 msgid "Username"
-msgstr "Usuário"
+msgstr "E-mail"
 
 msgctxt "#30002"
 msgid "Password"
@@ -31,17 +47,35 @@ msgctxt "#30004"
 msgid "Configure InputStream Adaptive"
 msgstr "Configuração do plugin InputStream Adaptive"
 
+msgctxt "#30005"
+msgid "Soft Subtitles"
+msgstr ""
+
+msgctxt "#30010"
+msgid "General"
+msgstr "Geral"
+
+msgctxt "#30011"
+msgid "Skip intro"
+msgstr "Pular abertura"
+
+msgctxt "#30012"
+msgid "Skip credits"
+msgstr "Pular créditos"
+
+msgctxt "#30015"
+msgid "Skip"
+msgstr ""
+
 msgctxt "#30020"
 msgid "Subtitle Language"
-msgstr "Linguagem da legenda"
+msgstr "Idioma da legenda"
 
 msgctxt "#30021"
-msgid "English (US)"
-msgstr "Inglês (US)"
+msgid "English"
+msgstr "Inglês"
 
-msgctxt "#30022"
-msgid "English (UK)"
-msgstr "Inglês (UK)"
+# 30022 free
 
 msgctxt "#30023"
 msgid "Spanish"
@@ -79,6 +113,44 @@ msgctxt "#30031"
 msgid "Russian"
 msgstr "Russo"
 
+msgctxt "#30032"
+msgid "Hindi"
+msgstr ""
+
+
+msgctxt "#30038"
+msgid "Filter available dubs"
+msgstr "Filtrar os idiomas de áudio disponíveis"
+
+msgctxt "#30039"
+msgid "In an anime seasons or series view, only display dubs in either Japanese, your CR language or any of your configured subtitle languages."
+msgstr "Em uma exibição de temporadas ou séries de anime, exiba apenas os idiomas de áudio em japonês, o idioma Crunchyroll ou qualquer um dos idiomas de legenda configurados."
+
+msgctxt "#30138"
+msgid "Show dubs in your language"
+msgstr ""
+
+msgctxt "#30139"
+msgid "In an anime seasons or series view, display dubs in your CR language"
+msgstr ""
+
+msgctxt "#30140"
+msgid "Show dubs in your alternative language"
+msgstr ""
+
+msgctxt "#30141"
+msgid "In an anime seasons or series view, display dubs in your configured alternative subtitle language."
+msgstr ""
+
+msgctxt "#30142"
+msgid "Show subtitled entries"
+msgstr ""
+
+msgctxt "#30143"
+msgid "In an anime seasons or series view, display dubs in Japanese with subtitles in your configured subtitle languages."
+msgstr ""
+
+
 # Crunchyroll Menue
 msgctxt "#30040"
 msgid "Queue"
@@ -107,6 +179,16 @@ msgstr "Séries"
 msgctxt "#30046"
 msgid "Goto season"
 msgstr "Temporadas"
+
+msgctxt "#30047"
+msgid "Resume"
+msgstr "Retomar"
+
+# 30048 free
+
+msgctxt "#30049"
+msgid "Crunchylists"
+msgstr "Crunchylistas"
 
 msgctxt "#30050"
 msgid "Anime"
@@ -176,3 +258,39 @@ msgstr "Você quer continuar assistindo de %s%%?"
 msgctxt "#30066"
 msgid "If the video does not start wait 30 seconds for the fallback to start."
 msgstr "Se o vídeo não iniciar, aguarde 30 segundos e tente novamente."
+
+msgctxt "#30067"
+msgid "Add to queue"
+msgstr "Adicionar à fila"
+
+msgctxt "#30068"
+msgid "Remove from queue"
+msgstr "Remover da fila"
+
+msgctxt "#30069"
+msgid "Alternative Subtitle Language"
+msgstr "Idioma de Legendas Alternativa"
+
+msgctxt "#30070"
+msgid "None"
+msgstr "Sem Legendas"
+
+msgctxt "#30071"
+msgid "Added to queue"
+msgstr "Adicionado à fila"
+
+msgctxt "#30072"
+msgid "[COLOR orange]%s[/COLOR] (change profile)"
+msgstr ""
+
+msgctxt "#30073"
+msgid "Choose your profile"
+msgstr ""
+
+msgctxt "#30080"
+msgid "There are too many active streams. Please try again later."
+msgstr "Muitas streams ativas. Por favor, tente mais tarde"
+
+msgctxt "#30090"
+msgid "No search results"
+msgstr ""
