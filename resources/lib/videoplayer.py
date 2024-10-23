@@ -45,17 +45,15 @@ class VideoPlayer(Object):
     def start_playback(self):
         """ Set up player and start playback """
 
-        if not self._get_video_stream_data():
-            return
-
         # already playing for whatever reason?
         if self._player.isPlaying():
             utils.log("Skipping playback because already playing")
+            return
+
+        if not self._get_video_stream_data():
+            return
 
         self._prepare_and_start_playback()
-
-        if not self._wait_for_playback_started(10):
-            utils.crunchy_log('Timeout reached, video did not start playback in 10 seconds', xbmc.LOGERROR)
 
         # wait with starting the threads until playback has started for guarantee, otherwise they will immediately exit
         self._handle_skipping()
@@ -169,13 +167,8 @@ class VideoPlayer(Object):
             """ start playback"""
             xbmcplugin.setResolvedUrl(int(G.args.argv[1]), True, item)
 
-            # wait for playback
-            # if wait_for_playback(10):
-            #     # if successful wait more (why?)
-            #     xbmc.sleep(3000)
-
         # start fallback
-        if not wait_for_playback(10):
+        if not self._wait_for_playback_started(10):
             # start without inputstream adaptive
             utils.crunchy_log("Inputstream Adaptive failed, trying directly with kodi", xbmc.LOGINFO)
             item.setProperty("inputstream", "")
@@ -187,11 +180,6 @@ class VideoPlayer(Object):
         # if disabled in settings, no need to start thread
         if G.args.addon.getSetting("sync_playtime") != "true":
             utils.crunchy_log('Sync playtime is disabled', xbmc.LOGINFO)
-            return
-
-        # wait for video to begin
-        if not wait_for_playback(30):
-            utils.crunchy_log('Timeout reached, video did not start in 30 seconds', xbmc.LOGERROR)
             return
 
         # update playtime at crunchyroll in a background thread
@@ -309,6 +297,10 @@ class VideoPlayer(Object):
         ).start()
 
     def clear_active_stream(self):
+        """ Tell Crunchyroll that we no longer use the stream.
+            Crunchyroll keeps track of started streams. If they are not released, CR will block starting a new one.
+        """
+
         if not G.args.get_arg('episode_id') or not self._stream_data.token:
             return
 
@@ -328,13 +320,14 @@ class VideoPlayer(Object):
         """ function that waits for the playback to start"""
 
         timer = time.time() + timeout
-        while not self.is_playing():
+        while not xbmc.getCondVisibility("Player.HasMedia") and not self.is_playing():
             xbmc.sleep(50)
             # timeout to prevent infinite loop
             if time.time() > timer:
                 return False
 
         return True
+
 
 def update_playhead(content_id: str, playhead: int):
     """ Update playtime to Crunchyroll """
@@ -363,16 +356,3 @@ def update_playhead(content_id: str, playhead: int):
             )
         )
         pass
-
-
-def wait_for_playback(timeout: int = 30):
-    """ function that waits for playback """
-
-    timer = time.time() + timeout
-    while not xbmc.getCondVisibility("Player.HasMedia"):
-        xbmc.sleep(50)
-        # timeout to prevent infinite loop
-        if time.time() > timer:
-            return False
-
-    return True
