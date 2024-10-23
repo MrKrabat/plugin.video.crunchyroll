@@ -186,6 +186,7 @@ class VideoPlayer(Object):
 
         # if disabled in settings, no need to start thread
         if G.args.addon.getSetting("sync_playtime") != "true":
+            utils.crunchy_log('Sync playtime is disabled', xbmc.LOGINFO)
             return
 
         # wait for video to begin
