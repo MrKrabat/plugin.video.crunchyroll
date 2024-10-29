@@ -1,12 +1,153 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <setting id="crunchyroll_username" type="text" label="30001" default=""/>
-    <setting id="crunchyroll_password" type="text" label="30002" option="hidden" default=""/>
-    <setting id="device_id" type="text" label="30002" visible="false" option="hidden" default=""/>
-    <setting id="session_id" type="text" label="30002" visible="false" option="hidden" default=""/>
-    <setting id="auth_token" type="text" label="30002" visible="false" option="hidden" default=""/>
-    <setting type="sep" />
-    <setting id="subtitle_language" type="select" lvalues="30021|30022|30023|30024|30025|30026|30027|30028|30029|30030|30031" label="30020" default="0" />
-    <setting id="sync_playtime" type="bool" label="30003" default="true"/>
-    <setting id="inputstream_adaptive" type="action" label="30004" option="close" action="RunPlugin(plugin://plugin.video.crunchyroll/?mode=hls)"/>
+<settings version="1">
+    <section id="plugin.video.crunchyroll">
+        <category id="general" label="30010" help="">
+            <group id="1" label="30200">
+                <setting id="crunchyroll_username" type="string" label="30001" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <heading>30001</heading>
+                    </control>
+                </setting>
+                <setting id="crunchyroll_password" type="string" label="30002" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <heading>30002</heading>
+                        <hidden>true</hidden>
+                    </control>
+                </setting>
+                <setting id="device_id" type="string" label="30002" help="">
+                    <level>4</level>
+                    <default/>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <heading>30002</heading>
+                        <hidden>true</hidden>
+                    </control>
+                    <visible>false</visible>
+                </setting>
+            </group>
+            <group id="2" label="30210">
+                <setting id="subtitle_language" type="string" label="30020" help="">
+                    <level>0</level>
+                    <default>en-US</default>
+                    <constraints>
+                        <options>
+                            <option label="30021">en-US</option>
+                            <option label="30023">es-419</option>
+                            <option label="30024">es-ES</option>
+                            <option label="30025">pt-BR</option>
+                            <option label="30026">pt-PT</option>
+                            <option label="30027">fr-FR</option>
+                            <option label="30028">de-DE</option>
+                            <option label="30029">ar-SA</option>
+                            <option label="30030">it-IT</option>
+                            <option label="30031">ru-RU</option>
+                            <option label="30032">hi-IN</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <heading>30020</heading>
+                    </control>
+                </setting>
+                <setting id="subtitle_language_fallback" type="string" label="30069" help="">
+                    <level>0</level>
+                    <default/>
+                    <constraints>
+                        <options>
+                            <option label="30021">en-US</option>
+                            <option label="30023">es-419</option>
+                            <option label="30024">es-ES</option>
+                            <option label="30025">pt-BR</option>
+                            <option label="30026">pt-PT</option>
+                            <option label="30027">fr-FR</option>
+                            <option label="30028">de-DE</option>
+                            <option label="30029">ar-SA</option>
+                            <option label="30030">it-IT</option>
+                            <option label="30031">ru-RU</option>
+                            <option label="30032">hi-IN</option>
+                        </options>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="list" format="string">
+                        <heading>30069</heading>
+                    </control>
+                </setting>
+            </group>
+
+            <group id="3" label="30230">
+                <setting id="inputstream_adaptive" type="action" label="30004" help="">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://plugin.video.crunchyroll/?mode=hls)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
+
+                <setting id="filter_dubs_by_language" type="boolean" label="30038" help="30039">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="show_dubs_by_language" parent="filter_dubs_by_language" type="boolean" label="30138" help="30139">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="enable" setting="filter_dubs_by_language">true</dependency>
+                    </dependencies>
+                </setting>
+                <setting id="show_dubs_by_language_fallback" parent="filter_dubs_by_language" type="boolean" label="30140" help="30141">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="enable" setting="filter_dubs_by_language">true</dependency>
+                    </dependencies>
+                </setting>
+                <setting id="show_subs_by_language" parent="filter_dubs_by_language" type="boolean" label="30142" help="30143">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                    <dependencies>
+                        <dependency type="enable" setting="filter_dubs_by_language">true</dependency>
+                    </dependencies>
+                </setting>             
+            </group>
+        </category>
+        <category id="playback_options" label="30220" help="">
+            <group id="1" label="30220">
+                <setting id="soft_subtitles" type="boolean" label="30005" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="sync_playtime" type="boolean" label="30003" help="">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="enable_skip_intro" type="boolean" label="30011" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+                <setting id="enable_skip_credits" type="boolean" label="30012" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+        </category>
+    </section>
 </settings>
