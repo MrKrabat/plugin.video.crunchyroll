@@ -1,3 +1,5 @@
+## IMPORTANT NOTE: THIS REPO IS OUTDATED AND NO LONGER MAINTAINED. PLEASE CHECK OUT THESE PROJECTS: [smirgol/plugin.video.crunchyroll](https://github.com/smirgol/plugin.video.crunchyroll) and [xtero/CrunchyREroll](https://github.com/xtero/CrunchyREroll).
+
 # Crunchyroll plugin for Kodi
 
 Crunchyroll a KODI (XBMC) plugin for Crunchyroll.com.
